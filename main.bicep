@@ -1,78 +1,75 @@
-@description('The name of the administrator account of the new VM and domain')
-param adminUsername string = 'rootuser'
+@description('DO NOT CHANGE! The name of the administrator account of the new VM and domain')
+var adminUsername = 'rootuser'
 
 @description('The password for the administrator account of the new VM and domain')
 @secure()
 param adminPassword string 
 
-@description('The FQDN of the Active Directory Domain to be created')
-param domainName string = 'lab.com'
+@description('DO NOT CHANGE! The FQDN of the Active Directory Domain to be created')
+var domainName = 'mylab.local'
 
-@description('The DNS prefix for the public IP address used by the Load Balancer')
-param dnsPrefix string = 'lab'
+@description('DO NOT CHANGE! The DNS prefix for the public IP address used by the Load Balancer')
+var dnsPrefix = 'mylab'
 
 @description('Size of the VM for the controller')
 param vmSize string = 'Standard_D2s_v3'
 
 @description('The location of resources, such as templates and DSC modules, that the template depends on. do not modify.')
-param _artifactsLocation string = deployment().properties.templateLink.uri
+var _artifactsLocation = deployment().properties.templateLink.uri
 
 @description('Auto-generated token to access _artifactsLocation. Leave it blank unless you need to provide your own value.')
-@secure()
-param _artifactsLocationSasToken string = ''
+var _artifactsLocationSasToken = ''
 
 @description('Location for all resources.')
 param location string = resourceGroup().location
 
 @description('Virtual machine name.')
-@maxLength(15)
-param virtualMachineName string = 'adVM'
+var DCvirtualMachineName = 'adDcVM'
 
 @description('Virtual network name.')
-param virtualNetworkName string = 'adVNET'
+var virtualNetworkName = 'adVNET'
 
 @description('Virtual network address range.')
-param virtualNetworkAddressRange string = '10.0.0.0/16'
+var virtualNetworkAddressRange = '10.0.0.0/16'
 
 @description('Load balancer front end IP address name.')
-param loadBalancerFrontEndIPName string = 'LoadBalancerFE'
+var loadBalancerFrontEndIPName = 'LoadBalancerFE'
 
 @description('Backend address pool name.')
-param backendAddressPoolName string = 'LoadBalancerBE'
+var backendAddressPoolName = 'LoadBalancerBE'
 
 @description('Inbound NAT rules name.')
-param inboundNatRulesName string = 'adRDP'
+var inboundNatRulesName = 'adRDP'
 
 @description('Network interface name.')
-param networkInterfaceName string = 'adNic'
+var networkInterfaceName = 'adNic'
 
 @description('Private IP address.')
-param privateIPAddress string = '10.0.0.4'
+var privateIPAddress = '10.0.0.4'
 
 @description('Subnet name.')
-param subnetName string = 'adSubnet'
+var subnetName = 'adSubnet'
 
 @description('Subnet IP range.')
-param subnetRange string = '10.0.0.0/24'
+var subnetRange = '10.0.0.0/24'
 
 @description('Subnet IP range.')
-param publicIPAddressName string = 'adPublicIP'
+var publicIPAddressName = 'adPublicIP'
 
 @description('Availability set name.')
-param availabilitySetName string = 'adAvailabiltySet'
+var availabilitySetName  = 'adAvailabiltySet'
 
 @description('Load balancer name.')
-param loadBalancerName string = 'adLoadBalancer'
+var loadBalancerName = 'adLoadBalancer'
 
 @description('Windows 11 virtual machine name.')
-@maxLength(15)
-param windows11VMName string = 'win11VM'
+var windows11VMName = 'win11VM'
 
 @description('Private IP address for Windows 11 VM.')
-param windows11PrivateIPAddress string = '10.0.0.10'
+var windows11PrivateIPAddress = '10.0.0.10'
 
 @description('Public IP address name for Windows 11 VM.')
-param windows11PublicIPAddressName string = 'win11PublicIP'
+var windows11PublicIPAddressName = 'win11PublicIP'
 
 resource publicIPAddress 'Microsoft.Network/publicIPAddresses@2022-07-01' = {
   name: publicIPAddressName
@@ -179,7 +176,7 @@ resource networkInterface 'Microsoft.Network/networkInterfaces@2022-07-01' = {
 }
 
 resource virtualMachine 'Microsoft.Compute/virtualMachines@2022-08-01' = {
-  name: virtualMachineName
+  name: DCvirtualMachineName
   location: location
   properties: {
     hardwareProfile: {
@@ -189,7 +186,7 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2022-08-01' = {
       id: availabilitySet.id
     }
     osProfile: {
-      computerName: virtualMachineName
+      computerName: DCvirtualMachineName
       adminUsername: adminUsername
       adminPassword: adminPassword
     }
@@ -201,7 +198,7 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2022-08-01' = {
         version: 'latest'
       }
       osDisk: {
-        name: '${virtualMachineName}_OSDisk'
+        name: '${DCvirtualMachineName}_OSDisk'
         caching: 'ReadOnly'
         createOption: 'FromImage'
         managedDisk: {
@@ -210,7 +207,7 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2022-08-01' = {
       }
       dataDisks: [
         {
-          name: '${virtualMachineName}_DataDisk'
+          name: '${DCvirtualMachineName}_DataDisk'
           caching: 'ReadWrite'
           createOption: 'Empty'
           diskSizeGB: 20
@@ -352,5 +349,19 @@ resource windows11VM 'Microsoft.Compute/virtualMachines@2022-08-01' = {
   }
   dependsOn: [
     windows11NetworkInterface
+  ]
+}
+
+resource runCommandOnADVM 'Microsoft.Compute/virtualMachines/runCommands@2022-08-01' = {
+  name: '${DCvirtualMachineName}/RunPowerShellScript'
+  location: location
+  properties: {
+    source: {
+      script: 'Invoke-WebRequest -Uri "https://url.com/script.ps1" -OutFile "C:\\script.ps1"; & "C:\\script.ps1"'
+    }
+    parameters: []
+  }
+  dependsOn: [
+    virtualMachine
   ]
 }
