@@ -1,5 +1,5 @@
 @description('The name of the administrator account of the new VM and domain')
-param adminUsername string = 'root'
+param adminUsername string = 'rootuser'
 
 @description('The password for the administrator account of the new VM and domain')
 @secure()
