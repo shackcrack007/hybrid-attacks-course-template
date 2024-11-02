@@ -238,3 +238,4 @@ if ($CheckSystem) {
 }
 
 Stop-Transcript
+exit 0

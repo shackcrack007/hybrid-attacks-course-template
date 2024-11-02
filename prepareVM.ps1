@@ -159,3 +159,4 @@ pip install roadrecon
 
 # Stop logging
 Stop-Transcript
+exit 0
