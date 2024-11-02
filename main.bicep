@@ -100,7 +100,6 @@ resource disableDefenderScriptonDc 'Microsoft.Compute/virtualMachines/extensions
   }
 }
 
-
 resource disableDefenderScriptonWin11 'Microsoft.Compute/virtualMachines/extensions@2021-07-01' = {
   name: 'disableDefenderWin11'
   parent: virtualMachineWin11
@@ -121,24 +120,6 @@ resource disableDefenderScriptonWin11 'Microsoft.Compute/virtualMachines/extensi
   }
 }
 
-resource runCommandOnWin11VMDisableAV 'Microsoft.Compute/virtualMachines/runCommands@2022-08-01' = {
-  parent: virtualMachineWin11
-  name: 'RunPowerShellScriptWin11DisableAV'
-  location: location
-  properties: {
-    source: {
-      script: '''
-      # Start logging
-      Start-Transcript -Path "c:\download-DisableAV.txt" -Append
-
-      Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force
-      Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/disableAv.ps1" -OutFile "C:\\DisableAV.ps1"; & "C:\\DisableAV.ps1"
-      # Stop logging
-      Stop-Transcript
-      '''
-    }
-  }
-}
 
 resource runCommandOnWin11VMPrepartion 'Microsoft.Compute/virtualMachines/runCommands@2022-08-01' = {
   parent: virtualMachineWin11
@@ -172,7 +153,7 @@ resource runCommandOnWin11VMPrepartion 'Microsoft.Compute/virtualMachines/runCom
     ]
   }
   dependsOn: [
-    runCommandOnWin11VMDisableAV
+    disableDefenderScriptonWin11
   ]
 }
 
