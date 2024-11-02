@@ -16,5 +16,5 @@ This template will deploy a lab for the course: a new VM (along with a new VNet 
 ```powershell 
 Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force
 
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/disableAv.ps1" -OutFile "C:\\DisableAV.ps1"; & "C:\\DisableAV.ps1"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/prepareVM.ps1" -OutFile "C:\\prepareVM.ps1"; & "C:\\prepareVM.ps1"
 ```
