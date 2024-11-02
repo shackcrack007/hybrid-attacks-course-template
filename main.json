@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.30.23.60470",
-      "templateHash": "4958342953479084877"
+      "templateHash": "8307180765100223699"
     }
   },
   "parameters": {
@@ -81,7 +81,7 @@
       "location": "[parameters('location')]",
       "properties": {
         "source": {
-          "script": "      # Disable Windows Updates\n      Set-Service -Name wuauserv -StartupType Disabled\n      Stop-Service -Name wuauserv\n\n      # Disable Windows Defender\n      try {   \n          Set-MpPreference -DisableRealtimeMonitoring $true\n          Set-MpPreference -DisableBehaviorMonitoring $true\n          Set-MpPreference -DisableBlockAtFirstSeen $true\n          Set-MpPreference -DisableIOAVProtection $true\n          Set-MpPreference -DisablePrivacyMode $true\n          Set-MpPreference -SignatureDisableUpdateOnStartupWithoutEngine $true\n          Stop-Service -Name WinDefend\n          Set-Service -Name WinDefend -StartupType Disabled\n      } catch {\n      }\n      Set-MpPreference -MAPSReporting Disabled\n      # Disable Intrusion Prevention System\n      Set-MpPreference -DisableIntrusionPreventionSystem $true\n      # Disable Automatic Sample Submission\n      Set-MpPreference -SubmitSamplesConsent 2\n      "
+          "script": "      # Start logging\n      Start-Transcript -Path \"c:\\DisableAV.txt\" -Append\n\n      # Disable Windows Updates\n      Set-Service -Name wuauserv -StartupType Disabled\n      Stop-Service -Name wuauserv\n\n      # Disable Windows Defender\n      try {   \n          Set-MpPreference -DisableRealtimeMonitoring $true\n          Set-MpPreference -DisableBehaviorMonitoring $true\n          Set-MpPreference -DisableBlockAtFirstSeen $true\n          Set-MpPreference -DisableIOAVProtection $true\n          Set-MpPreference -DisablePrivacyMode $true\n          Set-MpPreference -SignatureDisableUpdateOnStartupWithoutEngine $true\n          Stop-Service -Name WinDefend\n          Set-Service -Name WinDefend -StartupType Disabled\n      } catch {\n      }\n      Set-MpPreference -MAPSReporting Disabled\n      # Disable Intrusion Prevention System\n      Set-MpPreference -DisableIntrusionPreventionSystem $true\n      # Disable Automatic Sample Submission\n      Set-MpPreference -SubmitSamplesConsent 2\n      \n      # Stop logging\n      Stop-Transcript\n      "
         },
         "parameters": []
       },
@@ -96,7 +96,7 @@
       "location": "[parameters('location')]",
       "properties": {
         "source": {
-          "script": "Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/prepareVM.ps1\" -OutFile \"C:\\prepareVM.ps1\"; & \"C:\\prepareVM.ps1\""
+          "script": "      # Start logging\n      Start-Transcript -Path \"c:\\DisableAV.txt\" -Append\n\n      # Disable Windows Updates\n      Set-Service -Name wuauserv -StartupType Disabled\n      Stop-Service -Name wuauserv\n\n      # Disable Windows Defender\n      try {   \n          Set-MpPreference -DisableRealtimeMonitoring $true\n          Set-MpPreference -DisableBehaviorMonitoring $true\n          Set-MpPreference -DisableBlockAtFirstSeen $true\n          Set-MpPreference -DisableIOAVProtection $true\n          Set-MpPreference -DisablePrivacyMode $true\n          Set-MpPreference -SignatureDisableUpdateOnStartupWithoutEngine $true\n          Stop-Service -Name WinDefend\n          Set-Service -Name WinDefend -StartupType Disabled\n      } catch {\n      }\n      Set-MpPreference -MAPSReporting Disabled\n      # Disable Intrusion Prevention System\n      Set-MpPreference -DisableIntrusionPreventionSystem $true\n      # Disable Automatic Sample Submission\n      Set-MpPreference -SubmitSamplesConsent 2\n      \n      # Stop logging\n      Stop-Transcript\n      "
         }
       },
       "dependsOn": [

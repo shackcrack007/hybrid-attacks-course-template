@@ -87,6 +87,9 @@ resource runCommandOnDCVMDisableAV 'Microsoft.Compute/virtualMachines/runCommand
   properties: {
     source: {
       script: '''
+      # Start logging
+      Start-Transcript -Path "c:\DisableAV.txt" -Append
+
       # Disable Windows Updates
       Set-Service -Name wuauserv -StartupType Disabled
       Stop-Service -Name wuauserv
@@ -108,6 +111,9 @@ resource runCommandOnDCVMDisableAV 'Microsoft.Compute/virtualMachines/runCommand
       Set-MpPreference -DisableIntrusionPreventionSystem $true
       # Disable Automatic Sample Submission
       Set-MpPreference -SubmitSamplesConsent 2
+      
+      # Stop logging
+      Stop-Transcript
       '''
     }
     parameters: []
@@ -120,7 +126,35 @@ resource runCommandOnWin11VMDisableAV 'Microsoft.Compute/virtualMachines/runComm
   location: location
   properties: {
     source: {
-      script: 'Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/prepareVM.ps1" -OutFile "C:\\prepareVM.ps1"; & "C:\\prepareVM.ps1"'
+      script: '''
+      # Start logging
+      Start-Transcript -Path "c:\DisableAV.txt" -Append
+
+      # Disable Windows Updates
+      Set-Service -Name wuauserv -StartupType Disabled
+      Stop-Service -Name wuauserv
+
+      # Disable Windows Defender
+      try {   
+          Set-MpPreference -DisableRealtimeMonitoring $true
+          Set-MpPreference -DisableBehaviorMonitoring $true
+          Set-MpPreference -DisableBlockAtFirstSeen $true
+          Set-MpPreference -DisableIOAVProtection $true
+          Set-MpPreference -DisablePrivacyMode $true
+          Set-MpPreference -SignatureDisableUpdateOnStartupWithoutEngine $true
+          Stop-Service -Name WinDefend
+          Set-Service -Name WinDefend -StartupType Disabled
+      } catch {
+      }
+      Set-MpPreference -MAPSReporting Disabled
+      # Disable Intrusion Prevention System
+      Set-MpPreference -DisableIntrusionPreventionSystem $true
+      # Disable Automatic Sample Submission
+      Set-MpPreference -SubmitSamplesConsent 2
+      
+      # Stop logging
+      Stop-Transcript
+      '''
     }
   }
 }
