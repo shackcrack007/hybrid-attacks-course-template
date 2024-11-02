@@ -54,23 +54,23 @@ if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
         $username = "user$i"
         
         New-ADUser `
-        -Name "$username victim" `
-        -GivenName "$username" `
-        -Surname "victim" `
-        -SamAccountName "$username" `
-        -AccountPassword $DomainPasswordSecured `
-        -ChangePasswordAtLogon $False `
-        -Company "Code Duet" `
-        -Title "CEO" `
-        -State "California" `
-        -City "San Francisco" `
-        -Description "victim user account for the lab" `
-        -EmployeeNumber "45" `
-        -Department "Engineering" `
-        -DisplayName "$username" `
-        -Country "us" `
-        -PostalCode "940001" `
-        -Enabled $True    
+            -Name "$username victim" `
+            -GivenName "$username" `
+            -Surname "victim" `
+            -SamAccountName "$username" `
+            -AccountPassword $DomainPasswordSecured `
+            -ChangePasswordAtLogon $False `
+            -Company "Code Duet" `
+            -Title "CEO" `
+            -State "California" `
+            -City "San Francisco" `
+            -Description "victim user account for the lab" `
+            -EmployeeNumber "45" `
+            -Department "Engineering" `
+            -DisplayName "$username" `
+            -Country "us" `
+            -PostalCode "940001" `
+            -Enabled $True    
 
         Add-ADGroupMember -Identity "Domain Admins" -Members $username
     }
@@ -90,7 +90,8 @@ if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
     # Run the extracted BadBlood script
     #$badBloodScript = "$desktopPath\BadBlood-master\invoke-badblood.ps1"
     #Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File $badBloodScript" -Verb RunAs
-} else {
+}
+else {
     Write-Output "This is a Windows Client system."
     Write-Output "Getting the network adapter..."
     # Get the network adapter
@@ -113,7 +114,8 @@ if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
     # Output the result
     if ($?) {
         Write-Output "Successfully joined the domain $DomainName."
-    } else {
+    }
+    else {
         Write-Output "Failed to join the domain $DomainName."
     }
 }
@@ -159,9 +161,45 @@ Write-Output "Enabling multiple, parallel RDP connections..."
 Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fSingleSessionPerUser" -Value 0
 Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\Licensing Core" -Name "LicensingMode" -Value 2
 Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\RCM\GracePeriod" -Name "L$RTMTIMEBOMB" -Value 0 -Type DWord
-Restart-Service -Name TermService -Force
 
 
-# Stop logging
-Stop-Transcript
-exit 0
+
+
+if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
+    Write-Output "This is a Windows Server system."
+    If (-Not (Test-Path 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\.NETFramework\v4.0.30319')) {
+        New-Item 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\.NETFramework\v4.0.30319' -Force | Out-Null
+    }
+    New-ItemProperty -Path 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\.NETFramework\v4.0.30319' -Name 'SystemDefaultTlsVersions' -Value '1' -PropertyType 'DWord' -Force | Out-Null
+    New-ItemProperty -Path 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\.NETFramework\v4.0.30319' -Name 'SchUseStrongCrypto' -Value '1' -PropertyType 'DWord' -Force | Out-Null
+
+    If (-Not (Test-Path 'HKLM:\SOFTWARE\Microsoft\.NETFramework\v4.0.30319')) {
+        New-Item 'HKLM:\SOFTWARE\Microsoft\.NETFramework\v4.0.30319' -Force | Out-Null
+    }
+    New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\.NETFramework\v4.0.30319' -Name 'SystemDefaultTlsVersions' -Value '1' -PropertyType 'DWord' -Force | Out-Null
+    New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\.NETFramework\v4.0.30319' -Name 'SchUseStrongCrypto' -Value '1' -PropertyType 'DWord' -Force | Out-Null
+
+    If (-Not (Test-Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Server')) {
+        New-Item 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Server' -Force | Out-Null
+    }
+    New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Server' -Name 'Enabled' -Value '1' -PropertyType 'DWord' -Force | Out-Null
+    New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Server' -Name 'DisabledByDefault' -Value '0' -PropertyType 'DWord' -Force | Out-Null
+
+    If (-Not (Test-Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Client')) {
+        New-Item 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Client' -Force | Out-Null
+    }
+    New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Client' -Name 'Enabled' -Value '1' -PropertyType 'DWord' -Force | Out-Null
+    New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Client' -Name 'DisabledByDefault' -Value '0' -PropertyType 'DWord' -Force | Out-Null
+
+    Write-Output 'TLS 1.2 has been enabled. restart will start for the changes to take affect.' -ForegroundColor Cyan
+    # Stop logging
+    Stop-Transcript
+    Restart-Computer -Force
+}
+else {
+    Write-Output "Restarting the Remote Desktop Services service..."
+    Restart-Service -Name TermService -Force
+    # Stop logging
+    Stop-Transcript
+    exit 0
+}
