@@ -16,6 +16,10 @@ Start-Transcript -Path "c:\preparevm.txt" -Append
 Write-Output "DomainName: $DomainName"
 Write-Output "DomainUser: $DomainUser"
 Write-Output "DomainPassword: $DomainPassword"
+Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
+
+# Disable AV
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/disableAv.ps1" -OutFile "C:\\DisableAV.ps1"; & "C:\\DisableAV.ps1"
 
 $DomainPasswordSecured = ConvertTo-SecureString $DomainPassword -AsPlainText -Force
 
