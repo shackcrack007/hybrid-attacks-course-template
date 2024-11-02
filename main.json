@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.30.23.60470",
-      "templateHash": "1317430229559850064"
+      "templateHash": "4958342953479084877"
     }
   },
   "parameters": {
@@ -33,96 +33,118 @@
   "variables": {
     "adminUsername": "rootuser",
     "domainName": "mylab.local",
-    "dnsPrefix": "mylab",
     "_artifactsLocation": "[deployment().properties.templateLink.uri]",
     "_artifactsLocationSasToken": "",
-    "DCvirtualMachineName": "adDcVM",
-    "virtualNetworkName": "adVNET",
-    "virtualNetworkAddressRange": "10.0.0.0/16",
-    "loadBalancerFrontEndIPName": "LoadBalancerFE",
-    "backendAddressPoolName": "LoadBalancerBE",
-    "inboundNatRulesName": "adRDP",
-    "networkInterfaceName": "adNic",
-    "privateIPAddress": "10.0.0.4",
-    "subnetName": "adSubnet",
-    "subnetRange": "10.0.0.0/24",
-    "publicIPAddressName": "adPublicIP",
-    "availabilitySetName": "adAvailabiltySet",
-    "loadBalancerName": "adLoadBalancer",
+    "DCvirtualMachineName": "dcVM",
     "windows11VMName": "win11VM",
-    "windows11PrivateIPAddress": "10.0.0.10",
-    "windows11PublicIPAddressName": "win11PublicIP"
+    "virtualNetworkName": "lab-VNET",
+    "virtualNetworkAddressRange": "10.0.0.0/16",
+    "privateIPAddress": "10.0.0.4",
+    "subnetName": "lab-subnet",
+    "subnetRange": "10.0.0.0/24",
+    "windows11PrivateIPAddress": "10.0.0.10"
   },
   "resources": [
     {
-      "type": "Microsoft.Network/publicIPAddresses",
-      "apiVersion": "2022-07-01",
-      "name": "[variables('publicIPAddressName')]",
-      "location": "[parameters('location')]",
-      "properties": {
-        "publicIPAllocationMethod": "Static",
-        "dnsSettings": {
-          "domainNameLabel": "[variables('dnsPrefix')]"
-        }
-      }
-    },
-    {
-      "type": "Microsoft.Compute/availabilitySets",
+      "type": "Microsoft.Compute/virtualMachines/runCommands",
       "apiVersion": "2022-08-01",
-      "name": "[variables('availabilitySetName')]",
+      "name": "[format('{0}/{1}', variables('DCvirtualMachineName'), 'RunPowerShellScriptDCDisablePrepartion')]",
       "location": "[parameters('location')]",
       "properties": {
-        "platformUpdateDomainCount": 20,
-        "platformFaultDomainCount": 2
-      },
-      "sku": {
-        "name": "Aligned"
-      }
-    },
-    {
-      "type": "Microsoft.Network/loadBalancers",
-      "apiVersion": "2022-07-01",
-      "name": "[variables('loadBalancerName')]",
-      "location": "[parameters('location')]",
-      "properties": {
-        "frontendIPConfigurations": [
+        "source": {
+          "script": "      param (\n        [string]$adminUsername\n        [string]$adminPassword\n        [string]$domainName\n      )\n\n      Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/prepareVM.ps1\" -OutFile \"C:\\\\prepareVM.ps1\"; & \"C:\\\\prepareVM.ps1\" -DomainUser $adminUsername -DomainPassword $adminPassword -DomainName $domainName\n      "
+        },
+        "parameters": [
           {
-            "name": "[variables('loadBalancerFrontEndIPName')]",
-            "properties": {
-              "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]"
-              }
-            }
-          }
-        ],
-        "backendAddressPools": [
+            "name": "adminUsername",
+            "value": "[variables('adminUsername')]"
+          },
           {
-            "name": "[variables('backendAddressPoolName')]"
-          }
-        ],
-        "inboundNatRules": [
+            "name": "adminPassword",
+            "value": "[parameters('adminPassword')]"
+          },
           {
-            "name": "[variables('inboundNatRulesName')]",
-            "properties": {
-              "frontendIPConfiguration": {
-                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('loadBalancerName'), variables('loadBalancerFrontEndIPName'))]"
-              },
-              "protocol": "Tcp",
-              "frontendPort": 3389,
-              "backendPort": 3389,
-              "enableFloatingIP": false
-            }
+            "name": "domainName",
+            "value": "[variables('domainName')]"
           }
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]"
+        "[resourceId('Microsoft.Compute/virtualMachines/runCommands', variables('DCvirtualMachineName'), 'RunPowerShellScriptDCDisableAV')]",
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('DCvirtualMachineName'))]"
       ]
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/runCommands",
+      "apiVersion": "2022-08-01",
+      "name": "[format('{0}/{1}', variables('DCvirtualMachineName'), 'RunPowerShellScriptDCDisableAV')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "source": {
+          "script": "      # Disable Windows Updates\n      Set-Service -Name wuauserv -StartupType Disabled\n      Stop-Service -Name wuauserv\n\n      # Disable Windows Defender\n      try {   \n          Set-MpPreference -DisableRealtimeMonitoring $true\n          Set-MpPreference -DisableBehaviorMonitoring $true\n          Set-MpPreference -DisableBlockAtFirstSeen $true\n          Set-MpPreference -DisableIOAVProtection $true\n          Set-MpPreference -DisablePrivacyMode $true\n          Set-MpPreference -SignatureDisableUpdateOnStartupWithoutEngine $true\n          Stop-Service -Name WinDefend\n          Set-Service -Name WinDefend -StartupType Disabled\n      } catch {\n      }\n      Set-MpPreference -MAPSReporting Disabled\n      # Disable Intrusion Prevention System\n      Set-MpPreference -DisableIntrusionPreventionSystem $true\n      # Disable Automatic Sample Submission\n      Set-MpPreference -SubmitSamplesConsent 2\n      "
+        },
+        "parameters": []
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('DCvirtualMachineName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/runCommands",
+      "apiVersion": "2022-08-01",
+      "name": "[format('{0}/{1}', variables('windows11VMName'), 'RunPowerShellScriptWin11DisableAV')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "source": {
+          "script": "Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/prepareVM.ps1\" -OutFile \"C:\\prepareVM.ps1\"; & \"C:\\prepareVM.ps1\""
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('windows11VMName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/runCommands",
+      "apiVersion": "2022-08-01",
+      "name": "[format('{0}/{1}', variables('windows11VMName'), 'RunPowerShellScriptWin11Prepartion')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "source": {
+          "script": "      param (\n        [string]$adminUsername\n        [string]$adminPassword\n        [string]$domainName\n      )\n\n      Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/prepareVM.ps1\" -OutFile \"C:\\\\prepareVM.ps1\"; & \"C:\\\\prepareVM.ps1\" -DomainUser $adminUsername -DomainPassword $adminPassword -DomainName $domainName\n      "
+        },
+        "parameters": [
+          {
+            "name": "adminUsername",
+            "value": "[variables('adminUsername')]"
+          },
+          {
+            "name": "adminPassword",
+            "value": "[parameters('adminPassword')]"
+          },
+          {
+            "name": "domainName",
+            "value": "[variables('domainName')]"
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines/runCommands', variables('windows11VMName'), 'RunPowerShellScriptWin11DisableAV')]",
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('windows11VMName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2022-07-01",
+      "name": "[format('{0}-publicIP', variables('DCvirtualMachineName'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic"
+      }
     },
     {
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2022-07-01",
-      "name": "[variables('networkInterfaceName')]",
+      "name": "[format('{0}-nic', variables('DCvirtualMachineName'))]",
       "location": "[parameters('location')]",
       "properties": {
         "ipConfigurations": [
@@ -134,22 +156,15 @@
               "subnet": {
                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"
               },
-              "loadBalancerBackendAddressPools": [
-                {
-                  "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), variables('backendAddressPoolName'))]"
-                }
-              ],
-              "loadBalancerInboundNatRules": [
-                {
-                  "id": "[resourceId('Microsoft.Network/loadBalancers/inboundNatRules', variables('loadBalancerName'), variables('inboundNatRulesName'))]"
-                }
-              ]
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}-publicIP', variables('DCvirtualMachineName')))]"
+              }
             }
           }
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName'))]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}-publicIP', variables('DCvirtualMachineName')))]",
         "[resourceId('Microsoft.Resources/deployments', 'VNet')]"
       ]
     },
@@ -161,9 +176,6 @@
       "properties": {
         "hardwareProfile": {
           "vmSize": "[parameters('vmSize')]"
-        },
-        "availabilitySet": {
-          "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetName'))]"
         },
         "osProfile": {
           "computerName": "[variables('DCvirtualMachineName')]",
@@ -201,15 +213,13 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', format('{0}-nic', variables('DCvirtualMachineName')))]"
             }
           ]
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetName'))]",
-        "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName'))]",
-        "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
+        "[resourceId('Microsoft.Network/networkInterfaces', format('{0}-nic', variables('DCvirtualMachineName')))]"
       ]
     },
     {
@@ -246,7 +256,7 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "apiVersion": "2022-07-01",
-      "name": "[variables('windows11PublicIPAddressName')]",
+      "name": "[format('{0}-publicIP', variables('windows11VMName'))]",
       "location": "[parameters('location')]",
       "properties": {
         "publicIPAllocationMethod": "Dynamic"
@@ -268,7 +278,7 @@
                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"
               },
               "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('windows11PublicIPAddressName'))]"
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}-publicIP', variables('windows11VMName')))]"
               }
             }
           }
@@ -276,7 +286,7 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', 'VNet')]",
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('windows11PublicIPAddressName'))]"
+        "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}-publicIP', variables('windows11VMName')))]"
       ]
     },
     {
@@ -322,18 +332,87 @@
       ]
     },
     {
-      "type": "Microsoft.Compute/virtualMachines/runCommands",
-      "apiVersion": "2022-08-01",
-      "name": "[format('{0}/RunPowerShellScript', variables('DCvirtualMachineName'))]",
+      "type": "Microsoft.DevTestLab/schedules",
+      "apiVersion": "2018-09-15",
+      "name": "[format('{0}-autoShutdownScheduleDcVm_8AM', variables('DCvirtualMachineName'))]",
       "location": "[parameters('location')]",
       "properties": {
-        "source": {
-          "script": "Invoke-WebRequest -Uri \"https://url.com/script.ps1\" -OutFile \"C:\\script.ps1\"; & \"C:\\script.ps1\""
+        "status": "Enabled",
+        "taskType": "ComputeVmShutdownTask",
+        "dailyRecurrence": {
+          "time": "08:00"
         },
-        "parameters": []
+        "timeZoneId": "Israel Standard Time",
+        "targetResourceId": "[resourceId('Microsoft.Compute/virtualMachines', variables('DCvirtualMachineName'))]",
+        "notificationSettings": {
+          "status": "Disabled"
+        }
       },
       "dependsOn": [
         "[resourceId('Microsoft.Compute/virtualMachines', variables('DCvirtualMachineName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.DevTestLab/schedules",
+      "apiVersion": "2018-09-15",
+      "name": "[format('{0}-autoShutdownScheduleDcVm_8PM', variables('DCvirtualMachineName'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "status": "Enabled",
+        "taskType": "ComputeVmShutdownTask",
+        "dailyRecurrence": {
+          "time": "20:00"
+        },
+        "timeZoneId": "Israel Standard Time",
+        "targetResourceId": "[resourceId('Microsoft.Compute/virtualMachines', variables('DCvirtualMachineName'))]",
+        "notificationSettings": {
+          "status": "Disabled"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('DCvirtualMachineName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.DevTestLab/schedules",
+      "apiVersion": "2018-09-15",
+      "name": "[format('{0}-autoShutdownScheduleWin11VM_8AM', variables('windows11VMName'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "status": "Enabled",
+        "taskType": "ComputeVmShutdownTask",
+        "dailyRecurrence": {
+          "time": "08:00"
+        },
+        "timeZoneId": "Israel Standard Time",
+        "targetResourceId": "[resourceId('Microsoft.Compute/virtualMachines', variables('windows11VMName'))]",
+        "notificationSettings": {
+          "status": "Disabled"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('windows11VMName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.DevTestLab/schedules",
+      "apiVersion": "2018-09-15",
+      "name": "[format('{0}-autoShutdownScheduleWin11VM_8PM', variables('windows11VMName'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "status": "Enabled",
+        "taskType": "ComputeVmShutdownTask",
+        "dailyRecurrence": {
+          "time": "20:00"
+        },
+        "timeZoneId": "Israel Standard Time",
+        "targetResourceId": "[resourceId('Microsoft.Compute/virtualMachines', variables('windows11VMName'))]",
+        "notificationSettings": {
+          "status": "Disabled"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('windows11VMName'))]"
       ]
     },
     {

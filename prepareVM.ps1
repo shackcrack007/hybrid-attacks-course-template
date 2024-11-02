@@ -9,6 +9,14 @@ param (
     [string]$DomainPassword
 )
 
+# Start logging
+Start-Transcript -Path "c:\preparevm.txt" -Append
+
+# Log the accepted arguments
+Write-Output "DomainName: $DomainName"
+Write-Output "DomainUser: $DomainUser"
+Write-Output "DomainPassword: $DomainPassword"
+
 $DomainPasswordSecured = ConvertTo-SecureString $DomainPassword -AsPlainText -Force
 
 # Allow PowerShell script execution to be Unrestricted
@@ -108,8 +116,7 @@ Set-Service -Name wuauserv -StartupType Disabled
 Stop-Service -Name wuauserv
 
 # Disable Windows Defender
-try {
-    
+try {   
     Set-MpPreference -DisableRealtimeMonitoring $true
     Set-MpPreference -DisableBehaviorMonitoring $true
     Set-MpPreference -DisableBlockAtFirstSeen $true
@@ -131,3 +138,6 @@ Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" 
 Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\Licensing Core" -Name "LicensingMode" -Value 2
 Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\RCM\GracePeriod" -Name "L$RTMTIMEBOMB" -Value 0 -Type DWord
 Restart-Service -Name TermService -Force
+
+# Stop logging
+Stop-Transcript
