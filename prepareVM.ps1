@@ -30,7 +30,7 @@ if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
     Write-Output "This is a Windows Server system."
 
     function Disable-IEESC {
-        Write-Host "Disabling IE Enhanced Security Configuration (ESC)..."
+        Write-Output "Disabling IE Enhanced Security Configuration (ESC)..."
     
         # Disable for Administrators
         $AdminKey = "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A7-37EF-4b3f-8CFC-4F3A74704073}"
@@ -43,12 +43,13 @@ if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
         # Restart Explorer to apply changes
         Stop-Process -Name Explorer -Force
     
-        Write-Host "IE Enhanced Security Configuration (ESC) has been disabled." -ForegroundColor Green
+        Write-Output "IE Enhanced Security Configuration (ESC) has been disabled."
     }
     
     Disable-IEESC
 
     # Create 40 dummy domain users and add them to Domain Admins group
+    Write-Output "Creating 40 dummy domain users and adding them to Domain Admins group..."
     for ($i = 1; $i -le 40; $i++) {
         $username = "user$i"
         
@@ -74,11 +75,12 @@ if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
         Add-ADGroupMember -Identity "Domain Admins" -Members $username
     }
 
-
+    Write-Output "Downloading AzureADConnect.msi to Desktop..."
     # Download AzureADConnect.msi to Desktop
     $desktopPath = [Environment]::GetFolderPath("Desktop")
     Invoke-WebRequest -Uri "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi" -OutFile "$desktopPath\AzureADConnect.msi"
 
+    Write-Output "Downloading and extracting BadBlood zip file..."
     # Download and extract BadBlood zip file
     $zipUrl = "https://github.com/davidprowe/BadBlood/archive/refs/heads/master.zip"
     $zipPath = "$desktopPath\BadBlood.zip"
@@ -90,18 +92,21 @@ if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
     #Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File $badBloodScript" -Verb RunAs
 } else {
     Write-Output "This is a Windows Client system."
+    Write-Output "Getting the network adapter..."
     # Get the network adapter
     $adapter = Get-NetAdapter | Where-Object { $_.Status -eq 'Up' }
 
+    Write-Output "Setting the primary and secondary DNS servers..."
     # Set the primary and secondary DNS servers
     Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ServerAddresses ("10.0.0.4", "8.8.8.8")
 
-    # Output the result
     Write-Output "DNS servers have been set to 10.0.0.4 and 8.8.8.8."
 
+    Write-Output "Creating a PSCredential object..."
     # Create a PSCredential object
     $Credential = New-Object System.Management.Automation.PSCredential ($DomainUser, $DomainPasswordSecured)
 
+    Write-Output "Joining the computer to the domain..."
     # Join the computer to the domain
     Add-Computer -DomainName $DomainName -Credential $Credential -Restart -Force
 
@@ -113,35 +118,44 @@ if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
     }
 }
 
-
-
+Write-Output "Disabling Windows Updates..."
 # Disable Windows Updates
 Set-Service -Name wuauserv -StartupType Disabled
 Stop-Service -Name wuauserv
 
-# Disable Windows Defender
-try {   
-    Set-MpPreference -DisableRealtimeMonitoring $true
-    Set-MpPreference -DisableBehaviorMonitoring $true
-    Set-MpPreference -DisableBlockAtFirstSeen $true
-    Set-MpPreference -DisableIOAVProtection $true
-    Set-MpPreference -DisablePrivacyMode $true
-    Set-MpPreference -SignatureDisableUpdateOnStartupWithoutEngine $true
-    Stop-Service -Name WinDefend
-    Set-Service -Name WinDefend -StartupType Disabled
-} catch {
-}
-Set-MpPreference -MAPSReporting Disabled
-# Disable Intrusion Prevention System
-Set-MpPreference -DisableIntrusionPreventionSystem $true
-# Disable Automatic Sample Submission
-Set-MpPreference -SubmitSamplesConsent 2
-
+Write-Output "Enabling multiple, parallel RDP connections..."
 # Enable multiple, parallel RDP connections
 Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fSingleSessionPerUser" -Value 0
 Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\Licensing Core" -Name "LicensingMode" -Value 2
 Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\RCM\GracePeriod" -Name "L$RTMTIMEBOMB" -Value 0 -Type DWord
 Restart-Service -Name TermService -Force
+
+############################
+# Install PS, Python and attack tools
+################################
+
+write-output "Installing PowerShellGet..."
+Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+
+write-output "Installing Python..."
+# Define the URL for the Python installer
+$pythonInstallerUrl = "https://www.python.org/ftp/python/3.13.0/python-3.13.0-amd64.exe"
+
+# Define the path to save the installer
+$installerPath = "$env:TEMP\python-3.9.7-amd64.exe"
+$env:Path += ";$env:C:\Program Files\Python313\Scripts"
+$env:Path += ";$env:C:\Program Files\Python313\"
+# Download the installer
+Invoke-WebRequest -Uri $pythonInstallerUrl -OutFile $installerPath
+
+# Install Python silently
+Start-Process -FilePath $installerPath -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1" -Wait
+
+write-output "Installing AADInternals module..."
+Install-Module AADInternals -Force -AllowClobber -Scope AllUsers
+
+pip install roadlib
+pip install roadrecon
 
 # Stop logging
 Stop-Transcript
