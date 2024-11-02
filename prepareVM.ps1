@@ -123,13 +123,6 @@ Write-Output "Disabling Windows Updates..."
 Set-Service -Name wuauserv -StartupType Disabled
 Stop-Service -Name wuauserv
 
-Write-Output "Enabling multiple, parallel RDP connections..."
-# Enable multiple, parallel RDP connections
-Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fSingleSessionPerUser" -Value 0
-Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\Licensing Core" -Name "LicensingMode" -Value 2
-Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\RCM\GracePeriod" -Name "L$RTMTIMEBOMB" -Value 0 -Type DWord
-Restart-Service -Name TermService -Force
-
 ############################
 # Install PS, Python and attack tools
 ################################
@@ -156,6 +149,18 @@ Install-Module AADInternals -Force -AllowClobber -Scope AllUsers
 
 pip install roadlib
 pip install roadrecon
+
+######
+# THE FOLLOWING MUST RUN LAST AS IT WILL DISCONNECT THE SESSIONS
+####
+
+Write-Output "Enabling multiple, parallel RDP connections..."
+# Enable multiple, parallel RDP connections
+Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fSingleSessionPerUser" -Value 0
+Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\Licensing Core" -Name "LicensingMode" -Value 2
+Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\RCM\GracePeriod" -Name "L$RTMTIMEBOMB" -Value 0 -Type DWord
+Restart-Service -Name TermService -Force
+
 
 # Stop logging
 Stop-Transcript
