@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.30.23.60470",
-      "templateHash": "2674726813979067539"
+      "templateHash": "6387161699199824501"
     }
   },
   "parameters": {
@@ -123,20 +123,6 @@
     {
       "type": "Microsoft.Compute/virtualMachines/runCommands",
       "apiVersion": "2022-08-01",
-      "name": "[format('{0}/{1}', variables('windows11VMName'), 'RunPowerShellScriptWin11DisableAV')]",
-      "location": "[parameters('location')]",
-      "properties": {
-        "source": {
-          "script": "      # Start logging\n      Start-Transcript -Path \"c:\\download-DisableAV.txt\" -Append\n\n      Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force\n      Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/disableAv.ps1\" -OutFile \"C:\\\\DisableAV.ps1\"; & \"C:\\\\DisableAV.ps1\"\n      # Stop logging\n      Stop-Transcript\n      "
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('windows11VMName'))]"
-      ]
-    },
-    {
-      "type": "Microsoft.Compute/virtualMachines/runCommands",
-      "apiVersion": "2022-08-01",
       "name": "[format('{0}/{1}', variables('windows11VMName'), 'RunPowerShellScriptWin11Prepartion')]",
       "location": "[parameters('location')]",
       "properties": {
@@ -159,7 +145,7 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines/runCommands', variables('windows11VMName'), 'RunPowerShellScriptWin11DisableAV')]",
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('windows11VMName'), 'disableDefenderWin11')]",
         "[resourceId('Microsoft.Compute/virtualMachines', variables('windows11VMName'))]"
       ]
     },
