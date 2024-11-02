@@ -18,7 +18,7 @@ var _artifactsLocation = deployment().properties.templateLink.uri
 var _artifactsLocationSasToken = ''
 
 @description('Location for all resources.')
-param location string = resourceGroup().location
+var location = resourceGroup().location
 
 @description('Virtual machine name.')
 var DCvirtualMachineName = 'dcVM'
