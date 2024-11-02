@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.30.23.60470",
-      "templateHash": "4946077301003717090"
+      "templateHash": "15726564427190092345"
     }
   },
   "parameters": {
@@ -39,110 +39,6 @@
     "windows11PrivateIPAddress": "10.0.0.10"
   },
   "resources": [
-    {
-      "type": "Microsoft.Compute/virtualMachines/runCommands",
-      "apiVersion": "2022-08-01",
-      "name": "[format('{0}/{1}', variables('DCvirtualMachineName'), 'RunPowerShellScriptDCDisablePrepartion')]",
-      "location": "[variables('location')]",
-      "properties": {
-        "source": {
-          "script": "      param (\n        [string]$adminUsername\n        [string]$adminPassword\n        [string]$domainName\n      )\n\n      Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/prepareVM.ps1\" -OutFile \"C:\\\\prepareVM.ps1\"; & \"C:\\\\prepareVM.ps1\" -DomainUser $adminUsername -DomainPassword $adminPassword -DomainName $domainName\n      "
-        },
-        "parameters": [
-          {
-            "name": "adminUsername",
-            "value": "[variables('adminUsername')]"
-          },
-          {
-            "name": "adminPassword",
-            "value": "[parameters('adminPassword')]"
-          },
-          {
-            "name": "domainName",
-            "value": "[variables('domainName')]"
-          }
-        ]
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('DCvirtualMachineName'), 'disableDefenderDC')]",
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('DCvirtualMachineName'))]"
-      ]
-    },
-    {
-      "type": "Microsoft.Compute/virtualMachines/extensions",
-      "apiVersion": "2021-07-01",
-      "name": "[format('{0}/{1}', variables('DCvirtualMachineName'), 'disableDefenderDC')]",
-      "location": "[variables('location')]",
-      "properties": {
-        "publisher": "Microsoft.Compute",
-        "type": "CustomScriptExtension",
-        "typeHandlerVersion": "1.10",
-        "autoUpgradeMinorVersion": true,
-        "settings": {
-          "fileUris": [
-            "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/disableAv.ps1"
-          ]
-        },
-        "protectedSettings": {
-          "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File disableAv.ps1"
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('DCvirtualMachineName'))]"
-      ]
-    },
-    {
-      "type": "Microsoft.Compute/virtualMachines/extensions",
-      "apiVersion": "2021-07-01",
-      "name": "[format('{0}/{1}', variables('windows11VMName'), 'disableDefenderWin11')]",
-      "location": "[variables('location')]",
-      "properties": {
-        "publisher": "Microsoft.Compute",
-        "type": "CustomScriptExtension",
-        "typeHandlerVersion": "1.10",
-        "autoUpgradeMinorVersion": true,
-        "settings": {
-          "fileUris": [
-            "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/disableAv.ps1"
-          ]
-        },
-        "protectedSettings": {
-          "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File disableAv.ps1"
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('windows11VMName'))]"
-      ]
-    },
-    {
-      "type": "Microsoft.Compute/virtualMachines/runCommands",
-      "apiVersion": "2022-08-01",
-      "name": "[format('{0}/{1}', variables('windows11VMName'), 'RunPowerShellScriptWin11Prepartion')]",
-      "location": "[variables('location')]",
-      "properties": {
-        "source": {
-          "script": "      param (\n        [string]$adminUsername\n        [string]$adminPassword\n        [string]$domainName\n      )\n      Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force\n      Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/prepareVM.ps1\" -OutFile \"C:\\\\prepareVM.ps1\"; & \"C:\\\\prepareVM.ps1\" -DomainUser $adminUsername -DomainPassword $adminPassword -DomainName $domainName\n      "
-        },
-        "parameters": [
-          {
-            "name": "adminUsername",
-            "value": "[variables('adminUsername')]"
-          },
-          {
-            "name": "adminPassword",
-            "value": "[parameters('adminPassword')]"
-          },
-          {
-            "name": "domainName",
-            "value": "[variables('domainName')]"
-          }
-        ]
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('windows11VMName'), 'disableDefenderWin11')]",
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('windows11VMName'))]"
-      ]
-    },
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "apiVersion": "2022-07-01",
