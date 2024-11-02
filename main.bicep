@@ -8,8 +8,8 @@ param adminPassword string
 @description('DO NOT CHANGE! The FQDN of the Active Directory Domain to be created')
 var domainName = 'mylab.local'
 
-@description('Size of the VM for the controller')
-param vmSize string = 'Standard_D2s_v3'
+@description('Size of the VM for the controller (preffered Standard_D2s_v3)')
+param vmSize string = 'Standard_DS1_v2'
 
 @description('The location of resources, such as templates and DSC modules, that the template depends on. do not modify.')
 var _artifactsLocation = deployment().properties.templateLink.uri
@@ -88,30 +88,10 @@ resource runCommandOnDCVMDisableAV 'Microsoft.Compute/virtualMachines/runCommand
     source: {
       script: '''
       # Start logging
-      Start-Transcript -Path "c:\DisableAV.txt" -Append
+      Start-Transcript -Path "c:\download-DisableAV.txt" -Append
 
-      # Disable Windows Updates
-      Set-Service -Name wuauserv -StartupType Disabled
-      Stop-Service -Name wuauserv
-
-      # Disable Windows Defender
-      try {   
-          Set-MpPreference -DisableRealtimeMonitoring $true
-          Set-MpPreference -DisableBehaviorMonitoring $true
-          Set-MpPreference -DisableBlockAtFirstSeen $true
-          Set-MpPreference -DisableIOAVProtection $true
-          Set-MpPreference -DisablePrivacyMode $true
-          Set-MpPreference -SignatureDisableUpdateOnStartupWithoutEngine $true
-          Stop-Service -Name WinDefend
-          Set-Service -Name WinDefend -StartupType Disabled
-      } catch {
-      }
-      Set-MpPreference -MAPSReporting Disabled
-      # Disable Intrusion Prevention System
-      Set-MpPreference -DisableIntrusionPreventionSystem $true
-      # Disable Automatic Sample Submission
-      Set-MpPreference -SubmitSamplesConsent 2
-      
+      Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force
+      Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/DisableAv.ps1" -OutFile "C:\\DisableAV.ps1"; & "C:\\DisableAV.ps1"
       # Stop logging
       Stop-Transcript
       '''
@@ -128,30 +108,10 @@ resource runCommandOnWin11VMDisableAV 'Microsoft.Compute/virtualMachines/runComm
     source: {
       script: '''
       # Start logging
-      Start-Transcript -Path "c:\DisableAV.txt" -Append
+      Start-Transcript -Path "c:\download-DisableAV.txt" -Append
 
-      # Disable Windows Updates
-      Set-Service -Name wuauserv -StartupType Disabled
-      Stop-Service -Name wuauserv
-
-      # Disable Windows Defender
-      try {   
-          Set-MpPreference -DisableRealtimeMonitoring $true
-          Set-MpPreference -DisableBehaviorMonitoring $true
-          Set-MpPreference -DisableBlockAtFirstSeen $true
-          Set-MpPreference -DisableIOAVProtection $true
-          Set-MpPreference -DisablePrivacyMode $true
-          Set-MpPreference -SignatureDisableUpdateOnStartupWithoutEngine $true
-          Stop-Service -Name WinDefend
-          Set-Service -Name WinDefend -StartupType Disabled
-      } catch {
-      }
-      Set-MpPreference -MAPSReporting Disabled
-      # Disable Intrusion Prevention System
-      Set-MpPreference -DisableIntrusionPreventionSystem $true
-      # Disable Automatic Sample Submission
-      Set-MpPreference -SubmitSamplesConsent 2
-      
+      Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force
+      Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/DisableAv.ps1" -OutFile "C:\\DisableAV.ps1"; & "C:\\DisableAV.ps1"
       # Stop logging
       Stop-Transcript
       '''
@@ -171,7 +131,7 @@ resource runCommandOnWin11VMPrepartion 'Microsoft.Compute/virtualMachines/runCom
         [string]$adminPassword
         [string]$domainName
       )
-
+      Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force
       Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/prepareVM.ps1" -OutFile "C:\\prepareVM.ps1"; & "C:\\prepareVM.ps1" -DomainUser $adminUsername -DomainPassword $adminPassword -DomainName $domainName
       '''
     }
@@ -403,74 +363,6 @@ resource virtualMachineWin11 'Microsoft.Compute/virtualMachines@2022-08-01' = {
           id: windows11NetworkInterface.id
         }
       ]
-    }
-  }
-}
-
-resource autoShutdownScheduleDcVm_8AM 'Microsoft.DevTestLab/schedules@2018-09-15' = {
-  name: '${DCvirtualMachineName}-autoShutdownScheduleDcVm_8AM'
-  location: location
-  properties: {
-    status: 'Enabled'
-    taskType: 'ComputeVmShutdownTask'
-    dailyRecurrence: {
-      time: '08:00' // 8 AM Israel time (UTC+2)
-    }
-    timeZoneId: 'Israel Standard Time'
-    targetResourceId: virtualMachineDC.id
-    notificationSettings: {
-      status: 'Disabled'
-    }
-  }
-}
-
-resource autoShutdownScheduleDcVm_8PM 'Microsoft.DevTestLab/schedules@2018-09-15' = {
-  name: '${DCvirtualMachineName}-autoShutdownScheduleDcVm_8PM'
-  location: location
-  properties: {
-    status: 'Enabled'
-    taskType: 'ComputeVmShutdownTask'
-    dailyRecurrence: {
-      time: '20:00' // 8 PM Israel time (UTC+2)
-    }
-    timeZoneId: 'Israel Standard Time'
-    targetResourceId: virtualMachineDC.id
-    notificationSettings: {
-      status: 'Disabled'
-    }
-  }
-}
-
-resource autoShutdownScheduleWin11VM_8AM 'Microsoft.DevTestLab/schedules@2018-09-15' = {
-  name: '${windows11VMName}-autoShutdownScheduleWin11VM_8AM'
-  location: location
-  properties: {
-    status: 'Enabled'
-    taskType: 'ComputeVmShutdownTask'
-    dailyRecurrence: {
-      time: '08:00' // 8 AM Israel time (UTC+2)
-    }
-    timeZoneId: 'Israel Standard Time'
-    targetResourceId: virtualMachineWin11.id
-    notificationSettings: {
-      status: 'Disabled'
-    }
-  }
-}
-
-resource autoShutdownScheduleWin11VM_8PM 'Microsoft.DevTestLab/schedules@2018-09-15' = {
-  name: '${windows11VMName}-autoShutdownScheduleWin11VM_8PM'
-  location: location
-  properties: {
-    status: 'Enabled'
-    taskType: 'ComputeVmShutdownTask'
-    dailyRecurrence: {
-      time: '20:00' // 8 PM Israel time (UTC+2)
-    }
-    timeZoneId: 'Israel Standard Time'
-    targetResourceId: virtualMachineWin11.id
-    notificationSettings: {
-      status: 'Disabled'
     }
   }
 }
