@@ -76,27 +76,48 @@ resource runCommandOnDCVMPrepartion 'Microsoft.Compute/virtualMachines/runComman
     ]
   }
   dependsOn: [
-    runCommandOnDCVMDisableAV
+    disableDefenderScriptonDc
   ]
 }
 
-resource runCommandOnDCVMDisableAV 'Microsoft.Compute/virtualMachines/runCommands@2022-08-01' = {
+resource disableDefenderScriptonDc 'Microsoft.Compute/virtualMachines/extensions@2021-07-01' = {
+  name: 'disableDefenderDC'
   parent: virtualMachineDC
-  name: 'RunPowerShellScriptDCDisableAV'
   location: location
   properties: {
-    source: {
-      script: '''
-      # Start logging
-      Start-Transcript -Path "c:\download-DisableAV.txt" -Append
-
-      Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force
-      Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/DisableAv.ps1" -OutFile "C:\\DisableAV.ps1"; & "C:\\DisableAV.ps1"
-      # Stop logging
-      Stop-Transcript
-      '''
+    publisher: 'Microsoft.Compute'
+    type: 'CustomScriptExtension'
+    typeHandlerVersion: '1.10'
+    autoUpgradeMinorVersion: true
+    settings: {
+      fileUris: [
+        'https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/disableAv.ps1'
+      ]
     }
-    parameters: []
+    protectedSettings: {
+      commandToExecute: 'powershell -ExecutionPolicy Unrestricted -File disableAv.ps1'
+    }
+  }
+}
+
+
+resource disableDefenderScriptonWin11 'Microsoft.Compute/virtualMachines/extensions@2021-07-01' = {
+  name: 'disableDefenderWin11'
+  parent: virtualMachineWin11
+  location: location
+  properties: {
+    publisher: 'Microsoft.Compute'
+    type: 'CustomScriptExtension'
+    typeHandlerVersion: '1.10'
+    autoUpgradeMinorVersion: true
+    settings: {
+      fileUris: [
+        'https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/disableAv.ps1'
+      ]
+    }
+    protectedSettings: {
+      commandToExecute: 'powershell -ExecutionPolicy Unrestricted -File disableAv.ps1'
+    }
   }
 }
 
@@ -111,7 +132,7 @@ resource runCommandOnWin11VMDisableAV 'Microsoft.Compute/virtualMachines/runComm
       Start-Transcript -Path "c:\download-DisableAV.txt" -Append
 
       Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force
-      Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/DisableAv.ps1" -OutFile "C:\\DisableAV.ps1"; & "C:\\DisableAV.ps1"
+      Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/disableAv.ps1" -OutFile "C:\\DisableAV.ps1"; & "C:\\DisableAV.ps1"
       # Stop logging
       Stop-Transcript
       '''

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.30.23.60470",
-      "templateHash": "8307180765100223699"
+      "templateHash": "2674726813979067539"
     }
   },
   "parameters": {
@@ -17,9 +17,9 @@
     },
     "vmSize": {
       "type": "string",
-      "defaultValue": "Standard_D2s_v3",
+      "defaultValue": "Standard_DS1_v2",
       "metadata": {
-        "description": "Size of the VM for the controller"
+        "description": "Size of the VM for the controller (preffered Standard_D2s_v3)"
       }
     },
     "location": {
@@ -70,23 +70,54 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines/runCommands', variables('DCvirtualMachineName'), 'RunPowerShellScriptDCDisableAV')]",
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('DCvirtualMachineName'), 'disableDefenderDC')]",
         "[resourceId('Microsoft.Compute/virtualMachines', variables('DCvirtualMachineName'))]"
       ]
     },
     {
-      "type": "Microsoft.Compute/virtualMachines/runCommands",
-      "apiVersion": "2022-08-01",
-      "name": "[format('{0}/{1}', variables('DCvirtualMachineName'), 'RunPowerShellScriptDCDisableAV')]",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "apiVersion": "2021-07-01",
+      "name": "[format('{0}/{1}', variables('DCvirtualMachineName'), 'disableDefenderDC')]",
       "location": "[parameters('location')]",
       "properties": {
-        "source": {
-          "script": "      # Start logging\n      Start-Transcript -Path \"c:\\DisableAV.txt\" -Append\n\n      # Disable Windows Updates\n      Set-Service -Name wuauserv -StartupType Disabled\n      Stop-Service -Name wuauserv\n\n      # Disable Windows Defender\n      try {   \n          Set-MpPreference -DisableRealtimeMonitoring $true\n          Set-MpPreference -DisableBehaviorMonitoring $true\n          Set-MpPreference -DisableBlockAtFirstSeen $true\n          Set-MpPreference -DisableIOAVProtection $true\n          Set-MpPreference -DisablePrivacyMode $true\n          Set-MpPreference -SignatureDisableUpdateOnStartupWithoutEngine $true\n          Stop-Service -Name WinDefend\n          Set-Service -Name WinDefend -StartupType Disabled\n      } catch {\n      }\n      Set-MpPreference -MAPSReporting Disabled\n      # Disable Intrusion Prevention System\n      Set-MpPreference -DisableIntrusionPreventionSystem $true\n      # Disable Automatic Sample Submission\n      Set-MpPreference -SubmitSamplesConsent 2\n      \n      # Stop logging\n      Stop-Transcript\n      "
+        "publisher": "Microsoft.Compute",
+        "type": "CustomScriptExtension",
+        "typeHandlerVersion": "1.10",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "fileUris": [
+            "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/disableAv.ps1"
+          ]
         },
-        "parameters": []
+        "protectedSettings": {
+          "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File disableAv.ps1"
+        }
       },
       "dependsOn": [
         "[resourceId('Microsoft.Compute/virtualMachines', variables('DCvirtualMachineName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "apiVersion": "2021-07-01",
+      "name": "[format('{0}/{1}', variables('windows11VMName'), 'disableDefenderWin11')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "publisher": "Microsoft.Compute",
+        "type": "CustomScriptExtension",
+        "typeHandlerVersion": "1.10",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "fileUris": [
+            "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/disableAv.ps1"
+          ]
+        },
+        "protectedSettings": {
+          "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File disableAv.ps1"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('windows11VMName'))]"
       ]
     },
     {
@@ -96,7 +127,7 @@
       "location": "[parameters('location')]",
       "properties": {
         "source": {
-          "script": "      # Start logging\n      Start-Transcript -Path \"c:\\DisableAV.txt\" -Append\n\n      # Disable Windows Updates\n      Set-Service -Name wuauserv -StartupType Disabled\n      Stop-Service -Name wuauserv\n\n      # Disable Windows Defender\n      try {   \n          Set-MpPreference -DisableRealtimeMonitoring $true\n          Set-MpPreference -DisableBehaviorMonitoring $true\n          Set-MpPreference -DisableBlockAtFirstSeen $true\n          Set-MpPreference -DisableIOAVProtection $true\n          Set-MpPreference -DisablePrivacyMode $true\n          Set-MpPreference -SignatureDisableUpdateOnStartupWithoutEngine $true\n          Stop-Service -Name WinDefend\n          Set-Service -Name WinDefend -StartupType Disabled\n      } catch {\n      }\n      Set-MpPreference -MAPSReporting Disabled\n      # Disable Intrusion Prevention System\n      Set-MpPreference -DisableIntrusionPreventionSystem $true\n      # Disable Automatic Sample Submission\n      Set-MpPreference -SubmitSamplesConsent 2\n      \n      # Stop logging\n      Stop-Transcript\n      "
+          "script": "      # Start logging\n      Start-Transcript -Path \"c:\\download-DisableAV.txt\" -Append\n\n      Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force\n      Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/disableAv.ps1\" -OutFile \"C:\\\\DisableAV.ps1\"; & \"C:\\\\DisableAV.ps1\"\n      # Stop logging\n      Stop-Transcript\n      "
         }
       },
       "dependsOn": [
@@ -110,7 +141,7 @@
       "location": "[parameters('location')]",
       "properties": {
         "source": {
-          "script": "      param (\n        [string]$adminUsername\n        [string]$adminPassword\n        [string]$domainName\n      )\n\n      Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/prepareVM.ps1\" -OutFile \"C:\\\\prepareVM.ps1\"; & \"C:\\\\prepareVM.ps1\" -DomainUser $adminUsername -DomainPassword $adminPassword -DomainName $domainName\n      "
+          "script": "      param (\n        [string]$adminUsername\n        [string]$adminPassword\n        [string]$domainName\n      )\n      Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force\n      Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/prepareVM.ps1\" -OutFile \"C:\\\\prepareVM.ps1\"; & \"C:\\\\prepareVM.ps1\" -DomainUser $adminUsername -DomainPassword $adminPassword -DomainName $domainName\n      "
         },
         "parameters": [
           {
@@ -329,90 +360,6 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkInterfaces', format('{0}-nic', variables('windows11VMName')))]"
-      ]
-    },
-    {
-      "type": "Microsoft.DevTestLab/schedules",
-      "apiVersion": "2018-09-15",
-      "name": "[format('{0}-autoShutdownScheduleDcVm_8AM', variables('DCvirtualMachineName'))]",
-      "location": "[parameters('location')]",
-      "properties": {
-        "status": "Enabled",
-        "taskType": "ComputeVmShutdownTask",
-        "dailyRecurrence": {
-          "time": "08:00"
-        },
-        "timeZoneId": "Israel Standard Time",
-        "targetResourceId": "[resourceId('Microsoft.Compute/virtualMachines', variables('DCvirtualMachineName'))]",
-        "notificationSettings": {
-          "status": "Disabled"
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('DCvirtualMachineName'))]"
-      ]
-    },
-    {
-      "type": "Microsoft.DevTestLab/schedules",
-      "apiVersion": "2018-09-15",
-      "name": "[format('{0}-autoShutdownScheduleDcVm_8PM', variables('DCvirtualMachineName'))]",
-      "location": "[parameters('location')]",
-      "properties": {
-        "status": "Enabled",
-        "taskType": "ComputeVmShutdownTask",
-        "dailyRecurrence": {
-          "time": "20:00"
-        },
-        "timeZoneId": "Israel Standard Time",
-        "targetResourceId": "[resourceId('Microsoft.Compute/virtualMachines', variables('DCvirtualMachineName'))]",
-        "notificationSettings": {
-          "status": "Disabled"
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('DCvirtualMachineName'))]"
-      ]
-    },
-    {
-      "type": "Microsoft.DevTestLab/schedules",
-      "apiVersion": "2018-09-15",
-      "name": "[format('{0}-autoShutdownScheduleWin11VM_8AM', variables('windows11VMName'))]",
-      "location": "[parameters('location')]",
-      "properties": {
-        "status": "Enabled",
-        "taskType": "ComputeVmShutdownTask",
-        "dailyRecurrence": {
-          "time": "08:00"
-        },
-        "timeZoneId": "Israel Standard Time",
-        "targetResourceId": "[resourceId('Microsoft.Compute/virtualMachines', variables('windows11VMName'))]",
-        "notificationSettings": {
-          "status": "Disabled"
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('windows11VMName'))]"
-      ]
-    },
-    {
-      "type": "Microsoft.DevTestLab/schedules",
-      "apiVersion": "2018-09-15",
-      "name": "[format('{0}-autoShutdownScheduleWin11VM_8PM', variables('windows11VMName'))]",
-      "location": "[parameters('location')]",
-      "properties": {
-        "status": "Enabled",
-        "taskType": "ComputeVmShutdownTask",
-        "dailyRecurrence": {
-          "time": "20:00"
-        },
-        "timeZoneId": "Israel Standard Time",
-        "targetResourceId": "[resourceId('Microsoft.Compute/virtualMachines', variables('windows11VMName'))]",
-        "notificationSettings": {
-          "status": "Disabled"
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', variables('windows11VMName'))]"
       ]
     },
     {
