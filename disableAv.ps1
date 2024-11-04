@@ -220,7 +220,7 @@ if ($CheckSystem) {
     Write-Host "Check disabled engines (Get-MpPreference)" -ForegroundColor Yellow
     Get-MpPreference | Format-List disable*
 
-    Write-Host ""
+
     Write-Host "Some engines might return False, ignore" -ForegroundColor Yellow
 
 
@@ -231,9 +231,9 @@ if ($CheckSystem) {
     else {
         Write-Host "Windows Defender Service is not running" -ForegroundColor Green
     }
-    Write-Host ""
+
     Write-Host "Please REBOOT your system to after completing the whole process. Thank you." -ForegroundColor Green
-    Write-Host ""
+
 }
 
 Stop-Transcript
