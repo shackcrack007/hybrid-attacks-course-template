@@ -23,7 +23,7 @@ As part of the lab setup, you will:
 2. **Azure subscription**: activate your free 150$ Azure credits https://my.visualstudio.com/Benefits (put in your personal Microsoft account), this will only be used to deploy the Azure template and host the VMs
 
 ### 2. Deploy Azure VMs - "On premise" Active Directory VMs
-1. reate a resource group where all the lab resources will be created  
+1. create a resource group where all the lab resources will be created  
 2. in your **personal** Azure subscription click here: [![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fshackcrack007%2Fhybrid-attacks-course-template%2Fmain%2Fmain.json)
 3. remember and keep the password- it will be your **"AD CREDS"** 
 
