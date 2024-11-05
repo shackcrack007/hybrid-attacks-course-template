@@ -18,14 +18,25 @@ As part of the lab setup, you will:
 ```
 
 # Instructions 
+* Use only your personal Microsoft account, unless instructed otherwise
+
 ### 1. Entra Tenant + Azure Prep
-1. **Entra tenant**: go to https://developer.microsoft.com/en-us/microsoft-365/profile?source=visualstudio and activate your M365 E5 account and then login, keep the admin credentials, these will be your **"ENTRA CREDS"**
-2. **Azure subscription**: activate your free 150$ Azure credits https://my.visualstudio.com/Benefits (put in your personal Microsoft account), this will only be used to deploy the Azure template and host the VMs
+1. **Entra tenant**: 
+    1. using your corp / developer account, go to https://developer.microsoft.com/en-us/microsoft-365/profile?source=visualstudio and activate your M365 E5 account and then login, keep the admin credentials, these will be your **"ENTRA CREDS"**
+
+    2. using your personal account, login to *[Entra portal](https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/AllUsers/menuId/) > Users* > look for your user > *Assigned roles* > *Add assignments* > *Hybrid Identity Administrator* and save: 
+    ![add_hybrid_role](pics/add_hybrid_role.png) 
+
+2. **Azure subscription**: [activate your free 150$ Azure credits](https://my.visualstudio.com/Benefits) (put in your personal Microsoft account), this will be used to deploy the Azure template and host the VMs
+
+3. **Enable Azure subscription management**: using your personal account, sign into [Azure portal](https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Properties) (if link doesn't work, look inside for "Entra") and turn on the following toggle: ![manage_enable](pics/manage_tenant.png) 
 
 ### 2. Deploy Azure VMs - "On premise" Active Directory VMs
-1. create a resource group where all the lab resources will be created  
+1. create a resource group where all the lab resources will be created (you may use Israel Central, if something fails switch to US East 2)  
 2. in your **personal** Azure subscription click here: [![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fshackcrack007%2Fhybrid-attacks-course-template%2Fmain%2Fmain.json)
+    * if it fails, try Github error diagnose, it's usually very helpful
 3. remember and keep the password- it will be your **"AD CREDS"** 
+![deployment](<Screenshot 2024-11-04 151338.png>)
 
 ### 3. Prepare VMs
 Once deployment is finished, do the following for each VM:
