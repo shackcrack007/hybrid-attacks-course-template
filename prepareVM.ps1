@@ -11,26 +11,23 @@ param (
 
 # Start logging
 Start-Transcript -Path "c:\labPrepareLog.txt" -Append
-
-$failedCommands = @()
-
+Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
 
 # Log the accepted arguments
 Write-Output "DomainName: $DomainName"
 Write-Output "DomainUser: $DomainUser"
 Write-Output "DomainPassword: $DomainPassword"
-Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
+# Convert the plain text password to a secure string
+$DomainPasswordSecured = ConvertTo-SecureString $DomainPassword -AsPlainText -Force
+
+
 
 # Disable AV
-try {
-    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/disableAv.ps1" -OutFile "C:\\DisableAV.ps1"; & "C:\\DisableAV.ps1"
-    if ($?) {
-        Write-Output "disableAv.ps1 downloaded and ran successfully."
-    } else {
-        Write-Output "disableAv.ps1 Failed to download and run."
-    }
-} catch {
-    $failedCommands += "Invoke-WebRequest disableAv.ps1"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/disableAv.ps1" -OutFile "C:\\DisableAV.ps1"; & "C:\\DisableAV.ps1"
+if ($?) {
+    Write-Output "disableAv.ps1 downloaded and ran successfully."
+} else {
+    Write-Output "disableAv.ps1 Failed to download and run."
 }
 
 if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
@@ -126,9 +123,6 @@ else {
     }
 
     Write-Output "Creating a PSCredential object..."
-    # Create a PSCredential object
-    # Convert the plain text password to a secure string
-    $DomainPasswordSecured = ConvertTo-SecureString $DomainPassword -AsPlainText -Force
     $Credential = New-Object System.Management.Automation.PSCredential ($DomainUser, $DomainPasswordSecured)
 
     try {
