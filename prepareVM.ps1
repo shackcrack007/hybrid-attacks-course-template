@@ -211,6 +211,11 @@ if ($?) {
 ######
 # THE FOLLOWING MUST RUN LAST AS IT WILL DISCONNECT THE SESSIONS
 ####
+function New-DesktopFinishFile {
+    $desktopPath = [System.Environment]::GetFolderPath('Desktop')
+    $filePath = Join-Path -Path $desktopPath -ChildPath 'lab-setup.txt'
+    "Lab prepartion script successfully finished" | Out-File -FilePath $filePath -Force
+}
 
 Write-Output "Enabling multiple, parallel RDP connections... this will restart the current session."
 Start-Sleep -Seconds 5
@@ -256,9 +261,11 @@ if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
     Write-Output 'TLS 1.2 has been enabled. restart will start for the changes to take affect.' -ForegroundColor Cyan
     # Stop logging
     Stop-Transcript
+    New-DesktopFinishFile
     Restart-Computer -Force
 }
 else {
+    New-DesktopFinishFile
     Write-Output "Restarting the Remote Desktop Services service..."
     Restart-Service -Name TermService -Force
     # Stop logging
