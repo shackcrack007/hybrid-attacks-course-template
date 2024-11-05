@@ -47,8 +47,9 @@ As part of the lab setup, you will:
     Then, Click *Review and assign* and finish the process.
 
 ### 2. Deploy Azure VMs - "On premise" Active Directory VMs
-1. create a resource group where all the lab resources will be created (you may use Israel Central, if something fails switch to US East 2)  
-2. in your **personal** Azure subscription click here: [![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fshackcrack007%2Fhybrid-attacks-course-template%2Fmain%2Fmain.json)
+1. Using your new Entra tenant's admin account: 
+    [![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fshackcrack007%2Fhybrid-attacks-course-template%2Fmain%2Fmain.json)
+    * create a resource group where all the lab resources will be created (you may use Israel Central, if something fails switch to US East 2) 
     * if fails, you might need to re-register a provider: Search for your subscription > **Resource providers** > look for **Microsoft.Network** and seelct **Re-register**: ![register](pics/register_provider.png)
     * if it fails, try Copilot error diagnose inside Azure, it's usually very helpful
 3. keep the password- *we'll refer to it as **"AD CREDS"***:
