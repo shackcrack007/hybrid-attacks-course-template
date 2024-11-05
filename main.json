@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.30.23.60470",
-      "templateHash": "15726564427190092345"
+      "templateHash": "15735177419747020561"
     }
   },
   "parameters": {
@@ -13,6 +13,13 @@
       "type": "securestring",
       "metadata": {
         "description": "The password for the administrator account of the new VM and domain"
+      }
+    },
+    "domainName": {
+      "type": "string",
+      "defaultValue": "mylab.local",
+      "metadata": {
+        "description": "DO NOT CHANGE! The FQDN of the Active Directory Domain to be created"
       }
     },
     "vmSize": {
@@ -25,7 +32,6 @@
   },
   "variables": {
     "adminUsername": "rootuser",
-    "domainName": "mylab.local",
     "_artifactsLocation": "[deployment().properties.templateLink.uri]",
     "_artifactsLocationSasToken": "",
     "location": "[resourceGroup().location]",
@@ -143,7 +149,7 @@
           "ModulesUrl": "[uri(variables('_artifactsLocation'), format('DSC/CreateADPDC.zip{0}', variables('_artifactsLocationSasToken')))]",
           "ConfigurationFunction": "CreateADPDC.ps1\\CreateADPDC",
           "Properties": {
-            "DomainName": "[variables('domainName')]",
+            "DomainName": "[parameters('domainName')]",
             "AdminCreds": {
               "UserName": "[variables('adminUsername')]",
               "Password": "PrivateSettingsRef:AdminPassword"
