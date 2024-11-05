@@ -220,7 +220,8 @@ if ($?) {
 # THE FOLLOWING MUST RUN LAST AS IT WILL DISCONNECT THE SESSIONS
 ####
 
-Write-Output "Enabling multiple, parallel RDP connections..."
+Write-Output "Enabling multiple, parallel RDP connections... this will restart the current session."
+Start-Sleep -Seconds 5
 # Enable multiple, parallel RDP connections
 Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fSingleSessionPerUser" -Value 0
 Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\Licensing Core" -Name "LicensingMode" -Value 2

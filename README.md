@@ -47,7 +47,11 @@ Once deployment is finished, do the following for each VM:
 ```powershell 
 Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force
 
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/prepareVM.ps1" -OutFile "C:\\prepareVM.ps1"; & "C:\\prepareVM.ps1" -DomainUser rootuser -DomainPassword CHANGEME -DomainName mylab.local
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/prepareVM.ps1" -OutFile "C:\\prepareVM.ps1"; `
+& "C:\\prepareVM.ps1" `
+-DomainUser rootuser `
+-DomainPassword CHANGEME `
+-DomainName mylab.local
 ```
     * * ignore there erros
 
