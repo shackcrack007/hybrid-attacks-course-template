@@ -175,6 +175,24 @@ else {
     Write-Output "Python failed to be installed."
 }
 
+write-output "Installing AzureAD module..."
+Install-Module -Name AzureAD -Force -AllowClobber -Scope AllUsers
+if ($?) {
+    Write-Output "AzureAD module has been installed."
+}
+else {
+    Write-Output "AzureAD module failed to be installed."
+}
+
+write-output "Installing DSInternals module..."
+Install-Module DSInternals -Force -AllowClobber -Scope AllUsers
+if ($?) {
+    Write-Output "DSInternals module has been installed."
+}
+else {
+    Write-Output "DSInternals module failed to be installed."
+}
+
 write-output "Installing AADInternals module..."
 Install-Module AADInternals -Force -AllowClobber -Scope AllUsers
 if ($?) {

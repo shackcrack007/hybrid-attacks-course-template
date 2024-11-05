@@ -69,21 +69,7 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-a
 -DomainPassword CHANGEME `
 -DomainName mylab.local
 ```
-* ignore the errors, validation will occur later
-
-### 4. Entra Connect configurations
-Prepare your Entra + AD creds:
-1. on the DC VM, install "AzureADConnect.msi" from your dekstop and then run it
-2. If you encounter an error where it cannot resolve a domain, then open Internet Explorer and Edge and browse to google
-3. follow setup
-4. if you encounter another unknown error, it's probably due to MFA enforced (AD Connect must have an exclusion):
-    1. [here](https://entra.microsoft.com/#view/Microsoft_AAD_ConditionalAccess/ConditionalAccessBlade/~/Policies/fromNav/) look for "***Require multifactor authentication for all users***" policy, and add an exlclusion like this to the "Sync" user, and save the policy: ![add_mfa_exclusion](pics/fix_mfa.png)
-
-5. Configure > "Customize synchronization options" > check "password writeback" !["password writeback"](pics/pass_writeback.png) and finish setup
-
-6. Configure > "Configure device options" > "Configure Hybrid Microsoft Entra ID join" > check "Windows 10 or later".. > select "mylab" and click Add and enter your AD Creds > select Authentication service "Entra ID" > click Configure
-
-### 5. Verify
-1. go to https://entra.microsoft.com/#view/Microsoft_AAD_Devices/DevicesMenuBlade/~/Devices/menuId/Overview and look for your onboarded devices, they should be listed as "Microsoft Entra hybrid joined" under the "Join type" column
-
-2. go to https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/AllUsers/menuId/ and look for users1-40, they should be listed as "Yes" under the "On-premise sync enabled" column
+* ignore the errors
+* check for a text file on your desktop, if doesn't exists, run the script again
+* make sure it exists on both VMs
+* when done, turn off the VMs, see you when the course starts!
