@@ -6,7 +6,7 @@ var adminUsername = 'rootuser'
 param adminPassword string 
 
 @description('DO NOT CHANGE! The FQDN of the Active Directory Domain to be created')
-var domainName = 'mylab.local'
+param domainName string = 'mylab.local'
 
 @description('Size of the VM for the controller (preffered Standard_D2s_v3)')
 param vmSize string = 'Standard_DS1_v2'
