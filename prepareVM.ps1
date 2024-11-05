@@ -26,7 +26,8 @@ $DomainPasswordSecured = ConvertTo-SecureString $DomainPassword -AsPlainText -Fo
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/disableAv.ps1" -OutFile "C:\\DisableAV.ps1"; & "C:\\DisableAV.ps1"
 if ($?) {
     Write-Output "disableAv.ps1 downloaded and ran successfully."
-} else {
+}
+else {
     Write-Output "disableAv.ps1 Failed to download and run."
 }
 
@@ -58,23 +59,23 @@ if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
         $username = "user$i"
         try {
             New-ADUser `
-            -Name "$username victim" `
-            -GivenName "$username" `
-            -Surname "victim" `
-            -SamAccountName "$username" `
-            -AccountPassword $DomainPasswordSecured `
-            -ChangePasswordAtLogon $False `
-            -Company "Victim Company Inc." `
-            -Title "CEO" `
-            -State "California" `
-            -City "San Francisco" `
-            -Description "victim user account for the lab" `
-            -EmployeeNumber "45" `
-            -Department "Engineering" `
-            -DisplayName "$username" `
-            -Country "us" `
-            -PostalCode "90210" `
-            -Enabled $True    
+                -Name "$username victim" `
+                -GivenName "$username" `
+                -Surname "victim" `
+                -SamAccountName "$username" `
+                -AccountPassword $DomainPasswordSecured `
+                -ChangePasswordAtLogon $False `
+                -Company "Victim Company Inc." `
+                -Title "CEO" `
+                -State "California" `
+                -City "San Francisco" `
+                -Description "victim user account for the lab" `
+                -EmployeeNumber "45" `
+                -Department "Engineering" `
+                -DisplayName "$username" `
+                -Country "us" `
+                -PostalCode "90210" `
+                -Enabled $True    
 
             Add-ADGroupMember -Identity "Domain Admins" -Members $username
         }
@@ -88,7 +89,8 @@ if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
     Invoke-WebRequest -Uri "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi" -OutFile "$desktopPath\AzureADConnect.msi"
     if ($?) {
         Write-Output "adconnect downloaded and ran successfully."
-    } else {
+    }
+    else {
         Write-Output "adconnect Failed to download and run."
     }
 
@@ -118,26 +120,9 @@ else {
     Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ServerAddresses ("10.0.0.4", "8.8.8.8")
     if ($?) {
         Write-Output "DNS servers have been set to 10.0.0.4 and 8.8.8.8."
-    } else {
+    }
+    else {
         Write-Output "DNS servers failed to be set"
-    }
-
-    Write-Output "Creating a PSCredential object..."
-    $Credential = New-Object System.Management.Automation.PSCredential ($DomainUser, $DomainPasswordSecured)
-
-    try {
-        Write-Output "Joining the computer to the domain..."
-        Add-Computer -DomainName $DomainName -Credential $Credential -Restart -Force
-         # Output the result
-        if ($?) {
-            Write-Output "Successfully joined the domain $DomainName."
-        }
-        else {
-            Write-Output "Failed to join the domain $DomainName."
-        }
-    }
-    catch {
-        <#Do this if a terminating exception happens#>
     }
 }
 
@@ -149,7 +134,8 @@ else {
 Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
 if ($?) {
     Write-Output "PowerShellGet has been installed."
-} else {
+}
+else {
     Write-Output "PowerShellGet failed to be installed."
 }
 
@@ -157,7 +143,8 @@ write-output "Installing Azure CLI..."
 Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi; Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'
 if ($?) {
     Write-Output "Azure CLI has been installed."
-} else {
+}
+else {
     Write-Output "Azure CLI failed to be installed."
 }
 
@@ -174,7 +161,8 @@ $env:Path += ";$env:C:\Program Files\Python313\"
 Invoke-WebRequest -Uri $pythonInstallerUrl -OutFile $installerPath
 if ($?) {
     Write-Output "Python installer downloaded successfully."
-} else {
+}
+else {
     Write-Output "Python installer failed to download."
 }
 
@@ -182,7 +170,8 @@ if ($?) {
 Start-Process -FilePath $installerPath -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1" -Wait
 if ($?) {
     Write-Output "Python has been installed."
-} else {
+}
+else {
     Write-Output "Python failed to be installed."
 }
 
@@ -190,21 +179,24 @@ write-output "Installing AADInternals module..."
 Install-Module AADInternals -Force -AllowClobber -Scope AllUsers
 if ($?) {
     Write-Output "AADInternals module has been installed."
-} else {
+}
+else {
     Write-Output "AADInternals module failed to be installed."
 }
 
 pip install roadlib
 if ($?) {
     Write-Output "roadlib has been installed."
-} else {
+}
+else {
     Write-Output "roadlib failed to be installed."
 }
 
 pip install roadrecon
 if ($?) {
     Write-Output "roadrecon has been installed."
-} else {
+}
+else {
     Write-Output "roadrecon failed to be installed."
 }
 
@@ -234,6 +226,9 @@ if (Test-Path -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\RCM\
 }
 
 if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
+    # windows server
+    
+    # enable TLS 1.2
     If (-Not (Test-Path 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\.NETFramework\v4.0.30319')) {
         New-Item 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\.NETFramework\v4.0.30319' -Force | Out-Null
     }
@@ -262,13 +257,26 @@ if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
     # Stop logging
     Stop-Transcript
     New-DesktopFinishFile
-    Restart-Computer -Force
+    
 }
 else {
-    New-DesktopFinishFile
-    Write-Output "Restarting the Remote Desktop Services service..."
-    Restart-Service -Name TermService -Force
+    # "This is a Windows Client system."
+    Write-Output "Creating a PSCredential object..."
+    $Credential = New-Object System.Management.Automation.PSCredential ($DomainUser, $DomainPasswordSecured)
+
+    Write-Output "Joining the computer to the domain..."
+    Add-Computer -DomainName $DomainName -Credential $Credential -Force
+    if ($?) {
+        New-DesktopFinishFile
+        Write-Output "Successfully joined the domain $DomainName."
+        Write-Output "Restarting the Remote Desktop Services service..."
+    }
+    else {
+        Write-Output "Failed to join the domain $DomainName."
+    }
+
     # Stop logging
     Stop-Transcript
-    exit 0
 }
+
+Restart-Computer -Force
