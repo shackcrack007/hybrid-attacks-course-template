@@ -12,6 +12,8 @@ param (
 # Start logging
 Start-Transcript -Path "c:\labPrepareLog.txt" -Append
 
+$failedCommands = @()
+
 
 # Log the accepted arguments
 Write-Output "DomainName: $DomainName"
@@ -20,16 +22,16 @@ Write-Output "DomainPassword: $DomainPassword"
 Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
 
 # Disable AV
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/disableAv.ps1" -OutFile "C:\\DisableAV.ps1"; & "C:\\DisableAV.ps1"
-if ($?) {
-    Write-Output "disableAv.ps1 downloaded and ran successfully."
-} else {
-    Write-Output "disableAv.ps1 Failed to download and run."
+try {
+    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/disableAv.ps1" -OutFile "C:\\DisableAV.ps1"; & "C:\\DisableAV.ps1"
+    if ($?) {
+        Write-Output "disableAv.ps1 downloaded and ran successfully."
+    } else {
+        Write-Output "disableAv.ps1 Failed to download and run."
+    }
+} catch {
+    $failedCommands += "Invoke-WebRequest disableAv.ps1"
 }
-
-
-# Allow PowerShell script execution to be Unrestricted
-Set-ExecutionPolicy Unrestricted -Force
 
 if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
     Write-Output "This is a Windows Server system."
@@ -129,27 +131,23 @@ else {
     $DomainPasswordSecured = ConvertTo-SecureString $DomainPassword -AsPlainText -Force
     $Credential = New-Object System.Management.Automation.PSCredential ($DomainUser, $DomainPasswordSecured)
 
-    Write-Output "Joining the computer to the domain..."
-    # Join the computer to the domain
-    Add-Computer -DomainName $DomainName -Credential $Credential -Restart -Force
-
-    # Output the result
-    if ($?) {
-        Write-Output "Successfully joined the domain $DomainName."
+    try {
+        Write-Output "Joining the computer to the domain..."
+        Add-Computer -DomainName $DomainName -Credential $Credential -Restart -Force
+         # Output the result
+        if ($?) {
+            Write-Output "Successfully joined the domain $DomainName."
+        }
+        else {
+            Write-Output "Failed to join the domain $DomainName."
+        }
     }
-    else {
-        Write-Output "Failed to join the domain $DomainName."
+    catch {
+        <#Do this if a terminating exception happens#>
     }
 }
 
-# Disable Windows Updates
-Set-Service -Name wuauserv -StartupType Disabled
-Stop-Service -Name wuauserv
-if ($?) {
-    Write-Output "Windows Updates have been disabled."
-} else {
-    Write-Output "Windows Updates failed to be disabled."
-}
+
 ############################
 # Install PS, Python and attack tools
 ################################
@@ -223,10 +221,18 @@ if ($?) {
 Write-Output "Enabling multiple, parallel RDP connections... this will restart the current session."
 Start-Sleep -Seconds 5
 # Enable multiple, parallel RDP connections
-Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fSingleSessionPerUser" -Value 0
-Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\Licensing Core" -Name "LicensingMode" -Value 2
-Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\RCM\GracePeriod" -Name "L$RTMTIMEBOMB" -Value 0 -Type DWord
+# Check if the paths exist and set the item properties
+if (Test-Path -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server") {
+    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fSingleSessionPerUser" -Value 0
+}
 
+if (Test-Path -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\Licensing Core") {
+    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\Licensing Core" -Name "LicensingMode" -Value 2
+}
+
+if (Test-Path -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\RCM\GracePeriod") {
+    Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\RCM\GracePeriod" -Name "L$RTMTIMEBOMB" -Value 0 -Type DWord
+}
 
 if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
     If (-Not (Test-Path 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\.NETFramework\v4.0.30319')) {

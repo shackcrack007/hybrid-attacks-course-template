@@ -43,7 +43,7 @@ Once deployment is finished, do the following for each VM:
 1. RDP using '***rootuser***' and your chosen password 
 2. **disable the Defender runtime protection and cloud delivered protection** (under *Virus and threat protection > Manage settings*)
 ![defender](pics/defender.jpg)
-3. Open Powershell as administrator and run the script, use your chosen password:
+3. Open Powershell **as administrator** and run the script, modify *CHANGEME* to your chosen password:
 ```powershell 
 Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force
 
@@ -53,7 +53,7 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-a
 -DomainPassword CHANGEME `
 -DomainName mylab.local
 ```
-    * * ignore there erros
+* ignore the errors, validation will occur later
 
 ### 4. Entra Connect configurations
 Prepare your Entra + AD creds:
