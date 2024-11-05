@@ -1,4 +1,21 @@
 Start-Transcript -Path "c:\disableav-advanced.txt" -Append
+
+# Check internet connectivity
+$url = "https://www.nirsoft.net"
+$connected = $false
+while (-not $connected) {
+    try {
+        $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 5
+        if ($response.StatusCode -eq 200) {
+            $connected = $true
+            Write-Host "Internet connectivity check succeeded." -ForegroundColor Green
+        }
+    } catch {
+        Write-Host "Internet connectivity check failed. Retrying in 1 seconds..." -ForegroundColor Red
+        Start-Sleep -Seconds 1
+    }
+}
+
 Write-Host "Checking if user is running as TrustedInstaller." -ForegroundColor Yellow
 # Check if the script is running as SYSTEM
 if (-Not ($(whoami) -eq "nt authority\system")) {

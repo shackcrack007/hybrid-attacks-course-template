@@ -64,7 +64,7 @@ if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
             -SamAccountName "$username" `
             -AccountPassword $DomainPasswordSecured `
             -ChangePasswordAtLogon $False `
-            -Company "Code Duet" `
+            -Company "Victim Company Inc." `
             -Title "CEO" `
             -State "California" `
             -City "San Francisco" `
@@ -73,7 +73,7 @@ if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
             -Department "Engineering" `
             -DisplayName "$username" `
             -Country "us" `
-            -PostalCode "940001" `
+            -PostalCode "90210" `
             -Enabled $True    
 
             Add-ADGroupMember -Identity "Domain Admins" -Members $username

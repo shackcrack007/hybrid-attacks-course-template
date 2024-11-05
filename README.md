@@ -34,12 +34,13 @@ As part of the lab setup, you will:
 ### 2. Deploy Azure VMs - "On premise" Active Directory VMs
 1. create a resource group where all the lab resources will be created (you may use Israel Central, if something fails switch to US East 2)  
 2. in your **personal** Azure subscription click here: [![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fshackcrack007%2Fhybrid-attacks-course-template%2Fmain%2Fmain.json)
+    * if fails, you might need to re-register a provider: Search for your subscription > **Resource providers** > look for **Microsoft.Network** and seelct **Re-register**: ![register](pics/register_provider.png)
     * if it fails, try Copilot error diagnose inside Azure, it's usually very helpful
 3. keep the password- *we'll refer to it as **"AD CREDS"***:
 ![deployment](pics/deployment.png)
 
 ### 3. Prepare VMs
-Once deployment is finished, do the following for each VM:
+Once deployment is finished, do the following for **each VM**:
 1. RDP using '***rootuser***' and your chosen password 
 2. **disable the Defender runtime protection and cloud delivered protection** (under *Virus and threat protection > Manage settings*)
 ![defender](pics/defender.jpg)
