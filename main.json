@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.30.23.60470",
-      "templateHash": "1116320491648055991"
+      "templateHash": "11224179321280316171"
     }
   },
   "parameters": {
@@ -17,7 +17,7 @@
     },
     "domainName": {
       "type": "string",
-      "defaultValue": "mylab.local",
+      "defaultValue": "[tenant().displayName]",
       "metadata": {
         "description": "DO NOT CHANGE! The FQDN of the Active Directory Domain to be created"
       }
