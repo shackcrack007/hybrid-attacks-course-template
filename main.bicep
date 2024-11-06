@@ -8,7 +8,7 @@ var adminUsername = 'rootuser'
 param adminPassword string 
 
 @description('DO NOT CHANGE! The FQDN of the Active Directory Domain to be created')
-param domainName string = 'MYDOMAIN.onmicrosoft.com'
+param domainName string = tenant().displayName //'MYDOMAIN.onmicrosoft.com'
 
 @description('Size of the VM for the controller (preffered Standard_D2s_v3)')
 param vmSize string = 'Standard_DS1_v2'
