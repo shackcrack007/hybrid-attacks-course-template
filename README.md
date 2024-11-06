@@ -12,7 +12,7 @@ As part of the lab setup, you will:
 
 ### AD Creds:
 ```
-* domain: mylab.local
+* domain: YOURDOMAIN.onmicrosoft.com
 * user: rootuser
 * password: CHOSEN AT DEPLOYMENT TIME, follow instructions
 ```

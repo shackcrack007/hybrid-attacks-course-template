@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.30.23.60470",
-      "templateHash": "15735177419747020561"
+      "templateHash": "1116320491648055991"
     }
   },
   "parameters": {
@@ -449,5 +449,11 @@
         "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('DCvirtualMachineName'), 'CreateADForest')]"
       ]
     }
-  ]
+  ],
+  "outputs": {
+    "tenantDisplayName": {
+      "type": "string",
+      "value": "[tenant().displayName]"
+    }
+  }
 }

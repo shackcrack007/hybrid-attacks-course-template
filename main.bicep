@@ -1,3 +1,5 @@
+output tenantDisplayName string = tenant().displayName
+
 @description('DO NOT CHANGE! The name of the administrator account of the new VM and domain')
 var adminUsername = 'rootuser'
 
@@ -6,7 +8,7 @@ var adminUsername = 'rootuser'
 param adminPassword string 
 
 @description('DO NOT CHANGE! The FQDN of the Active Directory Domain to be created')
-param domainName string = 'mylab.local'
+param domainName string = 'MYDOMAIN.onmicrosoft.com'
 
 @description('Size of the VM for the controller (preffered Standard_D2s_v3)')
 param vmSize string = 'Standard_DS1_v2'

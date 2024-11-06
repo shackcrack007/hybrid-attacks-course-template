@@ -115,15 +115,18 @@ if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
     }
 
     Write-Output "Downloading AzureADConnect.msi to Desktop..."
-    # Download AzureADConnect.msi to Desktop
-    $desktopPath = [Environment]::GetFolderPath("Desktop")
-    Invoke-WebRequest -Uri "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi" -OutFile "$desktopPath\AzureADConnect.msi"
-    if ($?) {
-        Write-Output "adconnect downloaded and ran successfully."
+    if (-Not (Test-Path -Path "$desktopPath\AzureADConnect.msi")) {
+        Invoke-WebRequest -Uri "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi" -OutFile "$desktopPath\AzureADConnect.msi"
+        if ($?) {
+            Write-Output "adconnect downloaded and ran successfully."
+        }
+        else {
+            Write-Output "adconnect Failed to download and run."
+        }
+    } else {
+        Write-Output "AzureADConnect.msi already exists, skipping download."
     }
-    else {
-        Write-Output "adconnect Failed to download and run."
-    }
+    
 
     # Write-Output "Downloading and extracting BadBlood zip file..."
     # # Download and extract BadBlood zip file
@@ -170,31 +173,32 @@ else {
     Write-Output "PowerShellGet failed to be installed."
 }
 
-write-output "Installing Azure CLI..."
-Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi; Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'
-if ($?) {
-    Write-Output "Azure CLI has been installed."
-}
-else {
-    Write-Output "Azure CLI failed to be installed."
+if (-Not (Test-Path -Path AzureCLI.msi)) {
+    write-output "Installing Azure CLI..."
+    Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi; Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'
+    if ($?) {
+        Write-Output "Azure CLI has been installed."
+    }
+    else {
+        Write-Output "Azure CLI failed to be installed."
+    }
 }
 
 write-output "Installing Python..."
 # Define the URL for the Python installer
 $pythonInstallerUrl = "https://www.python.org/ftp/python/3.13.0/python-3.13.0-amd64.exe"
-
-# Define the path to save the installer
 $installerPath = "$env:TEMP\python-3.9.7-amd64.exe"
 $env:Path += ";$env:C:\Program Files\Python313\Scripts"
 $env:Path += ";$env:C:\Program Files\Python313\"
 
-# Download the installer
-Invoke-WebRequest -Uri $pythonInstallerUrl -OutFile $installerPath
-if ($?) {
-    Write-Output "Python installer downloaded successfully."
-}
-else {
-    Write-Output "Python installer failed to download."
+if (-Not (Test-Path -Path $installerPath)) {
+    Invoke-WebRequest -Uri $pythonInstallerUrl -OutFile $installerPath
+    if ($?) {
+        Write-Output "Python installer downloaded successfully."
+    }
+    else {
+        Write-Output "Python installer failed to download."
+    }
 }
 
 # Install Python silently
@@ -204,6 +208,15 @@ if ($?) {
 }
 else {
     Write-Output "Python failed to be installed."
+}
+
+Write-Output "Installing Microsoft.Graph module..."
+Install-Module Microsoft.Graph -AllowClobber -Force -Scope AllUsers
+if ($?) {
+    Write-Output "Microsoft.Graph module has been installed."
+}
+else {
+    Write-Output "Microsoft.Graph module failed to be installed."
 }
 
 write-output "Installing AzureAD module..."
@@ -256,7 +269,14 @@ $mimikatzZipPath = "$env:TEMP\mimikatz.zip"
 $mimikatzExtractPath = "C:\tools\Mimikatz"
 
 # Download Mimikatz
-Invoke-WebRequest -Uri $mimikatzUrl -OutFile $mimikatzZipPath
+if (-Not (Test-Path -Path $mimikatzZipPath)) {
+    Invoke-WebRequest -Uri $mimikatzUrl -OutFile $mimikatzZipPath
+    if ($?) {
+        Write-Output "Mimikatz downloaded successfully."
+    } else {
+        Write-Output "Failed to download Mimikatz."
+    }
+}
 
 # Extract Mimikatz
 Expand-Archive -Path $mimikatzZipPath -DestinationPath $mimikatzExtractPath
@@ -275,7 +295,16 @@ $sysinternalsZipPath = "$env:TEMP\SysinternalsSuite.zip"
 $sysinternalsExtractPath = "C:\Windows"
 
 # Download Sysinternals Suite
-Invoke-WebRequest -Uri $sysinternalsUrl -OutFile $sysinternalsZipPath
+if (-Not (Test-Path -Path $sysinternalsZipPath)) {
+    Invoke-WebRequest -Uri $sysinternalsUrl -OutFile $sysinternalsZipPath
+    if ($?) {
+        Write-Output "Sysinternals Suite downloaded successfully."
+    } else {
+        Write-Output "Failed to download Sysinternals Suite."
+    }
+} else {
+    Write-Output "Sysinternals Suite zip file already exists, skipping download."
+}
 
 # Extract Sysinternals Suite
 Expand-Archive -Path $sysinternalsZipPath -DestinationPath $sysinternalsExtractPath

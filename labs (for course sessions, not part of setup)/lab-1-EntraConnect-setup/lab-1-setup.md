@@ -11,7 +11,7 @@ Prepare your Entra + AD admins creds:
 
 4. run it again > *Configure > Change user sign-in >  check *Enable single sign-on*.. > *Next* > Enter **AD CREDS** > *Next > Configure*
 
-5. run it again > *Configure > Configure device options > Configure Hybrid Microsoft Entra ID join* > check *Windows 10 or later*.. > select *mylab* > *Add* and enter your **AD Creds** > select Authentication service *Entra ID* >  *Next > Configure*
+5. run it again > *Configure > Configure device options > Configure Hybrid Microsoft Entra ID join* > check *Windows 10 or later*.. > select *YOURDOMAIN.onmicrosoft.com* > *Add* and enter your **AD Creds** > select Authentication service *Entra ID* >  *Next > Configure*
 
 6. GPO:
     1. follow  [Group policy detailed steps
@@ -29,7 +29,7 @@ Prepare your Entra + AD admins creds:
 
     ![connect](connect_validation.png)
 
-4. After a restart, in your Win11 VM, RDP login as "*mylab\user1*":
+4. After a restart, in your Win11 VM, RDP login as "*YOURDOMAIN\user1*":
     1. open CMD as Administrator and run:
         ```
         dsregcmd /status
@@ -41,5 +41,3 @@ Prepare your Entra + AD admins creds:
         and 
 
         ![dsreg2](dsregcmd_status_2.png)
-    2. [Test Seamless SSO](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-connect-sso-quick-start#test-seamless-sso)
-        * on your browser, use the username in the Entra format of *```user1@<mydomain>.onmicrosoft.com```*
