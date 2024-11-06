@@ -20,6 +20,37 @@ Write-Output "DomainPassword: $DomainPassword"
 # Convert the plain text password to a secure string
 $DomainPasswordSecured = ConvertTo-SecureString $DomainPassword -AsPlainText -Force
 
+function Copy-DirectoryContentToWindows {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$SourceDir
+    )
+
+    # Check if the source directory exists
+    if (-Not (Test-Path -Path $SourceDir -PathType Container)) {
+        Write-Output "The source directory does not exist."
+        return
+    }
+
+    # Define the destination directory
+    $destinationDir = "C:\Windows"
+
+    # Get all files and directories in the source directory
+    $items = Get-ChildItem -Path $SourceDir -Recurse
+
+    foreach ($item in $items) {
+        # Define the destination path for each item
+        $destinationPath = Join-Path -Path $destinationDir -ChildPath ($item.FullName -replace [regex]::Escape($SourceDir), "")
+
+        # Create the destination directory if it doesn't exist
+        if (-Not (Test-Path -Path (Split-Path -Path $destinationPath -Parent))) {
+            New-Item -ItemType Directory -Path (Split-Path -Path $destinationPath -Parent) | Out-Null
+        }
+
+        # Move the item to the destination
+        Copy-Item -Path $item.FullName -Destination $destinationPath -Force
+    }
+}
 
 
 # Disable AV
@@ -217,6 +248,43 @@ if ($?) {
 else {
     Write-Output "roadrecon failed to be installed."
 }
+
+
+# Define the URL for Mimikatz
+$mimikatzUrl = "https://github.com/gentilkiwi/mimikatz/releases/download/2.2.0-20220919/mimikatz_trunk.zip"
+$mimikatzZipPath = "$env:TEMP\mimikatz.zip"
+$mimikatzExtractPath = "C:\tools\Mimikatz"
+
+# Download Mimikatz
+Invoke-WebRequest -Uri $mimikatzUrl -OutFile $mimikatzZipPath
+
+# Extract Mimikatz
+Expand-Archive -Path $mimikatzZipPath -DestinationPath $mimikatzExtractPath
+
+# Clean up
+Remove-Item -Path $mimikatzZipPath
+
+Write-Output "Mimikatz downloaded and extracted to $mimikatzExtractPath"
+Copy-DirectoryContentToWindows "C:\tools\Mimikatz\x64"
+
+
+######
+# Define the URLs for Sysinternals Suite
+$sysinternalsUrl = "https://download.sysinternals.com/files/SysinternalsSuite.zip"
+$sysinternalsZipPath = "$env:TEMP\SysinternalsSuite.zip"
+$sysinternalsExtractPath = "C:\Windows"
+
+# Download Sysinternals Suite
+Invoke-WebRequest -Uri $sysinternalsUrl -OutFile $sysinternalsZipPath
+
+# Extract Sysinternals Suite
+Expand-Archive -Path $sysinternalsZipPath -DestinationPath $sysinternalsExtractPath
+
+# Clean up
+Remove-Item -Path $sysinternalsZipPath
+Write-Output "Sysinternals Suite downloaded and extracted to $sysinternalsExtractPath"
+
+
 
 ######
 # THE FOLLOWING MUST RUN LAST AS IT WILL DISCONNECT THE SESSIONS
