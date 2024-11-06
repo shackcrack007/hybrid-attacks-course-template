@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.30.23.60470",
-      "templateHash": "11224179321280316171"
+      "templateHash": "16696335047422353429"
     }
   },
   "parameters": {
@@ -19,7 +19,7 @@
       "type": "string",
       "defaultValue": "[tenant().displayName]",
       "metadata": {
-        "description": "DO NOT CHANGE! The FQDN of the Active Directory Domain to be created"
+        "description": "Use your tenant domain name (e.g. \"MYDOMAIN.onmicrosoft.com\" it will set up the Active Directory Domain with the same name"
       }
     },
     "vmSize": {
