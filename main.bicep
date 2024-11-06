@@ -7,8 +7,8 @@ var adminUsername = 'rootuser'
 @secure()
 param adminPassword string 
 
-@description('Use your tenant domain name (e.g. "MYDOMAIN.onmicrosoft.com" it will set up the Active Directory Domain with the same name')
-param domainName string = tenant().displayName
+@description('Use *your* tenant domain name (e.g. "YOURDOMAIN.onmicrosoft.com"), it will set up the Active Directory Domain with the same name (must be the same)')
+param domainName string = 'YOURDOMAIN.onmicrosoft.com'
 
 @description('Size of the VM for the controller (preffered Standard_D2s_v3)')
 param vmSize string = 'Standard_DS1_v2'
