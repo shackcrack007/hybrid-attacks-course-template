@@ -150,8 +150,10 @@ function Copy-DirectoryContentToWindows {
             New-Item -ItemType Directory -Path (Split-Path -Path $destinationPath -Parent) | Out-Null
         }
 
-        # Move the item to the destination
-        Copy-Item -Path $item.FullName -Destination $destinationPath -Force
+        # Copy the item to the destination
+        if (-Not (Test-Path -Path $destinationFile)) {
+            Copy-Item -Path $item.FullName -Destination $destinationPath -Force
+        }
     }
 }
 
