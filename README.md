@@ -33,7 +33,7 @@ As part of the lab setup, you will:
 
     4. keep these creds, *we'll refer to them as **"ENTRA CREDS"***
 
-3. **Enable Azure subscription management**, using your **new Entra admin account**: 
+3. **Enable Azure subscription management** using your **new Entra admin account**: 
     1. sign into [Azure portal](https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Properties) (if link doesn't work, look inside for "Entra") and turn on the following toggle: ![manage_enable](pics/manage_tenant.png) 
 
     2. Refresh browser, search and select your subscription > *IAM > Add role assignment*:
@@ -47,6 +47,7 @@ As part of the lab setup, you will:
     Then, Click *Review and assign* and finish the process.
 
 ### 2. Deploy Azure VMs - "On premise" Active Directory VMs
+This part will deploy and configure an active directory domain with two VMs: a Domain Controller ("dcVm") and Win11 VM
 1. Using your new Entra tenant's admin account: 
     [![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fshackcrack007%2Fhybrid-attacks-course-template%2Fmain%2Fmain.json)
     * create a resource group where all the lab resources will be created (you may use Israel Central, if something fails switch to US East 2) 
@@ -56,9 +57,9 @@ As part of the lab setup, you will:
 ![deployment](pics/deployment.png)
 
 ### 3. Prepare VMs
-Once deployment is finished, do the following for **each VM**:
+Once deployment is finished, do the following for **each VM**, starting with the DC VM:
 1. RDP using '***rootuser***' and your chosen password 
-2. **disable the Defender runtime protection and cloud delivered protection** (under *Virus and threat protection > Manage settings*)
+2. **disable both the Defender runtime protection and cloud delivered protection** (under *Virus and threat protection > Manage settings*)
 ![defender](pics/defender.jpg)
 3. Open Powershell **as administrator** and run the script, modify *CHANGEME* to your chosen password:
 ```powershell 
@@ -68,9 +69,9 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-a
 & "C:\\prepareVM.ps1" `
 -DomainUser rootuser `
 -DomainPassword CHANGEME `
--DomainName mylab.local
+-DomainName YOURDOMAIN.onmicrosoft.com
 ```
 * ignore the errors
 * check for a text file on your desktop, if doesn't exists, run the script again
-* make sure it exists on both VMs
+    * make sure it exists on both VMs
 * when done, turn off the VMs, see you when the course starts!

@@ -19,6 +19,104 @@ Write-Output "DomainUser: $DomainUser"
 Write-Output "DomainPassword: $DomainPassword"
 # Convert the plain text password to a secure string
 $DomainPasswordSecured = ConvertTo-SecureString $DomainPassword -AsPlainText -Force
+$desktopPath = [System.Environment]::GetFolderPath('Desktop')
+
+# List of modules to install
+$modulesToInstall = @(
+    "Microsoft.Graph",
+    "DSInternals",
+    "AzureAD", 
+    "AADInternals"
+)
+
+# Function to install a module
+function Install-ModuleWithParams {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$moduleToInstall,
+
+        [Parameter(Mandatory = $true)]
+        [bool]$waitForCompletion
+    )
+
+    $arguments = "-NoProfile -Command Install-Module $moduleToInstall -AllowClobber -Force -Scope AllUsers"
+    if ($waitForCompletion) {
+        Start-Process powershell -ArgumentList $arguments -Verb RunAs -Wait
+    }
+    else {
+        Start-Process powershell -ArgumentList $arguments -Verb RunAs
+    }
+}
+
+function Install-Software {
+    param (
+        [Parameter(Mandatory = $false)]
+        [string]$url,
+
+        [Parameter(Mandatory = $false)]
+        [string]$fileName,
+
+        [Parameter(Mandatory = $false)]
+        [string]$processArgList,
+
+        [Parameter(Mandatory = $false)]
+        [string]$startProcess
+    )
+    
+    if (-Not [string]::IsNullOrEmpty($url)) {
+        if (-Not (Test-Path -Path $fileName)) {
+            Write-Output "Installing software from $url..."
+            $maxRetries = 3
+            $retryCount = 0
+            $success = $false
+        
+            while (-Not $success -and $retryCount -lt $maxRetries) {
+                try {
+                    Invoke-WebRequest -Uri $url -OutFile $fileName
+                    $success = $true
+                }
+                catch {
+                    if ($_.Exception.Message -like "*The remote name could not be resolved*") {
+                        Write-Output "Failed to resolve remote name. Retrying... ($($retryCount + 1)/$maxRetries)"
+                        Start-Sleep -Seconds 2
+                        $retryCount++
+                    }
+                    else {
+                        throw $_
+                    }
+                }
+            }
+            if (-Not $success) {
+                Write-Output "Failed to download the file after $maxRetries retries." 
+                return
+            }
+        }
+    }
+    
+    if ([string]::IsNullOrEmpty($startProcess)) {
+        # No start process defined, just download the file
+        return
+    }
+    Write-Output "Running $startProcess..."
+    if (-not [string]::IsNullOrEmpty($processArgList)) {
+        Start-Process $startProcess -Wait -ArgumentList $processArgList
+    }
+    else {
+        Start-Process $startProcess -Wait
+    }
+    try {
+        if ($?) {
+            Write-Output "$fileName ($startProcess) has been installed."
+        }
+        else {
+            Write-Output "$fileName ($startProcess) failed to be installed."
+        }   
+    }
+    catch {
+        <#Do this if a terminating exception happens#>
+    }
+}
+
 
 function Copy-DirectoryContentToWindows {
     param (
@@ -52,15 +150,11 @@ function Copy-DirectoryContentToWindows {
     }
 }
 
-
 # Disable AV
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/disableAv.ps1" -OutFile "C:\\DisableAV.ps1"; & "C:\\DisableAV.ps1"
-if ($?) {
-    Write-Output "disableAv.ps1 downloaded and ran successfully."
-}
-else {
-    Write-Output "disableAv.ps1 Failed to download and run."
-}
+Install-Software -url "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/disableAv.ps1" `
+    -fileName "C:\DisableAV.ps1" `
+    -startProcess "powershell" `
+    -processArgList "-ExecutionPolicy Bypass -File C:\DisableAV.ps1"
 
 if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
     Write-Output "This is a Windows Server system."
@@ -114,34 +208,11 @@ if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
         }
     }
 
-    Write-Output "Downloading AzureADConnect.msi to Desktop..."
-    if (-Not (Test-Path -Path "$desktopPath\AzureADConnect.msi")) {
-        Invoke-WebRequest -Uri "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi" -OutFile "$desktopPath\AzureADConnect.msi"
-        if ($?) {
-            Write-Output "adconnect downloaded and ran successfully."
-        }
-        else {
-            Write-Output "adconnect Failed to download and run."
-        }
-    } else {
-        Write-Output "AzureADConnect.msi already exists, skipping download."
-    }
-    
-
-    # Write-Output "Downloading and extracting BadBlood zip file..."
-    # # Download and extract BadBlood zip file
-    # $zipUrl = "https://github.com/davidprowe/BadBlood/archive/refs/heads/master.zip"
-    # $zipPath = "$desktopPath\BadBlood.zip"
-    # Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath
-    # Expand-Archive -Path $zipPath -DestinationPath $desktopPath
-    # if ($?) {
-    #     Write-Output "badblood downloaded and ran successfully."
-    # } else {
-    #     Write-Output "badblood Failed to download and run."
-    # }
-    # Run the extracted BadBlood script
-    #$badBloodScript = "$desktopPath\BadBlood-master\invoke-badblood.ps1"
-    #Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File $badBloodScript" -Verb RunAs
+    # Install Azure AD Connect
+    Install-Software -url "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi" `
+        -fileName "$desktopPath\AzureADConnect.msi" `
+        -startProcess "" `
+        -processArgList ""
 }
 else {
     Write-Output "This is a Windows Client system."
@@ -160,7 +231,6 @@ else {
     }
 }
 
-
 ############################
 # Install PS, Python and attack tools
 ################################
@@ -173,145 +243,45 @@ else {
     Write-Output "PowerShellGet failed to be installed."
 }
 
-if (-Not (Test-Path -Path AzureCLI.msi)) {
-    write-output "Installing Azure CLI..."
-    Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi; Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'
-    if ($?) {
-        Write-Output "Azure CLI has been installed."
-    }
-    else {
-        Write-Output "Azure CLI failed to be installed."
-    }
+# Install the PS modules
+foreach ($module in $modulesToInstall) {
+    Install-ModuleWithParams -moduleToInstall $module -waitForCompletion $false
 }
 
-write-output "Installing Python..."
-# Define the URL for the Python installer
-$pythonInstallerUrl = "https://www.python.org/ftp/python/3.13.0/python-3.13.0-amd64.exe"
-$installerPath = "$env:TEMP\python-3.9.7-amd64.exe"
+# Install Azure CLI
+Install-Software -url "https://aka.ms/installazurecliwindows" `
+    -fileName "$desktopPath\azureCli.msi" `
+    -startProcess "msiexec.exe" `
+    -processArgList "/I AzureCLI.msi /quiet"
+
+
+
+# Install Python
+Install-Software -url "https://www.python.org/ftp/python/3.13.0/python-3.13.0-amd64.exe" `
+    -fileName "$desktopPath\python-3.9.7-amd64.exe" `
+    -startProcess "$desktopPath\python-3.9.7-amd64.exe" `
+    -processArgList "/quiet InstallAllUsers=1 PrependPath=1"
+
 $env:Path += ";$env:C:\Program Files\Python313\Scripts"
 $env:Path += ";$env:C:\Program Files\Python313\"
 
-if (-Not (Test-Path -Path $installerPath)) {
-    Invoke-WebRequest -Uri $pythonInstallerUrl -OutFile $installerPath
-    if ($?) {
-        Write-Output "Python installer downloaded successfully."
-    }
-    else {
-        Write-Output "Python installer failed to download."
-    }
-}
-
-# Install Python silently
-Start-Process -FilePath $installerPath -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1" -Wait
-if ($?) {
-    Write-Output "Python has been installed."
-}
-else {
-    Write-Output "Python failed to be installed."
-}
-
-Write-Output "Installing Microsoft.Graph module..."
-Install-Module Microsoft.Graph -AllowClobber -Force -Scope AllUsers
-if ($?) {
-    Write-Output "Microsoft.Graph module has been installed."
-}
-else {
-    Write-Output "Microsoft.Graph module failed to be installed."
-}
-
-write-output "Installing AzureAD module..."
-Install-Module -Name AzureAD -Force -AllowClobber -Scope AllUsers
-if ($?) {
-    Write-Output "AzureAD module has been installed."
-}
-else {
-    Write-Output "AzureAD module failed to be installed."
-}
-
-write-output "Installing DSInternals module..."
-Install-Module DSInternals -Force -AllowClobber -Scope AllUsers
-if ($?) {
-    Write-Output "DSInternals module has been installed."
-}
-else {
-    Write-Output "DSInternals module failed to be installed."
-}
-
-write-output "Installing AADInternals module..."
-Install-Module AADInternals -Force -AllowClobber -Scope AllUsers
-if ($?) {
-    Write-Output "AADInternals module has been installed."
-}
-else {
-    Write-Output "AADInternals module failed to be installed."
-}
-
-pip install roadlib
-if ($?) {
-    Write-Output "roadlib has been installed."
-}
-else {
-    Write-Output "roadlib failed to be installed."
-}
-
-pip install roadrecon
-if ($?) {
-    Write-Output "roadrecon has been installed."
-}
-else {
-    Write-Output "roadrecon failed to be installed."
-}
+Install-Software -startProcess "pip" -processArgList "install roadlib"
+Install-Software -startProcess "pip" -processArgList "install roadrecon"
 
 
-# Define the URL for Mimikatz
-$mimikatzUrl = "https://github.com/gentilkiwi/mimikatz/releases/download/2.2.0-20220919/mimikatz_trunk.zip"
-$mimikatzZipPath = "$env:TEMP\mimikatz.zip"
-$mimikatzExtractPath = "C:\tools\Mimikatz"
+# install mimikatz
+$mimikatzZipPath = "$desktopPath\mimikatz.zip"
+Install-Software -url "https://github.com/gentilkiwi/mimikatz/releases/download/2.2.0-20220919/mimikatz_trunk.zip" `
+    -fileName "$mimikatzZipPath" `
+    -startProcess "powershell" `
+    -processArgList "-Command Expand-Archive -Path $mimikatzZipPath -DestinationPath C:\mimikatz"
+Copy-DirectoryContentToWindows "C:\mimikatz\x64"
 
-# Download Mimikatz
-if (-Not (Test-Path -Path $mimikatzZipPath)) {
-    Invoke-WebRequest -Uri $mimikatzUrl -OutFile $mimikatzZipPath
-    if ($?) {
-        Write-Output "Mimikatz downloaded successfully."
-    } else {
-        Write-Output "Failed to download Mimikatz."
-    }
-}
-
-# Extract Mimikatz
-Expand-Archive -Path $mimikatzZipPath -DestinationPath $mimikatzExtractPath
-
-# Clean up
-Remove-Item -Path $mimikatzZipPath
-
-Write-Output "Mimikatz downloaded and extracted to $mimikatzExtractPath"
-Copy-DirectoryContentToWindows "C:\tools\Mimikatz\x64"
-
-
-######
-# Define the URLs for Sysinternals Suite
-$sysinternalsUrl = "https://download.sysinternals.com/files/SysinternalsSuite.zip"
-$sysinternalsZipPath = "$env:TEMP\SysinternalsSuite.zip"
-$sysinternalsExtractPath = "C:\Windows"
-
-# Download Sysinternals Suite
-if (-Not (Test-Path -Path $sysinternalsZipPath)) {
-    Invoke-WebRequest -Uri $sysinternalsUrl -OutFile $sysinternalsZipPath
-    if ($?) {
-        Write-Output "Sysinternals Suite downloaded successfully."
-    } else {
-        Write-Output "Failed to download Sysinternals Suite."
-    }
-} else {
-    Write-Output "Sysinternals Suite zip file already exists, skipping download."
-}
-
-# Extract Sysinternals Suite
-Expand-Archive -Path $sysinternalsZipPath -DestinationPath $sysinternalsExtractPath
-
-# Clean up
-Remove-Item -Path $sysinternalsZipPath
-Write-Output "Sysinternals Suite downloaded and extracted to $sysinternalsExtractPath"
+# Install Sysinternals Suite
+Install-Software -url "https://download.sysinternals.com/files/SysinternalsSuite.zip" `
+    -fileName "c:\SysinternalsSuite.zip" `
+    -startProcess "powershell" `
+    -processArgList "-Command Expand-Archive -Path c:\SysinternalsSuite.zip -DestinationPath C:\Windows"
 
 
 
