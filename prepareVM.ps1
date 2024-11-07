@@ -28,7 +28,7 @@ $modulesToInstall = @(
     "AzureAD", 
     "AADInternals"
 )
-$jobs = @()
+$global:jobs = @()
 
 # Function to install a module
 function Install-ModuleWithParams {
@@ -49,7 +49,7 @@ function Install-ModuleWithParams {
             param ($arguments)
             Start-Process powershell -ArgumentList $arguments -Verb RunAs
         } -ArgumentList $arguments
-        $jobs += $job
+        $global:jobs += $job
     }
 }
 
@@ -292,7 +292,7 @@ Install-Software -url "https://download.sysinternals.com/files/SysinternalsSuite
 
 
 
-foreach ($job in $jobs) {
+foreach ($job in $global:jobs) {
     Write-Output "Waiting for job $($job.Id) to complete..."
     Wait-Job -Job $job
     write-Output "Job $($job.Id) has completed."
