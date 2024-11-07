@@ -34,7 +34,8 @@ As part of the lab setup, you will:
     4. keep these creds, *we'll refer to them as **"ENTRA CREDS"***
 
 3. **Enable Azure subscription management** using your **new Entra admin account**: 
-    1. sign into [Azure portal](https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Properties) (if link doesn't work, look inside for "Entra") and turn on the following toggle: ![manage_enable](pics/manage_tenant.png) 
+    1. sign into [Azure portal](https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Properties) (if link doesn't work, look inside for "Entra") and turn on the following toggle: 
+        ![manage_enable](pics/manage_tenant.png) 
 
     2. Refresh browser, search and select your subscription > *IAM > Add role assignment*:
     ![addrole](pics/add_ga_azure.png)
@@ -42,10 +43,12 @@ As part of the lab setup, you will:
     ![owner](pics/owner.png)
     Next, select your new Entra admin user:
     ![user](pics/user_selected.png)
+    
     Next, select *Allow user to assign all roles (highly privileged)*
 
     Then, Click *Review and assign* and finish the process.
 
+##
 ### 2. Deploy Azure VMs - "On premise" Active Directory VMs
 This part will deploy and configure an active directory domain with two VMs: a Domain Controller ("dcVm") and Win11 VM
 1. Using your new Entra tenant's admin account: 
@@ -55,7 +58,7 @@ This part will deploy and configure an active directory domain with two VMs: a D
     * if it fails, try Copilot error diagnose inside Azure, it's usually very helpful
 3. keep the password- *we'll refer to it as **"AD CREDS"***:
 ![deployment](pics/deployment.png)
-
+##
 ### 3. Prepare VMs
 Once deployment is finished, do the following for **each VM**, starting with the DC VM:
 1. RDP using '***rootuser***' and your chosen password 
