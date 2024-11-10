@@ -1,4 +1,4 @@
-# Entra Connect configurations #
+# Lab 1 - Entra Connect Setup
 Prepare your Entra + AD admins creds:
 1. on the DC VM, install "AzureADConnect.msi" from your dekstop and finish setup
     * If you encounter an error where it cannot resolve a domain, then open Internet Explorer and Edge and browse to google

