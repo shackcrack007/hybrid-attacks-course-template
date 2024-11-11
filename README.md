@@ -26,11 +26,13 @@ As part of the lab setup, you will:
 2. **Entra tenant**: 
     1. create a new admin user for the Entra tenant: login to [Entra portal](https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/AllUsers/menuId/), and create a new user: 
     
-        <img src="pics/create_tenant_admin_user.png" style="max-width: 70%;" />
+        <img src="pics/create_tenant_admin_user.png" style="max-width: 50%;" />
 
         ![createuser](pics/create_tenant_admin_user.png)
 
     2. under *Assignments* > add *Hybrid Identity Administrator* and *Global Administrator* and save: 
+
+        <img src="pics/role_assignment.png" style="max-width: 50%;" />
 
         ![roles](pics/role_assignment.png) 
 
