@@ -28,7 +28,7 @@ As part of the lab setup, you will:
 
         ![createuser](pics/create_tenant_admin_user.png)
 
-    2. under *Assignments* > add *Hybrid Identity Administrator* and *Global Administrator* and save: 
+    2. under *Assignments* > add *Hybrid Identity Administrator* and *Global Administrator* > *Save > Review > Create*: 
 
         <img src="pics/role_assignment.png" width="500" />
 
@@ -39,10 +39,11 @@ As part of the lab setup, you will:
     4. keep these credentials, *we'll refer to them as **"ENTRA CREDS"***
 
 3. **Enable Azure subscription management** using your **new Entra admin account**: 
-    1. sign into [Azure portal](https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Properties) (if link doesn't work, look inside for "Entra") and turn on the following toggle: 
-
+    1. sign into [Azure portal](https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Properties) (if link doesn't work, inside the Azure portal search for "Entra ID") and turn on the following toggle: 
+        * make sure you are logged in with the correct, new Entra admin account (!)
         <img src="pics/manage_tenant.png" width="600" />
 
+        * if the toggle is disabled, it probably means that you don't have any Azure subscription associated to your Entra tenant. If this is the case- go back and create another Entra admin account, this time in the CORRECT Entra tenant directory, that has an associated subscription.
     2. Refresh browser, find your subscription > *IAM > Add role assignment*:
 
         <img src="pics/add_ga_azure.png" width="500" />
@@ -50,7 +51,6 @@ As part of the lab setup, you will:
         *Privileged administrator roles > Owner*:
 
         <img src="pics/owner.png" width="400" />
-
 
         Next, select your new Entra admin user:
 
