@@ -88,7 +88,7 @@ This part will deploy and configure an active directory domain with two VMs: a D
 
 ##
 ### 3. Prepare VMs
-Once deployment has finished, do the following for **each VM**, starting with dcVm:
+Once deployment has finished (will take a while..), do the following for **each VM**, starting with dcVm:
 1. RDP using '***rootuser***' and your chosen password (you may find the IP address in the *Azure portal > Virtual machines*)
 2. **Disable BOTH the Defender runtime protection AND cloud delivered protection** under *Virus and threat protection > Manage settings*:
 
