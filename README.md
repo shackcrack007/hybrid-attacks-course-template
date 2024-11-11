@@ -94,7 +94,9 @@ Once deployment has finished, do the following for **each VM**, starting with dc
 
     <img src="pics/defender.jpg" width="500" />
 
-3. Open Powershell **as administrator** and run the script, modify *CHANGEME* to your chosen password:
+3. Open Powershell **as administrator** and run the script:
+* modify ***CHANGEME*** to your chosen password
+* modify ***YOURDOMAIN*** to your Entra tenant domain
 
     ```powershell 
     Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force
