@@ -75,6 +75,8 @@ This part will deploy and configure an active directory domain with two VMs: a D
 3. Choose a password - this password will be used for all Active Directory users + VMs (*we'll refer to them as **"AD CREDS"***)
 
 4. Choose a domain name: it MUST be the same as your Entra tenant (!)
+
+5. Deploy and wait until it finishes
     <img src="pics/deployment.png" width="600" />
 
     * if the deployment fails again, you might need to re-register a provider: 
@@ -86,21 +88,25 @@ This part will deploy and configure an active directory domain with two VMs: a D
 
 ##
 ### 3. Prepare VMs
-Once deployment is finished, do the following for **each VM**, starting with the DC VM:
-1. RDP using '***rootuser***' and your chosen password 
-2. **disable both the Defender runtime protection and cloud delivered protection** (under *Virus and threat protection > Manage settings*)
-![defender](pics/defender.jpg)
-3. Open Powershell **as administrator** and run the script, modify *CHANGEME* to your chosen password:
-```powershell 
-Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force
+Once deployment has finished, do the following for **each VM**, starting with dcVm:
+1. RDP using '***rootuser***' and your chosen password (you may find the IP address in the *Azure portal > Virtual machines*)
+2. **Disable BOTH the Defender runtime protection AND cloud delivered protection** under *Virus and threat protection > Manage settings*:
 
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/prepareVM.ps1" -OutFile "C:\\prepareVM.ps1"; `
-& "C:\\prepareVM.ps1" `
--DomainUser rootuser `
--DomainPassword CHANGEME `
--DomainName YOURDOMAIN.onmicrosoft.com
-```
+    <img src="pics/defender.jpg" width="500" />
+
+3. Open Powershell **as administrator** and run the script, modify *CHANGEME* to your chosen password:
+
+    ```powershell 
+    Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force
+
+    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/prepareVM.ps1" -OutFile "C:\\prepareVM.ps1"; `
+    & "C:\\prepareVM.ps1" `
+    -DomainUser rootuser `
+    -DomainPassword CHANGEME `
+    -DomainName YOURDOMAIN.onmicrosoft.com
+    ```
+
 * ignore the errors
 * check for a text file on your desktop, if doesn't exists, run the script again
-    * make sure it exists on both VMs
+    * *make sure it exists on both VMs*
 * when done, turn off the VMs, see you when the course starts!
