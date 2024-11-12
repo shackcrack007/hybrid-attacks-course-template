@@ -89,7 +89,7 @@ Using your new Entra tenant's admin account, click here and follow instructions 
 2. **Choose a password:** this password will be used for all Active Directory users + VMs (*we'll refer to them as **"AD CREDS"***)
 
 4. **Choose a domain name:** it MUST be the same as your Entra tenant (!)
-<img src="pics/deployment.png" width="600" />
+    <img src="pics/deployment.png" width="600" />
 
 5. **Deploy**: wait until it finishes
     * if the deployment fails again, you might need to re-register a provider: 
