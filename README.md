@@ -78,24 +78,24 @@
 ##
 ### 2. Deploy Azure VMs - "On premise" Active Directory VMs
 This part will deploy and configure an active directory domain with two VMs: a Domain Controller ("dcVm") and Win11 VM
-1. Using your new Entra tenant's admin account: 
 
-    [![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fshackcrack007%2Fhybrid-attacks-course-template%2Fmain%2Fmain.json)
+Using your new Entra tenant's admin account, click here and follow instructions below:
 
-2. create a resource group where all the lab resources will be created
+[![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fshackcrack007%2Fhybrid-attacks-course-template%2Fmain%2Fmain.json)
+
+1. **Create a resource group:** where all the lab resources will be created
     * you may use *Israel Central* region, if something fails switch to US East 2
 
-3. Choose a password - this password will be used for all Active Directory users + VMs (*we'll refer to them as **"AD CREDS"***)
+2. **Choose a password:** this password will be used for all Active Directory users + VMs (*we'll refer to them as **"AD CREDS"***)
 
-4. Choose a domain name: it MUST be the same as your Entra tenant (!)
+4. **Choose a domain name:** it MUST be the same as your Entra tenant (!)
+<img src="pics/deployment.png" width="600" />
 
-5. Deploy and wait until it finishes
-    <img src="pics/deployment.png" width="600" />
-
+5. **Deploy**: wait until it finishes
     * if the deployment fails again, you might need to re-register a provider: 
         Search for your subscription > **Resource providers** > look for **Microsoft.Network** and select **Re-register**: 
     
-    <img src="pics/register_provider.png" width="500" />
+        <img src="pics/register_provider.png" width="500" />
     
     * Alternatively, try Copilot error diagnose inside Azure, it's usually very helpful
 
