@@ -149,14 +149,18 @@ function Copy-DirectoryContentToWindows {
         # Define the destination path for each item
         $destinationPath = Join-Path -Path $destinationDir -ChildPath ($item.FullName -replace [regex]::Escape($SourceDir), "")
 
-        # Create the destination directory if it doesn't exist
-        if (-Not (Test-Path -Path (Split-Path -Path $destinationPath -Parent))) {
+        try {
+            # Create the destination directory if it doesn't exist
+            if (-Not (Test-Path -Path (Split-Path -Path $destinationPath -Parent))) {
             New-Item -ItemType Directory -Path (Split-Path -Path $destinationPath -Parent) | Out-Null
-        }
+            }
 
-        # Copy the item to the destination
-        if (-Not (Test-Path -Path $destinationFile)) {
+            # Copy the item to the destination
+            if (-Not (Test-Path -Path $destinationFile)) {
             Copy-Item -Path $item.FullName -Destination $destinationPath -Force
+            }
+        }
+        catch {
         }
     }
 }
@@ -296,10 +300,10 @@ Install-Software -url "https://download.sysinternals.com/files/SysinternalsSuite
     -processArgList "-Command Expand-Archive -Path $global:LAB_DIR\SysinternalsSuite.zip -DestinationPath C:\Windows"
 
 # Install OneDrive latest
-Install-Software -url "https://go.microsoft.com/fwlink/?linkid=844652" `
-    -fileName "$global:LAB_DIR\OneDriveSetup.exe" `
-    -startProcess "$global:LAB_DIR\OneDriveSetup.exe" `
-    -processArgList "/silent"
+# Install-Software -url "https://go.microsoft.com/fwlink/?linkid=844652" `
+#     -fileName "$global:LAB_DIR\OneDriveSetup.exe" `
+#     -startProcess "$global:LAB_DIR\OneDriveSetup.exe" `
+#     -processArgList "/silent"
 
 
 foreach ($job in $global:jobs) {

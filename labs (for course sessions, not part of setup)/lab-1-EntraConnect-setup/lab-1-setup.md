@@ -1,13 +1,15 @@
 # Lab 1 - Entra Connect Setup
 Prepare your Entra + AD admins creds:
-1. on the DC VM, install "AzureADConnect.msi" from your dekstop and finish setup
+1. on the DC VM, install "c:\lab\AzureADConnect.msi"
+
+2. run *"Azure AD Connect"* and use the Express Installation
     * If you encounter an error where it cannot resolve a domain, then open Internet Explorer and Edge and browse to google
-    * if you encounter another unknown error, it's probably due to MFA enforced (AD Connect must have an exclusion):
-    [here](https://entra.microsoft.com/#view/Microsoft_AAD_ConditionalAccess/ConditionalAccessBlade/~/Policies/fromNav/) look for "***Require multifactor authentication for all users***" policy, and add an exlclusion like this to the "Sync" user, and save the policy: ![add_mfa_exclusion](fix_mfa.png)
+    * if you encounter another unknown error, it's probably due to MFA enforced (Entra Connect account (*Sync_xx..*) must have an exclusion):
+        [here](https://entra.microsoft.com/#view/Microsoft_AAD_ConditionalAccess/ConditionalAccessBlade/~/Policies/fromNav/) look for "***Require multifactor authentication for all users***" policy, and add an exclusion like this to the "*Sync*" user, and save the policy: 
+        ![add_mfa_exclusion](fix_mfa.png)
 
-2. run *"Azure AD Connect"* and use the express installation
-
-3. run it again > *Configure > Customize synchronization options > Optional Features >* check *password writeback* and finish the config: !["password writeback"](pass_writeback.png)
+3. run it again > *Configure > Customize synchronization options > Optional Features >* check *password writeback* and finish the config: 
+    !["password writeback"](pass_writeback.png)
 
 4. run it again > *Configure > Change user sign-in >  check *Enable single sign-on*.. > *Next* > Enter **AD CREDS** > *Next > Configure*
 
@@ -26,18 +28,10 @@ Prepare your Entra + AD admins creds:
 2. go to https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/AllUsers/menuId/ and look for users1-40, they should be listed as "Yes" under the "On-premise sync enabled" column
 
 3. go to https://entra.microsoft.com/#view/Microsoft_AAD_Connect_Provisioning/AADConnectMenuBlade/~/ConnectSync and look for the following values: 
-
     ![connect](connect_validation.png)
 
 4. After a restart, in your Win11 VM, RDP login as "*YOURDOMAIN\user1*":
-    1. open CMD as Administrator and run:
-        ```
-        dsregcmd /status
-        ```
-        you should see similar output to:
-
+    1. open CMD as Administrator and run: ```dsregcmd /status```, you should see similar output to:
         ![dsreg](dsregcmd_status_1.png)
-        
         and 
-
         ![dsreg2](dsregcmd_status_2.png)
