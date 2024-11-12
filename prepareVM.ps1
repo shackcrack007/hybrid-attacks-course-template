@@ -74,7 +74,7 @@ function Install-Software {
     Start-Transcript -Path "$global:LAB_DIR\labPrepareSoftwareInstallationLog.txt" -Append
 
     if (-Not [string]::IsNullOrEmpty($url)) {
-        if (-Not [string]::IsNullOrEmpty($fileName) && (-Not (Test-Path -Path $fileName))) {
+        if (-Not [string]::IsNullOrEmpty($fileName) -and (-Not (Test-Path -Path $fileName))) {
             Write-Output "Installing software from $url..."
             $maxRetries = 3
             $retryCount = 0
