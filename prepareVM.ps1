@@ -71,7 +71,6 @@ function Install-Software {
         [Parameter(Mandatory = $false)]
         [string]$startProcess
     )
-    Start-Transcript -Path "$global:LAB_DIR\labPrepareSoftwareInstallationLog.txt" -Append
 
     if (-Not [string]::IsNullOrEmpty($url)) {
         if (-Not [string]::IsNullOrEmpty($fileName) -and (-Not (Test-Path -Path $fileName))) {
@@ -125,8 +124,6 @@ function Install-Software {
     catch {
         <#Do this if a terminating exception happens#>
     }
-
-    Stop-Transcript
 }
 
 
