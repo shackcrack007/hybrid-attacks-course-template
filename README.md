@@ -1,11 +1,23 @@
----
-description: This template creates a new Azure VM, it configures the VM to be an AD DC + Win11 VM
----
-# Create an Azure VM with a new AD domain
+# Preparation instructions for an hybrid lab deployment 
+### The lab is comprised from an Active Directory domain + VMs, synced to an Entra tenant, hosted on Azure VMs.
 
-This template will deploy a lab for the course: a new VM (along with a new VNet ) and will configure it as a Domain Controller and create a new forest and domain + win11 vm
+* 2 VMs: 
+    1. Windows Server 2019 - as a Domain Controller - **dcVm** 
+    2. Windows 11 - as a client in the domain
+* Creates 40 dummy domain users and adds them to the Domain Admins group.
+* the Active Directory domain will be set to the one you set during the deployment
+* Common Tasks:
+    * Module Installation: PowerShell modules to install (Microsoft.Graph, 
+    * DSInternals, AzureAD, AADInternals).
+    * Installs various software including Azure AD Connect, Azure CLI, Fiddler, * Python, Mimikatz, Sysinternals Suite, and OneDrive.
+    * Disables antivirus using a script.
+    * Enables multiple, parallel RDP connections.
+    * Enables TLS 1.2 for Windows Server.
+    * Disables Internet Explorer Enhanced Security Configuration (ESC).
+    * Creates a file on the desktop indicating the script has finished.
+    * Restarts the computer to apply changes.
 
-As part of the lab setup, you will:
+**As part of the lab setup, you will:**
 * Create an Entra tenant - which will play the "cloud" role
 * Deploy Azure template to your subscription account, this will only be used to host the "On-premise" Active Directory VMs
 * Install and confiugre Entra (AD) Connect
@@ -95,8 +107,9 @@ Once deployment has finished (will take a while..), do the following for **each 
     <img src="pics/defender.jpg" width="500" />
 
 3. Open Powershell **as administrator** and run the script:
-* modify ***CHANGEME*** to your chosen password
-* modify ***YOURDOMAIN*** to your Entra tenant domain
+    * modify ***CHANGEME*** to your chosen password from the deployment ("AD CREDS")
+    * modify ***YOURDOMAIN*** to your Entra tenant domain
+    * if you see a pop up suggesting you to restart, WAIT until all scripts finish execution, the script should restart the VM by itself
 
     ```powershell 
     Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force
@@ -108,7 +121,7 @@ Once deployment has finished (will take a while..), do the following for **each 
     -DomainName YOURDOMAIN.onmicrosoft.com
     ```
 
-* ignore the errors
-* check for a text file on your desktop, if doesn't exists, run the script again
+* you might see errors here and there - ignore them
+* check a file on the desktop indicating the script has finished, if doesn't exists, run the script again
     * *make sure it exists on both VMs*
 * when done, turn off the VMs, see you when the course starts!

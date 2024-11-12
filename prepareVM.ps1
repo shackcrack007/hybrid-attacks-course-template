@@ -10,7 +10,12 @@ param (
 )
 
 # Start logging
-Start-Transcript -Path "c:\labPrepareLog.txt" -Append
+$global:jobs = @()
+$global:LAB_DIR = "c:\lab"
+
+if (-Not (Test-Path -Path $global:LAB_DIR)) { New-Item -Path $global:LAB_DIR -ItemType Directory }
+Start-Transcript -Path "$global:LAB_DIR\labPrepareLog.txt" -Append
+
 Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
 
 # Log the accepted arguments
@@ -19,7 +24,6 @@ Write-Output "DomainUser: $DomainUser"
 Write-Output "DomainPassword: $DomainPassword"
 # Convert the plain text password to a secure string
 $DomainPasswordSecured = ConvertTo-SecureString $DomainPassword -AsPlainText -Force
-$desktopPath = [System.Environment]::GetFolderPath('Desktop')
 
 # List of modules to install
 $modulesToInstall = @(
@@ -28,7 +32,7 @@ $modulesToInstall = @(
     "AzureAD", 
     "AADInternals"
 )
-$global:jobs = @()
+
 
 # Function to install a module
 function Install-ModuleWithParams {
@@ -67,9 +71,10 @@ function Install-Software {
         [Parameter(Mandatory = $false)]
         [string]$startProcess
     )
-    
+    Start-Transcript -Path "$global:LAB_DIR\labPrepareSoftwareInstallationLog.txt" -Append
+
     if (-Not [string]::IsNullOrEmpty($url)) {
-        if (-Not (Test-Path -Path $fileName)) {
+        if (-Not [string]::IsNullOrEmpty($fileName) && (-Not (Test-Path -Path $fileName))) {
             Write-Output "Installing software from $url..."
             $maxRetries = 3
             $retryCount = 0
@@ -81,8 +86,8 @@ function Install-Software {
                     $success = $true
                 }
                 catch {
-                    if ($_.Exception.Message -like "*The remote name could not be resolved*") {
-                        Write-Output "Failed to resolve remote name. Retrying... ($($retryCount + 1)/$maxRetries)"
+                    if ($_.Exception.Message -like "*The remote name $url could not be resolved*") {
+                        Write-Output "Failed to resolve $url. Retrying... ($($retryCount + 1)/$maxRetries)"
                         Start-Sleep -Seconds 2
                         $retryCount++
                     }
@@ -92,7 +97,7 @@ function Install-Software {
                 }
             }
             if (-Not $success) {
-                Write-Output "Failed to download the file after $maxRetries retries." 
+                Write-Output "Failed to download $url ($fileName) file after $maxRetries retries." 
                 return
             }
         }
@@ -120,6 +125,8 @@ function Install-Software {
     catch {
         <#Do this if a terminating exception happens#>
     }
+
+    Stop-Transcript
 }
 
 
@@ -159,9 +166,9 @@ function Copy-DirectoryContentToWindows {
 
 # Disable AV
 Install-Software -url "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/disableAv.ps1" `
-    -fileName "C:\DisableAV.ps1" `
+    -fileName "$global:LAB_DIR\DisableAV.ps1" `
     -startProcess "powershell" `
-    -processArgList "-ExecutionPolicy Bypass -File C:\DisableAV.ps1"
+    -processArgList "-ExecutionPolicy Bypass -File $global:LAB_DIR\DisableAV.ps1"
 
 if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
     Write-Output "This is a Windows Server system."
@@ -217,7 +224,7 @@ if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
 
     # Install Azure AD Connect
     Install-Software -url "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi" `
-        -fileName "$desktopPath\AzureADConnect.msi" `
+        -fileName "$global:LAB_DIR\AzureADConnect.msi" `
         -startProcess "" `
         -processArgList ""
 }
@@ -257,17 +264,17 @@ foreach ($module in $modulesToInstall) {
 
 # Install Azure CLI
 Install-Software -url "https://aka.ms/installazurecliwindows" `
-    -fileName "$desktopPath\azureCli.msi" `
+    -fileName "$global:LAB_DIR\azureCli.msi" `
     -startProcess "msiexec.exe" `
     -processArgList "/I AzureCLI.msi /quiet"
 
 Install-Software -url "https://telerik-fiddler.s3.amazonaws.com/fiddler/FiddlerSetup.exe" `
-    -fileName "$desktopPath\FiddlerSetup.exe" 
+    -fileName "$global:LAB_DIR\FiddlerSetup.exe" 
     
 # Install Python
 Install-Software -url "https://www.python.org/ftp/python/3.13.0/python-3.13.0-amd64.exe" `
-    -fileName "$desktopPath\python-3.9.7-amd64.exe" `
-    -startProcess "$desktopPath\python-3.9.7-amd64.exe" `
+    -fileName "$global:LAB_DIR\python-3.9.7-amd64.exe" `
+    -startProcess "$global:LAB_DIR\python-3.9.7-amd64.exe" `
     -processArgList "/quiet InstallAllUsers=1 PrependPath=1"
 
 $env:Path += ";$env:C:\Program Files\Python313\Scripts"
@@ -279,26 +286,24 @@ Install-Software -startProcess "pip" -processArgList "install roadtx"
 Install-Software -startProcess "pip" -processArgList "install setuptools"
 
 # install mimikatz
-$mimikatzZipPath = "$desktopPath\mimikatz.zip"
 Install-Software -url "https://github.com/gentilkiwi/mimikatz/releases/download/2.2.0-20220919/mimikatz_trunk.zip" `
-    -fileName "$mimikatzZipPath" `
+    -fileName "$global:LAB_DIR\mimikatz.zip" `
     -startProcess "powershell" `
-    -processArgList "-Command Expand-Archive -Path $mimikatzZipPath -DestinationPath C:\mimikatz"
-Copy-DirectoryContentToWindows "C:\mimikatz\x64"
+    -processArgList "-Command Expand-Archive -Path $global:LAB_DIR\mimikatz.zip -DestinationPath $global:LAB_DIR\mimikatz"
+Copy-DirectoryContentToWindows "$global:LAB_DIR\mimikatz\x64"
 
 # Install Sysinternals Suite
 Install-Software -url "https://download.sysinternals.com/files/SysinternalsSuite.zip" `
-    -fileName "c:\SysinternalsSuite.zip" `
+    -fileName "$global:LAB_DIR\SysinternalsSuite.zip" `
     -startProcess "powershell" `
-    -processArgList "-Command Expand-Archive -Path c:\SysinternalsSuite.zip -DestinationPath C:\Windows"
+    -processArgList "-Command Expand-Archive -Path $global:LAB_DIR\SysinternalsSuite.zip -DestinationPath C:\Windows"
 
 # Install OneDrive latest
 Install-Software -url "https://go.microsoft.com/fwlink/?linkid=844652" `
-    -fileName "$desktopPath\OneDriveSetup.exe" `
-    -startProcess "$desktopPath\OneDriveSetup.exe" `
+    -fileName "$global:LAB_DIR\OneDriveSetup.exe" `
+    -startProcess "$global:LAB_DIR\OneDriveSetup.exe" `
     -processArgList "/silent"
 
-    
 
 foreach ($job in $global:jobs) {
     Write-Output "Waiting for job $($job.Id) to complete..."

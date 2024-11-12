@@ -1,4 +1,4 @@
-Start-Transcript -Path "c:\disableav-advanced.txt" -Append
+Start-Transcript -Path "$global:LAB_DIR\disableAvLog.txt" -Append
 
 # Check internet connectivity
 $url = "https://www.nirsoft.net"
