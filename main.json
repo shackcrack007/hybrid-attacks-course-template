@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.30.23.60470",
-      "templateHash": "13221101639481342299"
+      "version": "0.31.34.60546",
+      "templateHash": "13648925813423786954"
     }
   },
   "parameters": {
@@ -19,7 +19,7 @@
       "type": "string",
       "defaultValue": "YOURDOMAIN.onmicrosoft.com",
       "metadata": {
-        "description": "Use *your* tenant domain name (e.g. \"YOURDOMAIN.onmicrosoft.com\"), it will set up the Active Directory Domain with the same name (must be the same)"
+        "description": "Change to *your* tenant domain name (e.g. \"YOURDOMAIN.onmicrosoft.com\"), it will set up the Active Directory Domain with the same name (must be the same)"
       }
     },
     "vmSize": {
@@ -276,8 +276,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.30.23.60470",
-              "templateHash": "230381882974811039"
+              "version": "0.31.34.60546",
+              "templateHash": "5642472576391665090"
             }
           },
           "parameters": {
@@ -375,8 +375,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.30.23.60470",
-              "templateHash": "3607319008374713189"
+              "version": "0.31.34.60546",
+              "templateHash": "13577241380658303790"
             }
           },
           "parameters": {

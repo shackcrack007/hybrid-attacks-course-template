@@ -1,4 +1,4 @@
-# Preparation instructions for an hybrid lab deployment 
+# Preparation instructions for hybrid lab deployment 
 ### The lab is comprised from an Active Directory domain + VMs, synced to an Entra tenant, hosted on Azure VMs.
 
 * 2 VMs: 
