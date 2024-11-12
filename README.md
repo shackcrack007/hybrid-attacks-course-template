@@ -1,6 +1,7 @@
 # Preparation instructions for hybrid lab deployment 
-### The lab is comprised from an Active Directory domain + VMs, synced to an Entra tenant, hosted on Azure VMs.
+#### The lab is comprised from an Active Directory domain + VMs, synced to an Entra tenant, hosted on Azure VMs
 
+![lab](pics/lab.png)
 * 2 VMs: 
     1. Windows Server 2019 - as a Domain Controller - **dcVm** 
     2. Windows 11 - as a client in the domain
