@@ -88,7 +88,7 @@ $client_id = "1b730954-1685-4b74-9bfd-dac224a7b894"
 $prtToken = Get-AADIntUserPRTToken
 $tenantId = "YOUR_TENANT_ID"
 $at = Get-AADIntAccessTokenForAADGraph -PRTToken $prtToken
- Connect-AzureAD -AadAccessToken $at -TenantId $tenantId -AccountId "1b730954-1685-4b74-9bfd-dac224a7b894" # "Azure Active Directory PowerShell" app id, see here for more https://github.com/dirkjanm/ROADtools/blob/master/roadtx/roadtools/roadtx/firstpartyscopes.json
+Connect-AzureAD -AadAccessToken $at -TenantId $tenantId -AccountId "1b730954-1685-4b74-9bfd-dac224a7b894" # "Azure Active Directory PowerShell" app id, see here for more https://github.com/dirkjanm/ROADtools/blob/master/roadtx/roadtools/roadtx/firstpartyscopes.json
 
 Get-AzureADUser
 ```
