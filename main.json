@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.31.34.60546",
-      "templateHash": "13648925813423786954"
+      "templateHash": "6271189500195692756"
     }
   },
   "parameters": {
@@ -19,7 +19,7 @@
       "type": "string",
       "defaultValue": "YOURDOMAIN.onmicrosoft.com",
       "metadata": {
-        "description": "Change to *your* tenant domain name (e.g. \"YOURDOMAIN.onmicrosoft.com\"), it will set up the Active Directory Domain with the same name (must be the same)"
+        "description": "Change to *your* tenant domain name (e.g. \"YOURDOMAIN.onmicrosoft.com\"), it will set up the Active Directory Domain with the same name (must be the same). \"YOURDOMAIN\" cant be more than 15 chars!"
       }
     },
     "vmSize": {
