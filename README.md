@@ -125,7 +125,7 @@ Once deployment has finished (will take a while..), do the following for **each 
     -DomainName YOURDOMAIN.onmicrosoft.com # the one listed here https://admin.microsoft.com/#/Domains
     ```
 
-4. repeat 1-3 for the other VM
+4. repeat 1-3 for the other VM, but now RDP using **YOURDOMAIN\user1**  (*without the "onmicrosoft.com"*)
 
 * you might see errors here and there - ignore them
 * when done, turn off the VMs, see you when the course starts!
