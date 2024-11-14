@@ -12,6 +12,7 @@ param (
 # Start logging
 $global:jobs = @()
 $global:LAB_DIR = "c:\lab"
+$DomainUserForPcVM = "user1" # do not modify this as it is used to join the domain
 
 if (-Not (Test-Path -Path $global:LAB_DIR)) { New-Item -Path $global:LAB_DIR -ItemType Directory }
 Start-Transcript -Path "$global:LAB_DIR\labPrepareLog.txt" -Append
@@ -21,6 +22,7 @@ Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
 # Log the accepted arguments
 Write-Output "DomainName: $DomainName"
 Write-Output "DomainUser: $DomainUser"
+Write-Output "DomainUserForPcVM: $DomainUserForPcVM"
 Write-Output "DomainPassword: $DomainPassword"
 # Convert the plain text password to a secure string
 $DomainPasswordSecured = ConvertTo-SecureString $DomainPassword -AsPlainText -Force
@@ -381,7 +383,7 @@ if (Is-WindowsServer) {
 else {
     # "This is a Windows Client system."
     Write-Output "Creating a PSCredential object..."
-    $Credential = New-Object System.Management.Automation.PSCredential ($DomainUser, $DomainPasswordSecured)
+    $Credential = New-Object System.Management.Automation.PSCredential ($DomainUserForPcVM, $DomainPasswordSecured)
 
     Write-Output "Joining the computer to the domain..."
     Add-Computer -DomainName $DomainName -Credential $Credential -Force
