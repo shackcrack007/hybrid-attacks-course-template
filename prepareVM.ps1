@@ -165,13 +165,18 @@ function Copy-DirectoryContentToWindows {
     }
 }
 
+function Is-WindowsServer {
+    $os = Get-WmiObject -Class Win32_OperatingSystem
+    return $os.ProductType -eq 2 -or $os.ProductType -eq 3
+}
+
 # Disable AV
 Install-Software -url "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/disableAv.ps1" `
     -fileName "$global:LAB_DIR\DisableAV.ps1" `
     -startProcess "powershell" `
     -processArgList "-ExecutionPolicy Bypass -File $global:LAB_DIR\DisableAV.ps1"
 
-if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
+if (Is-WindowsServer) {
     Write-Output "This is a Windows Server system."
 
     function Disable-IEESC {
@@ -194,8 +199,8 @@ if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
     Disable-IEESC
 
     # Create 40 dummy domain users and add them to Domain Admins group
-    Write-Output "Creating 40 dummy domain users and adding them to Domain Admins group..."
-    for ($i = 1; $i -le 40; $i++) {
+    Write-Output "Creating 5 dummy domain users and adding them to Domain Admins group..."
+    for ($i = 1; $i -le 5; $i++) {
         $username = "user$i"
         try {
             New-ADUser `
@@ -210,7 +215,7 @@ if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
                 -State "California" `
                 -City "San Francisco" `
                 -Description "victim user account for the lab" `
-                -EmployeeNumber "45" `
+                -EmployeeNumber "$i" `
                 -Department "Engineering" `
                 -DisplayName "$username" `
                 -Country "us" `
@@ -339,7 +344,7 @@ if (Test-Path -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\RCM\
     Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\RCM\GracePeriod" -Name "L$RTMTIMEBOMB" -Value 0 -Type DWord
 }
 
-if ((Get-WmiObject -Class Win32_OperatingSystem).ProductType -eq 2) {
+if (Is-WindowsServer) {
     # windows server
     
     # enable TLS 1.2
