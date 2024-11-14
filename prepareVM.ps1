@@ -200,10 +200,10 @@ if (Is-WindowsServer) {
     
     Disable-IEESC
 
-    # Create 40 dummy domain users and add them to Domain Admins group
+    # Create dummy domain users and add them to Domain Admins group
     Write-Output "Creating 5 dummy domain users and adding them to Domain Admins group..."
-    for ($i = 1; $i -le 5; $i++) {
-        $username = "user$i"
+    for ($i = 1; $i -le 5; $i++) { # do not modify this as this username is used below to join the pc vm to the domain
+        $username = "user$i" # do not modify this as this username is used below to join the pc vm to the domain
         try {
             New-ADUser `
                 -Name "$username victim" `
