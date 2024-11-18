@@ -129,3 +129,6 @@ Once deployment has finished (will take a while..), do the following for **each 
 
 * you might see errors here and there - ignore them
 * when done, turn off the VMs, see you when the course starts!
+
+5. Verification
+    

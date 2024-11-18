@@ -13,9 +13,11 @@ param (
 $global:jobs = @()
 $global:LAB_DIR = "c:\lab"
 $DomainUserForPcVM = "user1" # do not modify this as it is used to join the domain
+$results = @() # holds the results of the validation for every part of the script
+$NUM_OF_USERS = 5 # do not modify this as it is used to create dummy domain users
 
 if (-Not (Test-Path -Path $global:LAB_DIR)) { New-Item -Path $global:LAB_DIR -ItemType Directory }
-Start-Transcript -Path "$global:LAB_DIR\labPrepareLog.txt" -Append
+Start-Transcript -Path "$global:LAB_DIR\LabSetupLog.txt" -Append
 
 Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
 
@@ -35,6 +37,106 @@ $modulesToInstall = @(
     "AADInternals"
 )
 
+function Test-SoftwareInstallation {
+    param (
+        [string]$softwareName
+    )
+    $installed = Get-WmiObject -Query "SELECT * FROM Win32_Product WHERE Name LIKE '%$softwareName%'"
+    if ($installed) {
+        return "$softwareName is installed.\n", $true
+    } else {
+        return "$softwareName is NOT installed.\n", $false
+    }
+}
+
+function Test-ModuleInstallation {
+    param (
+        [string]$moduleName
+    )
+    $module = Get-Module -ListAvailable -Name $moduleName
+    if ($module) {
+        return "PS Module $moduleName is installed.\n", $true
+    } else {
+        return "PS Module $moduleName is not installed.\n", $false
+    }
+}
+
+function Test-UserCreation {
+    param (
+        [string]$userName
+    )
+    $user = Get-LocalUser -Name $userName -ErrorAction SilentlyContinue
+    if ($user) {
+        return "User $userName exists.\n", $true
+    } else {
+        return "User $userName does not exist.\n", $false
+    }
+}
+
+function Test-DomainCreation {
+    param (
+        [string]$domainName
+    )
+    $domain = Get-ADDomain -Identity $domainName -ErrorAction SilentlyContinue
+    if ($domain) {
+        return "Domain $domainName exists.\n", $true
+    } else {
+        return "Domain $domainName does not exist.\n", $false
+    }
+}
+
+function Test-DomainJoin {
+    $computerSystem = Get-WmiObject -Class Win32_ComputerSystem
+    if ($computerSystem.PartOfDomain) {
+        return "Computer is joined to the domain.\n";  $true
+    } else {
+        return "Computer is NOT joined to the domain.\n";  $false
+    }
+}
+
+# Example usage for the specified modules
+$modulesToInstall = @("Microsoft.Graph", "DSInternals", "AzureAD", "AADInternals")
+$results = @()
+
+foreach ($module in $modulesToInstall) {
+    $result = Validate-ModuleInstallation -moduleName $module
+    $results += "$($result.Message)`n"
+}
+
+# Example usage for software, user, and domain validation
+$results += "$((Validate-SoftwareInstallation -softwareName 'YourSoftwareName').Message)`n"
+$results += "$((Validate-UserCreation -userName 'user1').Message)`n"
+$results += "$((Validate-DomainCreation -domainName 'boazwassergmail.onmicrosoft.com').Message)`n"
+$results += "$((Validate-DomainJoin).Message)`n"
+
+# Write all results to a file on the desktop
+$desktopPath = [System.Environment]::GetFolderPath('Desktop')
+$outputFile = Join-Path -Path $desktopPath -ChildPath "ValidationResults.txt"
+$results | Out-File -FilePath $outputFile
+
+Write-Output "Validation results written to $outputFile"
+Write-Output "Lab setup script has finished successfully."
+# Function to finish the script loggging and restart the computer
+function Finish ($isSuccessfull) {
+    # Write all results to a file on the desktop
+    $desktopPath = [System.Environment]::GetFolderPath('Desktop')
+    $outputFile = Join-Path -Path $desktopPath -ChildPath "LabSetupResults.txt"
+    $results | Out-File -FilePath $outputFile
+
+    Write-Output "Validation results written to $outputFile"
+    if($isSuccessfull) {
+        $results += "Lab setup script has finished successfully."
+        $results | Out-File -FilePath $outputFile
+        Stop-Transcript
+        Restart-Computer -Force
+    }
+    else {
+        $results += "Lab setup script has failed."
+        Write-Output "Lab setup script has failed."
+        $results | Out-File -FilePath $outputFile
+        Stop-Transcript
+    }
+}
 
 # Function to install a module
 function Install-ModuleWithParams {
@@ -197,12 +299,21 @@ if (Is-WindowsServer) {
     
         Write-Output "IE Enhanced Security Configuration (ESC) has been disabled."
     }
-    
     Disable-IEESC
 
+    # Validate the domain
+    $text, $status = Test-DomainCreation -domainName "$DomainName"
+    $results += $text
+    if(-Not $status) {
+        Write-Output $text
+        Write-Output "Cannot continue without a domain. Exiting..."
+        Finish($false)
+        exit
+    }
+
     # Create dummy domain users and add them to Domain Admins group
-    Write-Output "Creating 5 dummy domain users and adding them to Domain Admins group..."
-    for ($i = 1; $i -le 5; $i++) { # do not modify this as this username is used below to join the pc vm to the domain
+    Write-Output "Creating $NUM_OF_USERS dummy domain users and adding them to Domain Admins group..."
+    for ($i = 1; $i -le $NUM_OF_USERS; $i++) { # do not modify this as this username is used below to join the pc vm to the domain
         $username = "user$i" # do not modify this as this username is used below to join the pc vm to the domain
         try {
             New-ADUser `
@@ -230,11 +341,28 @@ if (Is-WindowsServer) {
         }
     }
 
+    # Validate the users
+    for ($i = 1; $i -le $NUM_OF_USERS; $i++)
+    {
+        $username = "user$i"
+        $text, $status = Test-UserCreation -userName $username
+        $results += $text
+        if(-Not $status) {
+            Write-Output $text
+            Write-Output "Cannot continue without the users. Exiting..."
+            Finish($false)
+            exit
+        }
+    }
+
     # Install Azure AD Connect
     Install-Software -url "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi" `
         -fileName "$global:LAB_DIR\AzureADConnect.msi" `
         -startProcess "" `
         -processArgList ""
+    
+    $text, $status = Test-SoftwareInstallation -softwareName "Entra Connect"
+    $results += $text
 }
 else {
     Write-Output "This is a Windows Client system."
@@ -276,9 +404,14 @@ Install-Software -url "https://aka.ms/installazurecliwindows" `
     -startProcess "msiexec.exe" `
     -processArgList "/I AzureCLI.msi /quiet"
 
+$text, $status = Test-SoftwareInstallation -softwareName "Azure CLI"
+$results += $text
+
 Install-Software -url "https://telerik-fiddler.s3.amazonaws.com/fiddler/FiddlerSetup.exe" `
     -fileName "$global:LAB_DIR\FiddlerSetup.exe" 
-    
+$text, $status = Test-SoftwareInstallation -softwareName "Fiddler"
+$results += $text
+
 # Install Python
 Install-Software -url "https://www.python.org/ftp/python/3.13.0/python-3.13.0-amd64.exe" `
     -fileName "$global:LAB_DIR\python-3.9.7-amd64.exe" `
@@ -288,10 +421,17 @@ Install-Software -url "https://www.python.org/ftp/python/3.13.0/python-3.13.0-am
 $env:Path += ";$env:C:\Program Files\Python313\Scripts"
 $env:Path += ";$env:C:\Program Files\Python313\"
 
+$text, $status = Test-SoftwareInstallation -softwareName "Python"
+$results += $text
+
 Install-Software -startProcess "pip" -processArgList "install roadlib"
 Install-Software -startProcess "pip" -processArgList "install roadrecon"
 Install-Software -startProcess "pip" -processArgList "install roadtx"
 Install-Software -startProcess "pip" -processArgList "install setuptools"
+
+$text, $status = Test-SoftwareInstallation -softwareName "pip"
+$results += $text
+
 
 # install mimikatz
 Install-Software -url "https://github.com/gentilkiwi/mimikatz/releases/download/2.2.0-20220919/mimikatz_trunk.zip" `
@@ -306,12 +446,6 @@ Install-Software -url "https://download.sysinternals.com/files/SysinternalsSuite
     -startProcess "powershell" `
     -processArgList "-Command Expand-Archive -Path $global:LAB_DIR\SysinternalsSuite.zip -DestinationPath C:\Windows"
 
-# Install OneDrive latest
-# Install-Software -url "https://go.microsoft.com/fwlink/?linkid=844652" `
-#     -fileName "$global:LAB_DIR\OneDriveSetup.exe" `
-#     -startProcess "$global:LAB_DIR\OneDriveSetup.exe" `
-#     -processArgList "/silent"
-
 
 foreach ($job in $global:jobs) {
     Write-Output "Waiting for job $($job.Id) to complete..."
@@ -321,15 +455,16 @@ foreach ($job in $global:jobs) {
     Remove-Job -Job $job
 }
 Update-Help -Force
+
+# Validate the installation of the modules
+foreach ($module in $modulesToInstall) {
+    $result, $status = Test-ModuleInstallation -moduleName $module
+    $results += $result
+}
+
 ######
 # THE FOLLOWING MUST RUN LAST AS IT WILL DISCONNECT THE SESSIONS
 ####
-function New-DesktopFinishFile {
-    $desktopPath = [System.Environment]::GetFolderPath('Desktop')
-    $filePath = Join-Path -Path $desktopPath -ChildPath 'lab-setup.txt'
-    "Lab prepartion script successfully finished" | Out-File -FilePath $filePath -Force
-}
-
 Write-Output "Enabling multiple, parallel RDP connections... this will restart the current session."
 Start-Sleep -Seconds 5
 # Enable multiple, parallel RDP connections
@@ -347,8 +482,6 @@ if (Test-Path -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\RCM\
 }
 
 if (Is-WindowsServer) {
-    # windows server
-    
     # enable TLS 1.2
     If (-Not (Test-Path 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\.NETFramework\v4.0.30319')) {
         New-Item 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\.NETFramework\v4.0.30319' -Force | Out-Null
@@ -375,10 +508,6 @@ if (Is-WindowsServer) {
     New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Client' -Name 'DisabledByDefault' -Value '0' -PropertyType 'DWord' -Force | Out-Null
 
     Write-Output 'TLS 1.2 has been enabled. restart will start for the changes to take affect.' -ForegroundColor Cyan
-    # Stop logging
-    Stop-Transcript
-    New-DesktopFinishFile
-    
 }
 else {
     # "This is a Windows Client system."
@@ -388,7 +517,6 @@ else {
     Write-Output "Joining the computer to the domain..."
     Add-Computer -DomainName $DomainName -Credential $Credential -Force
     if ($?) {
-        New-DesktopFinishFile
         Write-Output "Successfully joined the domain $DomainName."
         Write-Output "Restarting the Remote Desktop Services service..."
     }
@@ -396,8 +524,12 @@ else {
         Write-Output "Failed to join the domain $DomainName."
     }
 
-    # Stop logging
-    Stop-Transcript
+    $result, $status = Test-DomainJoin
+    $results += $result
 }
 
-Restart-Computer -Force
+Finish($true)
+
+
+
+
