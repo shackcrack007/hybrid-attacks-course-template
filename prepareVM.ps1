@@ -94,34 +94,17 @@ function Test-DomainJoin {
     }
 }
 
-# Example usage for the specified modules
-$modulesToInstall = @("Microsoft.Graph", "DSInternals", "AzureAD", "AADInternals")
-$results = @()
 
-foreach ($module in $modulesToInstall) {
-    $result = Validate-ModuleInstallation -moduleName $module
-    $results += "$($result.Message)`n"
-}
-
-# Example usage for software, user, and domain validation
-$results += "$((Validate-SoftwareInstallation -softwareName 'YourSoftwareName').Message)`n"
-$results += "$((Validate-UserCreation -userName 'user1').Message)`n"
-$results += "$((Validate-DomainCreation -domainName 'boazwassergmail.onmicrosoft.com').Message)`n"
-$results += "$((Validate-DomainJoin).Message)`n"
-
-# Write all results to a file on the desktop
-$desktopPath = [System.Environment]::GetFolderPath('Desktop')
-$outputFile = Join-Path -Path $desktopPath -ChildPath "ValidationResults.txt"
-$results | Out-File -FilePath $outputFile
-
-Write-Output "Validation results written to $outputFile"
-Write-Output "Lab setup script has finished successfully."
 # Function to finish the script loggging and restart the computer
 function Finish ($isSuccessfull) {
+    # Ensure the directory exists
+    if (-Not (Test-Path -Path $global:LAB_DIR)) {
+        New-Item -Path $global:LAB_DIR -ItemType Directory -Force | Out-Null
+    }
+    
     # Write all results to a file on the desktop
-    $desktopPath = [System.Environment]::GetFolderPath('Desktop')
-    $outputFile = Join-Path -Path $desktopPath -ChildPath "LabSetupResults.txt"
-    $results | Out-File -FilePath $outputFile
+    $outputFile = Join-Path -Path $global:LAB_DIR -ChildPath "LabSetupResults.txt"
+    $results | Out-File -FilePath $outputFile -Force
 
     Write-Output "Validation results written to $outputFile"
     if($isSuccessfull) {
