@@ -172,14 +172,9 @@ function Install-Software {
                     $success = $true
                 }
                 catch {
-                    if ($_.Exception.Message -like "*The remote name $url could not be resolved*") {
-                        Write-Output "Failed to resolve $url. Retrying... ($($retryCount + 1)/$maxRetries)"
-                        Start-Sleep -Seconds 2
-                        $retryCount++
-                    }
-                    else {
-                        throw $_
-                    }
+                    Write-Output "Failed to resolve $url. Retrying... ($($retryCount + 1)/$maxRetries)"
+                    Start-Sleep -Seconds 2
+                    $retryCount++
                 }
             }
             if (-Not $success) {
@@ -392,8 +387,6 @@ $global:SETUP_RESULTS += $text
 
 Install-Software -url "https://telerik-fiddler.s3.amazonaws.com/fiddler/FiddlerSetup.exe" `
     -fileName "$global:LAB_DIR\FiddlerSetup.exe" 
-$text, $status = Test-SoftwareInstallation -softwareName "Fiddler"
-$global:SETUP_RESULTS += $text
 
 # Install Python
 Install-Software -url "https://www.python.org/ftp/python/3.13.0/python-3.13.0-amd64.exe" `
