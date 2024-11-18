@@ -13,7 +13,7 @@ param (
 $global:jobs = @()
 $global:LAB_DIR = "c:\lab"
 $DomainUserForPcVM = "user1" # do not modify this as it is used to join the domain
-$results = @() # holds the results of the validation for every part of the script
+$global:SETUP_RESULTS = @() # holds the results of the validation for every part of the script
 $NUM_OF_USERS = 5 # do not modify this as it is used to create dummy domain users
 
 if (-Not (Test-Path -Path $global:LAB_DIR)) { New-Item -Path $global:LAB_DIR -ItemType Directory }
@@ -101,22 +101,22 @@ function Finish ($isSuccessfull) {
     if (-Not (Test-Path -Path $global:LAB_DIR)) {
         New-Item -Path $global:LAB_DIR -ItemType Directory -Force | Out-Null
     }
-    
+
     # Write all results to a file on the desktop
     $outputFile = Join-Path -Path $global:LAB_DIR -ChildPath "LabSetupResults.txt"
-    $results | Out-File -FilePath $outputFile -Force
+    $global:SETUP_RESULTS | Out-File -FilePath $outputFile -Force
 
     Write-Output "Validation results written to $outputFile"
     if($isSuccessfull) {
-        $results += "Lab setup script has finished successfully."
-        $results | Out-File -FilePath $outputFile
+        $global:SETUP_RESULTS += "Lab setup script has finished successfully."
+        $global:SETUP_RESULTS | Out-File -FilePath $outputFile
         Stop-Transcript
         Restart-Computer -Force
     }
     else {
-        $results += "Lab setup script has failed."
+        $global:SETUP_RESULTS += "Lab setup script has failed."
         Write-Output "Lab setup script has failed."
-        $results | Out-File -FilePath $outputFile
+        $global:SETUP_RESULTS | Out-File -FilePath $outputFile
         Stop-Transcript
     }
 }
@@ -286,7 +286,7 @@ if (Is-WindowsServer) {
 
     # Validate the domain
     $text, $status = Test-DomainCreation -domainName "$DomainName"
-    $results += $text
+    $global:SETUP_RESULTS += $text
     if(-Not $status) {
         Write-Output $text
         Write-Output "Cannot continue without a domain. Exiting..."
@@ -329,7 +329,7 @@ if (Is-WindowsServer) {
     {
         $username = "user$i"
         $text, $status = Test-UserCreation -userName $username
-        $results += $text
+        $global:SETUP_RESULTS += $text
         if(-Not $status) {
             Write-Output $text
             Write-Output "Cannot continue without the users. Exiting..."
@@ -345,7 +345,7 @@ if (Is-WindowsServer) {
         -processArgList ""
     
     $text, $status = Test-SoftwareInstallation -softwareName "Entra Connect"
-    $results += $text
+    $global:SETUP_RESULTS += $text
 }
 else {
     Write-Output "This is a Windows Client system."
@@ -388,12 +388,12 @@ Install-Software -url "https://aka.ms/installazurecliwindows" `
     -processArgList "/I AzureCLI.msi /quiet"
 
 $text, $status = Test-SoftwareInstallation -softwareName "Azure CLI"
-$results += $text
+$global:SETUP_RESULTS += $text
 
 Install-Software -url "https://telerik-fiddler.s3.amazonaws.com/fiddler/FiddlerSetup.exe" `
     -fileName "$global:LAB_DIR\FiddlerSetup.exe" 
 $text, $status = Test-SoftwareInstallation -softwareName "Fiddler"
-$results += $text
+$global:SETUP_RESULTS += $text
 
 # Install Python
 Install-Software -url "https://www.python.org/ftp/python/3.13.0/python-3.13.0-amd64.exe" `
@@ -405,7 +405,7 @@ $env:Path += ";$env:C:\Program Files\Python313\Scripts"
 $env:Path += ";$env:C:\Program Files\Python313\"
 
 $text, $status = Test-SoftwareInstallation -softwareName "Python"
-$results += $text
+$global:SETUP_RESULTS += $text
 
 Install-Software -startProcess "pip" -processArgList "install roadlib"
 Install-Software -startProcess "pip" -processArgList "install roadrecon"
@@ -413,7 +413,7 @@ Install-Software -startProcess "pip" -processArgList "install roadtx"
 Install-Software -startProcess "pip" -processArgList "install setuptools"
 
 $text, $status = Test-SoftwareInstallation -softwareName "pip"
-$results += $text
+$global:SETUP_RESULTS += $text
 
 
 # install mimikatz
@@ -442,7 +442,7 @@ Update-Help -Force
 # Validate the installation of the modules
 foreach ($module in $modulesToInstall) {
     $result, $status = Test-ModuleInstallation -moduleName $module
-    $results += $result
+    $global:SETUP_RESULTS += $result
 }
 
 ######
@@ -508,7 +508,7 @@ else {
     }
 
     $result, $status = Test-DomainJoin
-    $results += $result
+    $global:SETUP_RESULTS += $result
 }
 
 Finish($true)

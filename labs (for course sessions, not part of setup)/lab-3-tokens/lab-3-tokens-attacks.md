@@ -1,6 +1,6 @@
 # Lab 3 - Token Attacks
 ### Prepare a victim user with high privileges: 
-1. RDP and login to the Win11 VM using the "***YOURUSER@boazwassergmail.onmicrosoft.com***" "victim" user that you've created in the previous lab.
+1. RDP and login to the Win11 VM using the "***YOURUSER@YOURDOMAIN.onmicrosoft.com***" "victim" user that you've created in the previous lab.
 2. run ```dsregcmd /status``` and make sure you see ```AzureAdPrt : YES```
     ![prt](prtexists.png)
 
@@ -10,7 +10,7 @@ From this point on you act as the adversary, without knowing the Entra / AD Cred
 
 #
 ## 1.Steal-the-PRT-Cookie 
-Note: This method will bypass MFA only if the user has authenticated using MFA in its Windows (open Edge and sync the profile, go to the windows account settings on Windows and make sure it doesn't need to get verified)
+Note: This method will bypass MFA only if the user has authenticated using MFA in its Windows (open Edge and Turn on profile "sync", go to the windows account settings on Windows and make sure it doesn't need to get verified)
 
 #### Option 1: using RequestAADRefreshToken.exe tool
 Use the MicrosoftAccountTokenProvider DLL to request a new PRT cookie:
