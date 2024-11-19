@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.31.34.60546",
-      "templateHash": "6271189500195692756"
+      "templateHash": "4915076289031222114"
     }
   },
   "parameters": {
@@ -39,7 +39,7 @@
     "windows11VMName": "win11VM",
     "virtualNetworkName": "lab-VNET",
     "virtualNetworkAddressRange": "10.0.0.0/16",
-    "privateIPAddress": "10.0.0.4",
+    "privateIPAddress": "10.0.0.1",
     "subnetName": "lab-subnet",
     "subnetRange": "10.0.0.0/24",
     "windows11PrivateIPAddress": "10.0.0.10"

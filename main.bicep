@@ -34,8 +34,8 @@ var virtualNetworkName = 'lab-VNET'
 @description('Virtual network address range.')
 var virtualNetworkAddressRange = '10.0.0.0/16'
 
-@description('Private IP address.')
-var privateIPAddress = '10.0.0.4'
+@description('Private IP address for the DC VM.')
+var privateIPAddress = '10.0.0.1'
 
 @description('Subnet name.')
 var subnetName = 'lab-subnet'
