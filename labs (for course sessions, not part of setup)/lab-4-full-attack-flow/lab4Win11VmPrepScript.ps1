@@ -112,5 +112,6 @@ if ($null -eq $existingTask) {
 Write-Verbose "Scheduled task '$taskName' created to run every 20 minutes in the user context."
 
 Start-ScheduledTask -TaskName $taskName
+Write-Verbose "Scheduled task '$taskName' successfully started."
 Write-Verbose "Scheduled task '$taskName' started."
 

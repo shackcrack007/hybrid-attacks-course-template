@@ -2,14 +2,20 @@ creds of an SP -> azure run command -> vm that has user logged on -> steal user 
 
 
 # Preparations
-1. RDP login to DC VM using the YOURDOMAIN\rootuser
+1. RDP login to DC VM using the **YOURDOMAIN\rootuser**
 then, run the following powershell script as admin:
     ```powershell
     # when asked, login using the ENTRA CREDS (!)
     Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/refs/heads/main/labs%20(for%20course%20sessions%2C%20not%20part%20of%20setup)/lab-4-full-attack-flow/lab4PreparationScript.ps1" -OutFile "C:\\lab4PreparationScript.ps1"; `
     & "C:\\lab4PreparationScript.ps1"
     ```
-2. RDP login to Win11 VM using the YOURDOMAIN\user1, keep this window open in the background - you're not allowed to use it from now on.
+2. RDP login to Win11 VM using the **YOURDOMAIN\user1**
+then, , run the following powershell script as admin:
+    ```powershell
+    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/refs/heads/main/labs%20(for%20course%20sessions%2C%20not%20part%20of%20setup)/lab-4-full-attack-flow/lab4Win11VmPrepScript.ps1" -OutFile "C:\\lab4Win11VmPrepScript.ps1"; `
+        & "C:\\lab4Win11VmPrepScript.ps1"
+    ```
+keep this window open in the background - you're not allowed to use it from now on.
 
 # Instructions
 1. Your goal is to find the secret.txt file 
