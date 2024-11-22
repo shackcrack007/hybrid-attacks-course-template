@@ -29,8 +29,8 @@ If (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 
 # bypass PS 5.1 limitations:
 $MaximumFunctionCount = 32768
-$Script:MaximumFunctionCount = 32768
-$Script:MaximumVariableCount = 32768
+$script:MaximumFunctionCount = 32768
+$script:MaximumVariableCount = 32768
 $MaximumVariableCount = 32768
 
 $resourceGroupName = "hybrid-attacks-lab-rg"
@@ -52,18 +52,18 @@ function Generate-StorageAccountName {
 $storageAccountName = Generate-StorageAccountName
 
 Write-Verbose "Starting.. "
-if (-not (Get-Module -ListAvailable -Name Az.Storage, Az.Resources, Az.Accounts)) {
-    Write-Verbose "Installing Az module, this wil take a few mins..."
-    Install-Module -Name Az.Storage, Az.Resources, Az.Accounts -Force -AllowClobber -Verbose
+if (-not (Get-Module -ListAvailable -Name Az.*)) {
+    Write-Verbose "Installing Az module, this wil take a 5-10 mins..."
+    Install-Module -Name Az -Force -Verbose
 }
-if (-not (Get-Module -ListAvailable -Name Microsoft.Graph.Users, Microsoft.Graph.Groups, Microsoft.Graph.Identity.DirectoryManagement)) {
-    Write-Verbose "Installing Microsoft.Graph module, this wil take a few mins..."
-    Install-Module -Name Microsoft.Graph.Users, Microsoft.Graph.Groups, Microsoft.Graph.Identity.DirectoryManagement -Force -AllowClobber -Verbose
+if (-not (Get-Module -ListAvailable -Name Microsoft.Graph)) {
+    Write-Verbose "Installing Microsoft.Graph module, this wil take a 5-10 mins..."
+    Install-Module -Name Microsoft.Graph -Force -Verbose
 }
 
 Write-Verbose "Importing modules..."
-Import-Module Az.Storage, Az.Resources, Az.Accounts
-Import-Module Microsoft.Graph.Users, Microsoft.Graph.Groups, Microsoft.Graph.Identity.DirectoryManagement
+Import-Module Az
+Import-Module Microsoft.Graph
 
 # Connect to Azure
 Connect-AzAccount 
@@ -71,8 +71,9 @@ Connect-AzAccount
 
 # Extract domain from username
 $domain = (Get-AzContext).Account.Id.ToString().Split('@')[1]
-# Get the user object ID
+# Get the user1 object ID
 $userObjectId = (Get-AzADUser -UserPrincipalName "user1@$domain").Id
+$user2ObjectId = (Get-AzADUser -UserPrincipalName "user2@$domain").Id
 
 
 
@@ -91,6 +92,8 @@ Write-Verbose "Tenant ID: $($context.Tenant.Id)"
 Write-Verbose "Account: $($context.Account.Id)"
 Write-Verbose "Domain: $domain"
 
+
+################## User1 preps ##################
 
 Write-Verbose "Registering the Microsoft.Storage resource provider..."
 Register-AzResourceProvider -ProviderNamespace Microsoft.Storage
@@ -131,7 +134,7 @@ Set-Content -Path "secret.txt" -Value $content
 Set-AzStorageBlobContent -File "secret.txt" -Container $containerName -Blob "secret.txt" -Context $ctx
 
 # Check if the user already has the Reader role
-$roleAssignment = Get-AzRoleAssignment -ObjectId $userObjectId -Scope $storageAccount.Id -ErrorAction SilentlyContinue | Where-Object { $_.RoleDefinitionName -eq "Reader" }
+$roleAssignment = Get-AzRoleAssignment -ObjectId $userObjectId -Scope $storageAccount.Id | Where-Object { $_.RoleDefinitionName -eq "Reader" }
 
 if (-not $roleAssignment) {
     # Assign Reader role to user1@mydomain.onmicrosft.com if not already assigned
@@ -141,5 +144,24 @@ if (-not $roleAssignment) {
     Write-Verbose "User user1@$domain already has the Reader role."
 }
 
+
+################## User2 preps ##################
+Write-Verbose "Assigning roles to user2@$domain..."
+$roles = @("Reader", "Virtual Machine Contributor")
+
+foreach ($role in $roles) {
+    # Check if the role assignment already exists
+    $existingAssignment = Get-AzRoleAssignment -ObjectId $user2ObjectId -RoleDefinitionName $role -Scope $scope -ErrorAction SilentlyContinue
+
+    if ($null -eq $existingAssignment) {
+        # Assign the role if it does not exist
+        New-AzRoleAssignment -ObjectId $user2ObjectId -RoleDefinitionName $role -Scope "/subscriptions/$subscriptionId"
+        Write-Verbose "Role '$role' assigned successfully."
+    } else {
+        Write-Verbose "Role '$role' already assigned."
+    }
+}
+
+
 Write-Output "Script execution completed successfully."
-Write-Output "Once done, delete the resource group '$resourceGroupName' to clean up the resources."
+Write-Output "Once done with the lab, delete the resource group '$resourceGroupName' to clean up the resources."

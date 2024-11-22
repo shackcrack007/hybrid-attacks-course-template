@@ -1,42 +1,40 @@
 # LAB 4 Preparations
-1. RDP login to DC VM using the **YOURDOMAIN\rootuser**
-then, run the following powershell script as admin:
+1. RDP login to DC VM using the YOURDOMAIN\\**rootuser**, then run the following script as admin:
     ```powershell
     # when asked, login using the ENTRA CREDS (!)
     Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/refs/heads/main/labs%20(for%20course%20sessions%2C%20not%20part%20of%20setup)/lab-4-full-attack-flow/lab4PreparationScript.ps1" -OutFile "C:\\lab4PreparationScript.ps1"; `
     & "C:\\lab4PreparationScript.ps1"
     ```
-2. RDP login to Win11 VM using the **YOURDOMAIN\user1**
-then, , run the following powershell script as admin:
+2. RDP login to Win11 VM using the YOURDOMAIN\\**user1**, then run the following script as admin:
     ```powershell
     Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/refs/heads/main/labs%20(for%20course%20sessions%2C%20not%20part%20of%20setup)/lab-4-full-attack-flow/lab4Win11VmPrepScript.ps1" -OutFile "C:\\lab4Win11VmPrepScript.ps1"; `
         & "C:\\lab4Win11VmPrepScript.ps1"
     ```
-keep this window open in the background - you're not allowed to use it from now on.
+    keep this window open in the background - **you're not allowed to use it from now on**
 
 # Instructions
-1. Your goal is to find the secret.txt file 
-2. forget everything you knew: from this point on you DON'T know what the admin password is (i.e. what's the password of 'user1')
-3. DO NOT password reset or silver ticket (seamless sso) "user1"
-3. the only thing you have is the RDP session on the DC. Good luck! 
+1. Your goal is to find the `secret.txt` file 
+2. forget everything you knew: from this point on you DON'T know what the Entra admin password is (i.e. what's the password of 'user1' / 'rootuser')
+3. **DO NOT** password reset or silver ticket (Seamless SSO) "user1"
+3. **Starting point:** as the attacker the only thing you have is the RDP session on the DC VM. Good luck! 
 
 # Hints
 
 <details>
     <summary><b>First hint: where the secret.txt file isn't stored</b></summary>
 
-    The file isn't on a VM
+    The file isn't on any VM
 </details>
 
 
 <details>
     <summary><b>Entire attack path hint (use as last resort)</b></summary>
 
-    1. pass reset: DC vm -> reset pass of "user2" using Entra Sync credentials
+    1. Pass reset: DC vm -> reset pass of "user2" using Entra Sync credentials
 
-    2. login to Azure as that user using your browser
+    2. Login to Azure as that user using your browser
 
-    3. azure run command on Win11 VM (the VM that has user1 logged on)
+    3. Azure Run Command on Win11 VM (the VM that has user1 logged on)
 
     4. Steal user1 PRT Cookie by running powershell script from the Run Command extension on the Azure portal 
 
