@@ -1,7 +1,4 @@
-creds of an SP -> azure run command -> vm that has user logged on -> steal user prt ->
-
-
-# Preparations
+# LAB 4 Preparations
 1. RDP login to DC VM using the **YOURDOMAIN\rootuser**
 then, run the following powershell script as admin:
     ```powershell

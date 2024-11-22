@@ -33,12 +33,9 @@ $Script:MaximumFunctionCount = 32768
 $Script:MaximumVariableCount = 32768
 $MaximumVariableCount = 32768
 
-# Extract domain from username
-$domain = (Get-AzContext).Account.Id.ToString().Split('@')[1]
-# Get the user object ID
-$userObjectId = (Get-AzADUser -UserPrincipalName "user1@$domain").Id
 $resourceGroupName = "hybrid-attacks-lab-rg"
 $location = "EastUS"
+
 function Generate-StorageAccountName {
     param (
         [int]$length = 24
@@ -65,11 +62,20 @@ if (-not (Get-Module -ListAvailable -Name Microsoft.Graph.Users, Microsoft.Graph
 }
 
 Write-Verbose "Importing modules..."
-Import-Module Az
-Import-Module Microsoft.Graph
+Import-Module Az.Storage, Az.Resources, Az.Accounts
+Import-Module Microsoft.Graph.Users, Microsoft.Graph.Groups, Microsoft.Graph.Identity.DirectoryManagement
 
 # Connect to Azure
 Connect-AzAccount 
+
+
+# Extract domain from username
+$domain = (Get-AzContext).Account.Id.ToString().Split('@')[1]
+# Get the user object ID
+$userObjectId = (Get-AzADUser -UserPrincipalName "user1@$domain").Id
+
+
+
 
 Write-Verbose "Getting subscription ID..."
 $subscriptionId = (Get-AzSubscription).Id
