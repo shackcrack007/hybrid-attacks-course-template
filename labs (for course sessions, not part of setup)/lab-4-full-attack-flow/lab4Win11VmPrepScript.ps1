@@ -43,7 +43,7 @@ if($ShouldTrigger)
     $prtToken = $match.Groups[1].Value
     Write-Verbose "PrtToken: $prtToken"
 
-    roadrecon auth -r msgraph -c "1950a258-227b-4e31-a9cf-717495945fc2" --prt-cookie $prtToken
+    roadrecon auth -r azurerm -c azps --prt-cookie $prtToken
 
     # keep only the AT
     $filePath = (([Environment]::GetFolderPath("Desktop"))+'\.roadtools_auth')

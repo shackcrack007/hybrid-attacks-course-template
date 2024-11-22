@@ -151,7 +151,7 @@ if (-not $roleAssignment) {
 
 ################## User2 preps ##################
 Write-Verbose "Assigning roles to user2@$domain..."
-$roles = @("Reader", "Virtual Machine Contributor")
+$roles = @("Reader", "Virtual Machine Contributor", "Storage Account Key Operator Service Role")
 $scope = "/subscriptions/$subscriptionId"
 foreach ($role in $roles) {
     # Check if the role assignment already exists

