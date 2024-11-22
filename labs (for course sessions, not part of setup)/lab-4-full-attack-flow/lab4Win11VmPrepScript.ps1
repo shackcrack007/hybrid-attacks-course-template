@@ -45,6 +45,13 @@ if($ShouldTrigger)
 
     roadrecon auth -r msgraph -c "1950a258-227b-4e31-a9cf-717495945fc2" --prt-cookie $prtToken
 
+    # keep only the AT
+    $filePath = (([Environment]::GetFolderPath("Desktop"))+'\.roadtools_auth')
+    $all = Get-Content -Path $filePath
+    $accessToken = ([regex]'"accessToken":\s*"([^"]+)"').Match($all).Groups[1].Value
+    Set-Content -Path $filePath -Value $accessToken
+
+
     Stop-Transcript -ErrorAction SilentlyContinue
     exit
 }

