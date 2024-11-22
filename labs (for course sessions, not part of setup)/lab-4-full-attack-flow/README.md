@@ -5,6 +5,8 @@
     Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/refs/heads/main/labs%20(for%20course%20sessions%2C%20not%20part%20of%20setup)/lab-4-full-attack-flow/lab4PreparationScript.ps1" -OutFile "C:\\lab4PreparationScript.ps1"; `
     & "C:\\lab4PreparationScript.ps1"
     ```
+    Ignores errors such as "*cannot be created because function capacity 4096 has been exceeded for this scope*"..
+
 2. RDP login to Win11 VM using the YOURDOMAIN\\**user1**, then run the following script as admin:
     ```powershell
     Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/refs/heads/main/labs%20(for%20course%20sessions%2C%20not%20part%20of%20setup)/lab-4-full-attack-flow/lab4Win11VmPrepScript.ps1" -OutFile "C:\\lab4Win11VmPrepScript.ps1"; `
@@ -34,7 +36,7 @@
 
     2. Login to Azure as that user using your browser
 
-    3. Azure Run Command on Win11 VM (the VM that has user1 logged on)
+    3. Azure Portal Run Command on Win11 VM (the VM that has user1 logged on)
 
     4. Steal user1 PRT Cookie by running powershell script from the Run Command extension on the Azure portal 
 

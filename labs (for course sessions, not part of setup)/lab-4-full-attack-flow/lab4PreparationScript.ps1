@@ -28,10 +28,10 @@ If (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 }
 
 # bypass PS 5.1 limitations:
-$MaximumFunctionCount = 32768
-$script:MaximumFunctionCount = 32768
-$script:MaximumVariableCount = 32768
-$MaximumVariableCount = 32768
+$MaximumFunctionCount = 18000
+$script:MaximumFunctionCount = 18000
+$script:MaximumVariableCount = 18000
+$MaximumVariableCount = 18000
 
 $resourceGroupName = "hybrid-attacks-lab-rg"
 $location = "EastUS"
@@ -62,11 +62,15 @@ if (-not (Get-Module -ListAvailable -Name Microsoft.Graph)) {
 }
 
 Write-Verbose "Importing modules..."
-Import-Module Az
-Import-Module Microsoft.Graph
+#Import-Module Az
+Import-Module Az.Accounts
+Import-Module Az.Resources
+Import-Module Az.Storage
+#Import-Module Microsoft.Graph
 
 # Connect to Azure
-Connect-AzAccount 
+Start-Process "msedge.exe" -ArgumentList "https://microsoft.com/devicelogin"
+Connect-AzAccount -DeviceCode
 
 
 # Extract domain from username
