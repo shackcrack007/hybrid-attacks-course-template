@@ -130,5 +130,18 @@ Once deployment has finished (will take a while..), do the following for **each 
 * you might see errors here and there - ignore them
 * when done, turn off the VMs, see you when the course starts!
 
-5. Verification
-    
+5. look at c:\LabSetupResults.txt and make sure all is installed properly, if something isn't then manually install it
+
+### 4. Prepare local machine
+
+Open Powershell as administrator and run:
+```powershell 
+if (-not (Get-Module -ListAvailable -Name Az)) {
+    Write-Verbose "Installing Az module, this wil take a few mins..."
+    Install-Module -Name Az -Force -AllowClobber -Verbose
+}
+if (-not (Get-Module -ListAvailable -Name Microsoft.Graph)) {
+    Write-Verbose "Installing Microsoft.Graph module, this wil take a few mins..."
+    Install-Module -Name Microsoft.Graph -Force -AllowClobber -Verbose
+}
+```

