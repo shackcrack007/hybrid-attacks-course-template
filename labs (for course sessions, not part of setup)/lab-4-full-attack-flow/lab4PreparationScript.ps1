@@ -100,7 +100,7 @@ Write-Verbose "Domain: $domain"
 ################## User1 preps ##################
 
 Write-Verbose "Registering the Microsoft.Storage resource provider..."
-Register-AzResourceProvider -ProviderNamespace Microsoft.Storage
+$none = Register-AzResourceProvider -ProviderNamespace Microsoft.Storage
 
 
 # Check if the resource group exists
@@ -129,7 +129,7 @@ $ctx = $storageAccount.Context
 
 Write-Verbose "Creating a new container 'secretcontainer' in the storage account..."
 $containerName = "secretcontainer"
-New-AzStorageContainer -Name $containerName -Context $ctx
+$none = New-AzStorageContainer -Name $containerName -Context $ctx
 
 # Create a text file in the container
 Write-Verbose "Creating a text file 'secret.txt' in the container..."
@@ -142,7 +142,7 @@ $roleAssignment = Get-AzRoleAssignment -ObjectId $userObjectId -Scope $storageAc
 
 if (-not $roleAssignment) {
     # Assign Reader role to user1@mydomain.onmicrosft.com if not already assigned
-    New-AzRoleAssignment -ObjectId $userObjectId -RoleDefinitionName "Reader" -Scope $storageAccount.Id
+    $none = New-AzRoleAssignment -ObjectId $userObjectId -RoleDefinitionName "Reader" -Scope $storageAccount.Id
     Write-Verbose "Reader role assigned to user1@$domain."
 } else {
     Write-Verbose "User user1@$domain already has the Reader role."
@@ -152,14 +152,14 @@ if (-not $roleAssignment) {
 ################## User2 preps ##################
 Write-Verbose "Assigning roles to user2@$domain..."
 $roles = @("Reader", "Virtual Machine Contributor")
-
+$scope = "/subscriptions/$subscriptionId"
 foreach ($role in $roles) {
     # Check if the role assignment already exists
     $existingAssignment = Get-AzRoleAssignment -ObjectId $user2ObjectId -RoleDefinitionName $role -Scope $scope -ErrorAction SilentlyContinue
 
     if ($null -eq $existingAssignment) {
         # Assign the role if it does not exist
-        New-AzRoleAssignment -ObjectId $user2ObjectId -RoleDefinitionName $role -Scope "/subscriptions/$subscriptionId"
+        New-AzRoleAssignment -ObjectId $user2ObjectId -RoleDefinitionName $role -Scope $scope
         Write-Verbose "Role '$role' assigned successfully."
     } else {
         Write-Verbose "Role '$role' already assigned."
