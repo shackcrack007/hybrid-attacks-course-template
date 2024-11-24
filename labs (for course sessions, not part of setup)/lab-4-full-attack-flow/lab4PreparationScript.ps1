@@ -33,8 +33,10 @@ $script:MaximumFunctionCount = 18000
 $script:MaximumVariableCount = 18000
 $MaximumVariableCount = 18000
 
-$resourceGroupName = "hybrid-attacks-lab-rg"
+$resourceGroupName = "hybrid-attacks-lab4-rg"
 $location = "EastUS"
+$user1 = "user1"
+$user2 = "user2"
 
 function Generate-StorageAccountName {
     param (
@@ -76,8 +78,8 @@ Connect-AzAccount -DeviceCode
 # Extract domain from username
 $domain = (Get-AzContext).Account.Id.ToString().Split('@')[1]
 # Get the user1 object ID
-$userObjectId = (Get-AzADUser -UserPrincipalName "user1@$domain").Id
-$user2ObjectId = (Get-AzADUser -UserPrincipalName "user2@$domain").Id
+$userObjectId = (Get-AzADUser -UserPrincipalName "$user1@$domain").Id
+$user2ObjectId = (Get-AzADUser -UserPrincipalName "$user2@$domain").Id
 
 
 
@@ -143,14 +145,14 @@ $roleAssignment = Get-AzRoleAssignment -ObjectId $userObjectId -Scope $storageAc
 if (-not $roleAssignment) {
     # Assign Reader role to user1@mydomain.onmicrosft.com if not already assigned
     $none = New-AzRoleAssignment -ObjectId $userObjectId -RoleDefinitionName "Reader" -Scope $storageAccount.Id
-    Write-Verbose "Reader role assigned to user1@$domain."
+    Write-Verbose "Reader role assigned to $user1@$domain."
 } else {
-    Write-Verbose "User user1@$domain already has the Reader role."
+    Write-Verbose "User $user1@$domain already has the Reader role."
 }
 
 
-################## User2 preps ##################
-Write-Verbose "Assigning roles to user2@$domain..."
+################## $user2 preps ##################
+Write-Verbose "Assigning roles to $user2@$domain..."
 $roles = @("Reader", "Virtual Machine Contributor", "Storage Account Key Operator Service Role")
 $scope = "/subscriptions/$subscriptionId"
 foreach ($role in $roles) {
