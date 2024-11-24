@@ -64,24 +64,26 @@ if (-not (Get-Module -ListAvailable -Name Microsoft.Graph)) {
 }
 
 Write-Verbose "Importing modules..."
-#Import-Module Az
 Import-Module Az.Accounts
 Import-Module Az.Resources
 Import-Module Az.Storage
-#Import-Module Microsoft.Graph
+Import-Module Microsoft.Graph
 
-# Connect to Azure
+# Connect to Azure for creating resources
+Write-Output "Login to Azure ARM API:"
 Start-Process "msedge.exe" -ArgumentList "https://microsoft.com/devicelogin"
 Connect-AzAccount -DeviceCode
 
+# Connect to Microsoft Graph for assigning 'Azure DevOps Administrator' role on user2 later
+Write-Output "Login to Microsoft Graph API:"
+Start-Process "msedge.exe" -ArgumentList "https://microsoft.com/devicelogin"
+Connect-MgGraph -Scopes "RoleManagement.ReadWrite.Directory" -UseDeviceCode
 
 # Extract domain from username
 $domain = (Get-AzContext).Account.Id.ToString().Split('@')[1]
 # Get the user1 object ID
 $userObjectId = (Get-AzADUser -UserPrincipalName "$user1@$domain").Id
 $user2ObjectId = (Get-AzADUser -UserPrincipalName "$user2@$domain").Id
-
-
 
 
 Write-Verbose "Getting subscription ID..."
@@ -168,6 +170,9 @@ foreach ($role in $roles) {
     }
 }
 
+# Assign the Azure DevOps Administrator role to the user using Microsoft Graph
+$roleDefinition = Get-MgRoleManagementDirectoryRoleDefinition -Filter "displayName eq 'Azure DevOps Administrator'"
+New-MgRoleManagementDirectoryRoleAssignment -DirectoryScopeId "/" -PrincipalId $user2ObjectId -RoleDefinitionId $roleDefinition.Id -ErrorAction SilentlyContinue
 
 Write-Output "Script execution completed successfully."
 Write-Output "Once done with the lab, delete the resource group '$resourceGroupName' to clean up the resources."
