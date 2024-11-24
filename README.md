@@ -75,7 +75,7 @@
         Next, select *Allow user to assign all roles (highly privileged)*
         Then, Click *Review and assign* and finish the process.
 
-        ### **From this point on, you will this Entra admin account for the rest of the actions involving Entra / Azure**
+        **From this point on, you will this Entra admin account for the rest of the actions involving Entra / Azure**
 
 ##
 ### 2. Deploy Azure VMs - "On premise" Active Directory VMs

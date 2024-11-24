@@ -1,4 +1,6 @@
-# LAB 4 Preparations
+# LAB 4 
+
+## Preparations
 1. RDP login to DC VM using the YOURDOMAIN\\**rootuser**, then run the following script as admin:
     ```powershell
     # when asked, login using the ENTRA CREDS (!)
@@ -14,13 +16,13 @@
     ```
     keep this window open in the background - **you're not allowed to use it from now on**
 
-# Instructions
+## Instructions: Start Here
 1. Your goal is to find the `secret.txt` file 
 2. forget everything you knew: from this point on you DON'T know what the Entra admin password is (i.e. what's the password of 'user1' / 'rootuser'), and what the VMs passwords are
 3. **DO NOT** password reset or silver ticket (Seamless SSO) "user1"
 3. **Starting point:** as the attacker the only thing you have is the RDP session on the DC VM. Good luck! 
 
-# Hints
+## Hints
 
 <details>
     <summary><b>First hint: where the secret.txt file isn't stored</b></summary>

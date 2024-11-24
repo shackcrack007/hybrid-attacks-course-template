@@ -35,7 +35,7 @@ var virtualNetworkName = 'lab-VNET'
 var virtualNetworkAddressRange = '10.0.0.0/16'
 
 @description('Private IP address for the DC VM.')
-var privateIPAddress = '10.0.0.1'
+var privateIPAddress = '10.0.0.10'
 
 @description('Subnet name.')
 var subnetName = 'lab-subnet'
@@ -44,7 +44,7 @@ var subnetName = 'lab-subnet'
 var subnetRange = '10.0.0.0/24'
 
 @description('Private IP address for Windows 11 VM.')
-var windows11PrivateIPAddress = '10.0.0.10'
+var windows11PrivateIPAddress = '10.0.0.11'
 
 resource dcPublicIPAddress 'Microsoft.Network/publicIPAddresses@2022-07-01' = {
   name: '${DCvirtualMachineName}-publicIP'

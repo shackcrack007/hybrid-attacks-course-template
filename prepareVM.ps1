@@ -350,9 +350,9 @@ else {
 
     Write-Output "Setting the primary and secondary DNS servers..."
     # Set the primary and secondary DNS servers
-    Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ServerAddresses ("10.0.0.1", "8.8.8.8")
+    Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ServerAddresses ("10.0.0.10", "8.8.8.8")
     if ($?) {
-        Write-Output "DNS servers have been set to 10.0.0.1 and 8.8.8.8."
+        Write-Output "DNS servers have been set to 10.0.0.10 and 8.8.8.8."
     }
     else {
         Write-Output "DNS servers failed to be set"

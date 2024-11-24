@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.31.34.60546",
-      "templateHash": "4915076289031222114"
+      "version": "0.31.92.45157",
+      "templateHash": "8042360866765262200"
     }
   },
   "parameters": {
@@ -39,10 +39,10 @@
     "windows11VMName": "win11VM",
     "virtualNetworkName": "lab-VNET",
     "virtualNetworkAddressRange": "10.0.0.0/16",
-    "privateIPAddress": "10.0.0.1",
+    "privateIPAddress": "10.0.0.10",
     "subnetName": "lab-subnet",
     "subnetRange": "10.0.0.0/24",
-    "windows11PrivateIPAddress": "10.0.0.10"
+    "windows11PrivateIPAddress": "10.0.0.11"
   },
   "resources": [
     {
@@ -276,8 +276,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.31.34.60546",
-              "templateHash": "5642472576391665090"
+              "version": "0.31.92.45157",
+              "templateHash": "10825958380104081023"
             }
           },
           "parameters": {
@@ -375,8 +375,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.31.34.60546",
-              "templateHash": "13577241380658303790"
+              "version": "0.31.92.45157",
+              "templateHash": "2424793751536189289"
             }
           },
           "parameters": {
