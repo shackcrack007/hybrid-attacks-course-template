@@ -67,7 +67,7 @@ Write-Verbose "Importing modules..."
 Import-Module Az.Accounts
 Import-Module Az.Resources
 Import-Module Az.Storage
-Import-Module Microsoft.Graph
+Import-Module Microsoft.Graph.Identity.Governance
 
 # Connect to Azure for creating resources
 Write-Output "Login to Azure ARM API:"
@@ -75,14 +75,17 @@ Start-Process "msedge.exe" -ArgumentList "https://microsoft.com/devicelogin"
 Connect-AzAccount -DeviceCode
 
 # Connect to Microsoft Graph for assigning 'Azure DevOps Administrator' role on user2 later
-Write-Output "Login to Microsoft Graph API:"
-Start-Process "msedge.exe" -ArgumentList "https://microsoft.com/devicelogin"
-Connect-MgGraph -Scopes "RoleManagement.ReadWrite.Directory" -UseDeviceCode
+if (-Not (Get-AzContext).Account.Id.ToString() -eq (Get-mgContext).Account.ToString()) {
+    Write-Output "Login to Microsoft Graph API:"
+    Start-Process "msedge.exe" -ArgumentList "https://microsoft.com/devicelogin"
+}
+Connect-MgGraph -Scopes "RoleManagement.ReadWrite.Directory" -UseDeviceCode -NoWelcome
+
 
 # Extract domain from username
 $domain = (Get-AzContext).Account.Id.ToString().Split('@')[1]
 # Get the user1 object ID
-$userObjectId = (Get-AzADUser -UserPrincipalName "$user1@$domain").Id
+$user1ObjectId = (Get-AzADUser -UserPrincipalName "$user1@$domain").Id
 $user2ObjectId = (Get-AzADUser -UserPrincipalName "$user2@$domain").Id
 
 
