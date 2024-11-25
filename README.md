@@ -31,7 +31,7 @@
 ```
 
 # Instructions 
-* Use only your **personal** Microsoft account
+* Use only your **personal** Microsoft account (not coroporate/work)
 
 ### 1. Entra Tenant + Azure Prep
 1. **Azure subscription**: [activate your free 150$ Azure credits](https://my.visualstudio.com/Benefits) (put in your personal Microsoft account), this will be used to deploy the Azure template and host the VMs
