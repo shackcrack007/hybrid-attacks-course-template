@@ -130,7 +130,7 @@ Once deployment has finished (will take a while..), do the following for **each 
 * you might see errors here and there - ignore them
 * when done, turn off the VMs, see you when the course starts!
 
-5. look at c:\LabSetupResults.txt and make sure all is installed properly, if something isn't then manually install it
+5. look at c:\lab\LabSetupResults.txt and make sure all is installed properly, if something isn't then manually install it
 
 ### 4. Prepare local machine
 
