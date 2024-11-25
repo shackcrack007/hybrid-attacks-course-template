@@ -41,7 +41,7 @@ function Test-SoftwareInstallation {
     param (
         [string]$softwareName
     )
-    $installed = Get-WmiObject -Query "SELECT * FROM Win32_Product WHERE Name LIKE '%$softwareName%'"
+    $installed = Get-WmiObject -Query "SELECT Name FROM Win32_Product WHERE Name LIKE '%$softwareName%'"
     if ($installed) {
         return "$softwareName is installed.\n", $true
     } else {
@@ -338,9 +338,6 @@ if (Is-WindowsServer) {
         -fileName "$global:LAB_DIR\AzureADConnect.msi" `
         -startProcess "" `
         -processArgList ""
-    
-    $text, $status = Test-SoftwareInstallation -softwareName "Entra Connect"
-    $global:SETUP_RESULTS += $text
 }
 else {
     Write-Output "This is a Windows Client system."
