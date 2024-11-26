@@ -377,7 +377,7 @@ foreach ($module in $modulesToInstall) {
 Install-Software -url "https://aka.ms/installazurecliwindows" `
     -fileName "$global:LAB_DIR\azureCli.msi" `
     -startProcess "msiexec.exe" `
-    -processArgList "/I AzureCLI.msi /quiet"
+    -processArgList "/I $global:LAB_DIR\AzureCLI.msi /quiet"
 
 $text, $status = Test-SoftwareInstallation -softwareName "Azure CLI"
 $global:SETUP_RESULTS += $text

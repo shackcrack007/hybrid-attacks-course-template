@@ -113,7 +113,8 @@ Once deployment has finished (will take a while..), do the following for **each 
 3. Open Powershell **as administrator** and run the script:
     * modify ***CHANGEME*** to your chosen password from the deployment ("AD CREDS")
     * modify ***YOURDOMAIN*** to your Entra tenant domain
-    * if you see a pop up suggesting you to restart, WAIT until all scripts finish execution, the script should restart the VM by itself
+    * if you see a pop up suggesting you to restart, WAIT until all scripts finish executio
+    * the script should restart the VM when it finishes
 
     ```powershell 
     Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force
@@ -128,9 +129,11 @@ Once deployment has finished (will take a while..), do the following for **each 
 4. repeat 1-3 for the **other VM**
 
 * you might see errors here and there - ignore them
-* when done, turn off the VMs, see you when the course starts!
 
-5. look at c:\lab\LabSetupResults.txt and make sure all is installed properly, if something isn't then manually install it
+5. Verification:
+    1. RDP to each VM using your **```YOURDOMAIN\user1```** and your chosen password
+    2. look at c:\lab\LabSetupResults.txt and make sure all is installed properly, if something isn't then manually install it
+    3. turn off the VMs, see you when the course starts!
 
 ### 4. Prepare local machine
 
