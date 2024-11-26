@@ -130,12 +130,12 @@ Once deployment has finished (will take a while..), do the following for **each 
 
 * you might see errors here and there - ignore them
 
-5. Verification:
+5. **Verification:**
     1. RDP to each VM using your **```YOURDOMAIN\user1```** and your chosen password
     2. look at c:\lab\LabSetupResults.txt and make sure all is installed properly, if something isn't then manually install it
     3. turn off the VMs, see you when the course starts!
 
-### 4. Prepare local machine
+### 4. Prepare local machine (PC / laptop)
 
 Open Powershell as administrator and run:
 ```powershell 
