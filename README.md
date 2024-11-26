@@ -104,7 +104,7 @@ Using your new Entra tenant's admin account, click here and follow instructions 
 ##
 ### 3. Prepare VMs
 Once deployment has finished (will take a while..), do the following for **each VM, starting with dcVm**:
-1. RDP (**to dcVm first**), using '***rootuser***' and your chosen password (you may find the IP address in the *Azure portal > Virtual machines*)
+1. RDP (**to dcVm first**), using **```rootuser```** and your chosen password (you may find the IP address in the *Azure portal > Virtual machines*)
 
 2. **Disable BOTH the Defender runtime protection AND cloud delivered protection** under *Virus and threat protection > Manage settings*:
 
@@ -125,7 +125,7 @@ Once deployment has finished (will take a while..), do the following for **each 
     -DomainName YOURDOMAIN.onmicrosoft.com # the one listed here https://admin.microsoft.com/#/Domains
     ```
 
-4. repeat 1-3 for the **other VM**, but now RDP using **YOURDOMAIN\user1**  (*without the "onmicrosoft.com"*)
+4. repeat 1-3 for the **other VM**
 
 * you might see errors here and there - ignore them
 * when done, turn off the VMs, see you when the course starts!

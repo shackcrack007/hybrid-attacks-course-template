@@ -102,7 +102,7 @@ function Finish ($isSuccessfull) {
         New-Item -Path $global:LAB_DIR -ItemType Directory -Force | Out-Null
     }
 
-    # Write all results to a file on the desktop
+    # Write all results to a file
     $outputFile = Join-Path -Path $global:LAB_DIR -ChildPath "LabSetupResults.txt"
     $global:SETUP_RESULTS | Out-File -FilePath $outputFile -Force
 
