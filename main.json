@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.31.92.45157",
-      "templateHash": "8042360866765262200"
+      "templateHash": "7282741231209599913"
     }
   },
   "parameters": {
@@ -220,7 +220,7 @@
           "imageReference": {
             "publisher": "MicrosoftWindowsDesktop",
             "offer": "Windows-11",
-            "sku": "win11-21h2-pro",
+            "sku": "win11-24h2-pro",
             "version": "latest"
           },
           "osDisk": {
