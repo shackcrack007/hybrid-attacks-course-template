@@ -13,14 +13,14 @@ Prepare your Entra + AD admin credentials:
 
         ![mfa](mfa.png)
 
-        [here](https://entra.microsoft.com/#view/Microsoft_AAD_ConditionalAccess/ConditionalAccessBlade/~/Policies/fromNav/) look for "***Require multifactor authentication for all users***" policy, 
-        
+        [here](https://entra.microsoft.com/#view/Microsoft_AAD_ConditionalAccess/ConditionalAccessBlade/~/Policies/fromNav/) look for "***Require multifactor authentication for all users***" policy,   
         and add an exclusion to the "*Sync*" user, and save the policy: 
 
         ![add_mfa_exclusion](fix_mfa.png)
 
         and Retry.
 3. Once done, run it again > *Configure > Customize synchronization options > Optional Features* > check *password writeback* and finish the config: 
+
     !["password writeback"](pass_writeback.png)
 
 4. run it again > *Configure > Change user sign-in >  check *Enable single sign-on*.. > *Next* > Enter **AD CREDS** > *Next > Configure*
@@ -39,10 +39,9 @@ Prepare your Entra + AD admin credentials:
 ![alt text](adsyncservice.png)
 
 ### Verify
-1. go to https://entra.microsoft.com/#view/Microsoft_AAD_Devices/DevicesMenuBlade/~/Devices/menuId/Overview and look for your onboarded devices, they should be listed as "Microsoft Entra hybrid joined" under the "Join type" column 
-    it takes time for the "Pending" state to finish
+1. go to https://entra.microsoft.com/#view/Microsoft_AAD_Devices/DevicesMenuBlade/~/Devices/menuId/Overview and look for your onboarded devices, they should be listed as "*Microsoft Entra hybrid joined*" under the "*Join type*" column (it takes time for the "Pending" state to finish)
 
-2. go to https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/AllUsers/menuId/ and look for users1-40, they should be listed as "Yes" under the "On-premise sync enabled" column
+2. go to https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/AllUsers/menuId/ and look for users 1-5, they should be listed as "*Yes*" under the "*On-premise sync enabled*" column
 
 3. go to https://entra.microsoft.com/#view/Microsoft_AAD_Connect_Provisioning/AADConnectMenuBlade/~/ConnectSync and look for the following values: 
     ![connect](connect_validation.png)

