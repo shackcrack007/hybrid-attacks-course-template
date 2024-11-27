@@ -93,7 +93,9 @@ Using your new Entra tenant's admin account, click here and follow instructions 
 4. **Choose a domain name:** it MUST be the same as your Entra tenant! (you can find it [here](https://entra.microsoft.com/#view/Microsoft_AAD_IAM/TenantOverview.ReactView))
     <img src="pics/deployment.png" width="600" />
 
-5. **Deploy**: wait until it finishes
+5. **Choose VM Size**: if not auto filled you may choose the cheapest one: 1x Standard DS1 v2, 1 vcpu, 3.5 GB memory
+
+6. **Deploy**: wait until it finishes
     * if the deployment fails again, you might need to re-register a provider: 
         Search for your subscription > **Resource providers** > look for **Microsoft.Network** and select **Re-register**: 
     
