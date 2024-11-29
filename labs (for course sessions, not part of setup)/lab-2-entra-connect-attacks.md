@@ -1,7 +1,7 @@
 # Lab 2 - Entra Connect Attacks
 ### Preparations
 #### Prepare a victim user with high privileges:
-in Entra portal (login with your admin tenant creds), select ***user1*** and assign it with the **Active** (not *Eligible*) **Application Administrator** role
+in [Entra porta](https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/AllUsers/menuId/) (login with your admin tenant creds), select ***user1*** and assign it with the **Active** (not *Eligible*) **Application Administrator** role
 
 
 

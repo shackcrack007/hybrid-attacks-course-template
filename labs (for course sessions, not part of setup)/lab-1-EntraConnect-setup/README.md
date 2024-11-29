@@ -4,28 +4,30 @@ The configurations will include "password writeback", supporting Hybrid device j
 Prepare your Entra + AD admin credentials:
 1. on the DC VM, install "c:\lab\AzureADConnect.msi"
 
-2. run *"Azure AD Connect"* and use the Express Installation
-    1. First use your Entra credentials *YOURUSER@onmicrosoft.com*
-    1. Next, use your AD credentials *YOURDOMAIN.onmicrosoft.com\rootuser*
-    1. Check the "Continue without matching"... box
+1. run *"Azure AD Connect"* and use the Express Installation
+1. First use your Entra credentials *YOURUSER@onmicrosoft.com*
+1. Next, use your AD credentials *YOURDOMAIN.onmicrosoft.com\rootuser*
+1. Check the "Continue without matching"... box
+1. Install
+
     * If you encounter an error where it cannot resolve a domain, then open Internet Explorer and Edge and browse to google
     * if you encounter this error, it's due to MFA enforced (Entra Connect account (*Sync_xx..*) must have an **exclusion**):
 
-        ![mfa](mfa.png)
+        ![mfa](pics/mfa.png)
 
-        [here](https://entra.microsoft.com/#view/Microsoft_AAD_ConditionalAccess/ConditionalAccessBlade/~/Policies/fromNav/) look for "***Require multifactor authentication for all users***" policy,   
+        See [here](pics/https://entra.microsoft.com/#view/Microsoft_AAD_ConditionalAccess/ConditionalAccessBlade/~/Policies/fromNav/) "***Require multifactor authentication for all users***" policy,   
         and add an exclusion to the "*Sync*" user, and save the policy: 
 
-        ![add_mfa_exclusion](fix_mfa.png)
+        ![add_mfa_exclusion](pics/fix_mfa.png)
 
-        and Retry.
-3. Once done, run it again > *Configure > Customize synchronization options > Optional Features* > check *password writeback* and finish the config: 
+    and Retry.
+1. Once done, run it again > *Configure > Customize synchronization options > Optional Features* > check *password writeback* and finish the config: 
 
-    !["password writeback"](pass_writeback.png)
+    !["password writeback"](pics/pass_writeback.png)
 
-4. run it again > *Configure > Change user sign-in >  check *Enable single sign-on*.. > *Next* > Enter **AD CREDS** > *Next > Configure*
+4. run it again > *Configure > ***Change user sign-in*** >  check *Enable single sign-on*.. > *Next* > Enter your **AD CREDS** > *Next > Configure*
 
-5. run it again > *Configure > Configure device options > Configure Hybrid Microsoft Entra ID join* > check *Windows 10 or later*.. > select *YOURDOMAIN.onmicrosoft.com* > *Add* and enter your **AD Creds** > select Authentication service *Entra ID* >  *Next > Configure*
+5. run it again > *Configure > ***Configure device options*** > Configure Hybrid Microsoft Entra ID join* > check *Windows 10 or later*.. > select *YOURDOMAIN.onmicrosoft.com* > *Add* and enter your **AD Creds** > select Authentication service *Entra ID* > *Next > Configure*
 
 6. GPO:
     1. follow  [Group policy detailed steps
@@ -34,23 +36,25 @@ Prepare your Entra + AD admin credentials:
 
 6. restart the VMs
 
-7. login to the DC VM > Open Task Manager > look for "ADsync" start it if it's not running
+7. login to the DC VM > Open Task Manager > look for "```ADsync```" and start it if it's not running
 
-![alt text](adsyncservice.png)
+    ![alt text](pics/adsyncservice.png)
 
 ### Verify
-1. go to https://entra.microsoft.com/#view/Microsoft_AAD_Devices/DevicesMenuBlade/~/Devices/menuId/Overview and look for your onboarded devices, they should be listed as "*Microsoft Entra hybrid joined*" under the "*Join type*" column (it takes time for the "Pending" state to finish)
+1. go to https://entra.microsoft.com/#view/Microsoft_AAD_Devices/DevicesMenuBlade/~/Devices/menuId/Overview and look for your onboarded devices, they should be listed as "*Microsoft Entra hybrid joined*" under the "*Join type*" column (it takes time for the "Registration: Pending" state to finish)
 
 2. go to https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/AllUsers/menuId/ and look for users 1-5, they should be listed as "*Yes*" under the "*On-premise sync enabled*" column
 
 3. go to https://entra.microsoft.com/#view/Microsoft_AAD_Connect_Provisioning/AADConnectMenuBlade/~/ConnectSync and look for the following values: 
-    ![connect](connect_validation.png)
+    ![connect](pics/connect_validation.png)
 
-4. After a restart, in your Win11 VM, RDP login as "*YOURDOMAIN\user1*":
+4. Following your device Registration completion [(see *Registration* column here)](https://entra.microsoft.com/#view/Microsoft_AAD_Devices/DevicesMenuBlade/~/Devices/menuId/Overview), RDP to the Win11 VM as "``YOURDOMAIN\user1``":
     1. open CMD as Administrator and run: ```dsregcmd /status```, you should see similar output to:
-        ![dsreg](dsregcmd_status_1.png)
+        ![dsreg](pics/dsregcmd_status_1.png)
 
         and 
 
-        ![dsreg2](dsregcmd_status_2.png)
-    2. if you don't see one of them, make sure ADSync service is running on the DC, and restart
+        ![dsreg2](pics/dsregcmd_status_2.png)
+    2. if you don't see one of them, make sure:
+        - ADSync service is running on the DC, and restart
+        - [*Registration* column is not "Pending"](https://entra.microsoft.com/#view/Microsoft_AAD_Devices/DevicesMenuBlade/~/Devices/menuId/), if it is, then continue to the next lab
