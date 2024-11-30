@@ -41,7 +41,7 @@ Prepare your Entra + AD admin credentials:
     ![alt text](pics/adsyncservice.png)
 
 ### Verify
-1. go to https://entra.microsoft.com/#view/Microsoft_AAD_Devices/DevicesMenuBlade/~/Devices/menuId/Overview and look for your onboarded devices, they should be listed as "*Microsoft Entra hybrid joined*" under the "*Join type*" column (it takes time for the "Registration: Pending" state to finish)
+1. go to https://entra.microsoft.com/#view/Microsoft_AAD_Devices/DevicesMenuBlade/~/Devices/menuId/Overview and look for your onboarded devices, they should be listed as "*Microsoft Entra hybrid joined*" under the "*Join type*" column (it takes time for the "Registered: Pending" state to finish)
 
 2. go to https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/AllUsers/menuId/ and look for users 1-5, they should be listed as "*Yes*" under the "*On-premise sync enabled*" column
 
@@ -57,4 +57,4 @@ Prepare your Entra + AD admin credentials:
         ![dsreg2](pics/dsregcmd_status_2.png)
     2. if you don't see one of them, make sure:
         - ADSync service is running on the DC, and restart
-        - [*Registration* column is not "Pending"](https://entra.microsoft.com/#view/Microsoft_AAD_Devices/DevicesMenuBlade/~/Devices/menuId/), if it is, then continue to the next lab
+        - [*Registered* column is not "Pending"](https://entra.microsoft.com/#view/Microsoft_AAD_Devices/DevicesMenuBlade/~/Devices/menuId/), if it is, then continue to the next lab
