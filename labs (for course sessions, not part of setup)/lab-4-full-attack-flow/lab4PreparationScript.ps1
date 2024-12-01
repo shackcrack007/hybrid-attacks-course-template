@@ -122,7 +122,7 @@ if ($? -eq $False) {
     $connected = $false
     while (-not $connected) {
         try {
-            Connect-MgGraph -Scopes "RoleManagement.ReadWrite.Directory" -UseDeviceCode -NoWelcome
+            Connect-MgGraph -Scopes "User.ReadWrite.All", "Group.ReadWrite.All", "RoleManagement.ReadWrite.Directory" -UseDeviceCode -NoWelcome -Force
 
             $connected = $true
             Write-Output "Connect-MgGraph Connected successfully."
