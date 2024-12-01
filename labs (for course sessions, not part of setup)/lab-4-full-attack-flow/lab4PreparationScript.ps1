@@ -141,7 +141,7 @@ $user2ObjectId = (Get-AzADUser -UserPrincipalName "$user2@$domain").Id
 
 
 Write-Verbose "Getting subscription ID..."
-$subscriptionId = (Get-AzSubscription).Id
+$subscriptionId = (Get-AzContext).Subscription.Id
 Write-Verbose "Selected subscription ID: $subscriptionId"
 
 # Get the current Azure context
