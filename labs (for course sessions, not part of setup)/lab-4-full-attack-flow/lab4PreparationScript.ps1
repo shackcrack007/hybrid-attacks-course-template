@@ -29,6 +29,7 @@ If (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     Exit
 }
 
+Write-Output "Starting the script, this may take a while - watch out for prompts!"
 # bypass PS 5.1 limitations:
 $MaximumFunctionCount = 18000
 $script:MaximumFunctionCount = 18000
@@ -78,9 +79,9 @@ $connected = $false
 while (-not $connected) {
     try {
         Connect-AzAccount -DeviceCode -TenantId $TenantID
-        if(-Not (Get-AzContext).Name.Contains("Visual Studio Enterprise Subscription")) {
-            Write-Warning "NOTICE: The Azure subscription that's going to be used is:"
-            (Get-AzContext).Name
+        if (-Not (Get-AzContext).Name.Contains("Visual Studio Enterprise Subscription")) {
+            $selectedAzureSub = (Get-AzContext).Name
+            Write-Warning "NOTICE: The Azure subscription that's going to be used is: $selectedAzureSub"
             Write-Warning "It is not the 150$ one, Please select the subscription you'd like to proceed with:"
             # Get the list of subscriptions
             $subscriptions = Get-AzSubscription | Select-Object TenantId, Name
@@ -94,7 +95,8 @@ while (-not $connected) {
                 $TenantID = $selectedSubscription.TenantId
                 Write-Output "Selected TenantId: $TenantID"
                 Set-AzContext -Tenant $TenantID -SubscriptionName $selectedSubscription.Name
-            } else {
+            }
+            else {
                 Write-Output "Subscription not found. Please try again."
             }
 
@@ -112,15 +114,11 @@ while (-not $connected) {
 
 
 # Connect to Microsoft Graph for assigning 'Azure DevOps Administrator' role on user2 later
-try {
-    $mgContext = $null
-    Get-mgContext -ErrorAction Stop -OutVariable mgContext
-    if ($mgContext -eq $null) {
-        Write-Output "Login to Microsoft Graph API:"
-        Start-Process "msedge.exe" -ArgumentList "https://microsoft.com/devicelogin"
-    }
-}
-catch {
+get-mguser -Top 1  -ErrorAction SilentlyContinue # check if we're connected 
+if ($? -eq $False) {
+    Write-Output "Login to Microsoft Graph API:"
+    Start-Process "msedge.exe" -ArgumentList "https://microsoft.com/devicelogin"
+
     $connected = $false
     while (-not $connected) {
         try {
@@ -134,7 +132,6 @@ catch {
         }
     }
 }
-
 
 # Extract domain from username
 $domain = (Get-AzContext).Account.Id.ToString().Split('@')[1]
