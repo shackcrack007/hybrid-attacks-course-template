@@ -90,7 +90,9 @@ Using your new Entra tenant's admin account, click here and follow instructions 
 
 2. **Choose a password:** this password will be used for all Active Directory users + VMs (*we'll refer to them as **"AD CREDS"***)
 
-4. **Choose a domain name:** it MUST be the same as your Entra tenant! (you can find it [here](https://entra.microsoft.com/#view/Microsoft_AAD_IAM/TenantOverview.ReactView))
+4. **Choose a domain name:** it MUST be:
+    * up to 15 chars (if not, follow [this guide](https://github.com/shackcrack007/hybrid-attacks-course-template/tree/main/OpenNewEntraTenantAndTransferSubscriptionOwnership))
+    * same as your Entra tenant! (you can find it [here](https://entra.microsoft.com/#view/Microsoft_AAD_IAM/TenantOverview.ReactView))
     <img src="pics/deployment.png" width="600" />
 
 5. **Choose VM Size**: if not auto filled you may choose the cheapest one: 1x Standard DS1 v2, 1 vcpu, 3.5 GB memory
@@ -101,7 +103,8 @@ Using your new Entra tenant's admin account, click here and follow instructions 
     
         <img src="pics/register_provider.png" width="500" />
     
-    * Alternatively, try Copilot error diagnose inside Azure, it's usually very helpful
+    Alternatively, try Copilot error diagnose inside Azure, it's usually very helpful
+    * If your deployment fails because your domain name is longer than 15 chars, then follow [this guide](https://github.com/shackcrack007/hybrid-attacks-course-template/tree/main/OpenNewEntraTenantAndTransferSubscriptionOwnership)
 
 ##
 ### 3. Prepare VMs
