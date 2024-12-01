@@ -1,10 +1,12 @@
 # LAB 4 : Capture the Flag (CTF) Challenge
 
 ## Preparations
+* **DO NOT** look at the scripts content / output
+
 1. RDP login to DC VM using the YOURDOMAIN\\**rootuser**, then run the following script as admin (when asked, login using the ENTRA CREDS (!) - you will be asked twice)
     ```powershell
     # when asked, login using the ENTRA CREDS (!)
-    $tenantId = "YOUR_TENANT_ID" # you can get it here https://entra.microsoft.com/#view/Microsoft_AAD_IAM/TenantOverview.ReactView
+    $tenantId = "YOUR_TENANT_ID" # use the tenant where the azure subscription resides (your 150$)
     Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/refs/heads/main/labs%20(for%20course%20sessions%2C%20not%20part%20of%20setup)/lab-4-full-attack-flow/lab4PreparationScript.ps1" -OutFile "C:\\lab4PreparationScript.ps1"; `
     & "C:\\lab4PreparationScript.ps1" -TenantID $tenantId
     ```

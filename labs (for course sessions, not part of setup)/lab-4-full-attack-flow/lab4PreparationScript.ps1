@@ -20,7 +20,7 @@
 #>
 [CmdletBinding()]
 param (
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$TenantID
 )
 # Check if running as administrator
@@ -78,6 +78,30 @@ $connected = $false
 while (-not $connected) {
     try {
         Connect-AzAccount -DeviceCode -TenantId $TenantID
+        if(-Not (Get-AzContext).Name.Contains("Visual Studio Enterprise Subscription")) {
+            Write-Warning "NOTICE: The Azure subscription that's going to be used is:"
+            (Get-AzContext).Name
+            Write-Warning "It is not the 150$ one, Please select the subscription you'd like to proceed with:"
+            # Get the list of subscriptions
+            $subscriptions = Get-AzSubscription | Select-Object TenantId, Name
+
+            # Prompt the user to select a subscription
+            Write-Output "Available Subscriptions:"
+            $subscriptions | ForEach-Object { Write-Output "$($_.Name) - TenantId: $($_.TenantId)" }
+            $selectedSubscription = $subscriptions | Out-GridView -Title "Select a subscription" -PassThru
+            
+            if ($selectedSubscription) {
+                $TenantID = $selectedSubscription.TenantId
+                Write-Output "Selected TenantId: $TenantID"
+                Set-AzContext -Tenant $TenantID -SubscriptionName $selectedSubscription.Name
+            } else {
+                Write-Output "Subscription not found. Please try again."
+            }
+
+            $connected = $false
+            break
+        }
+
         $connected = $true
         Write-Output "Connect-AzAccount Connected successfully."
     }
@@ -89,25 +113,28 @@ while (-not $connected) {
 
 # Connect to Microsoft Graph for assigning 'Azure DevOps Administrator' role on user2 later
 try {
-    if (-Not (Get-AzContext).Account.Id.ToString() -eq (Get-mgContext).Account.ToString()) {
+    $mgContext = $null
+    Get-mgContext -ErrorAction Stop -OutVariable mgContext
+    if ($mgContext -eq $null) {
         Write-Output "Login to Microsoft Graph API:"
         Start-Process "msedge.exe" -ArgumentList "https://microsoft.com/devicelogin"
     }
 }
 catch {
-}
-$connected = $false
-while (-not $connected) {
-    try {
-        Connect-MgGraph -Scopes "RoleManagement.ReadWrite.Directory" -UseDeviceCode -NoWelcome
+    $connected = $false
+    while (-not $connected) {
+        try {
+            Connect-MgGraph -Scopes "RoleManagement.ReadWrite.Directory" -UseDeviceCode -NoWelcome
 
-        $connected = $true
-        Write-Output "Connect-MgGraph Connected successfully."
-    }
-    catch {
-        Write-Output "Connection failed. Retrying..."
+            $connected = $true
+            Write-Output "Connect-MgGraph Connected successfully."
+        }
+        catch {
+            Write-Output "Connection failed. Retrying..."
+        }
     }
 }
+
 
 # Extract domain from username
 $domain = (Get-AzContext).Account.Id.ToString().Split('@')[1]
