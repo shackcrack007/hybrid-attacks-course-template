@@ -20,6 +20,8 @@
 #>
 [CmdletBinding()]
 param (
+    [Parameter(Mandatory=$true)]
+    [string]$TenantID
 )
 # Check if running as administrator
 If (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
@@ -75,7 +77,7 @@ Start-Process "msedge.exe" -ArgumentList "https://microsoft.com/devicelogin"
 $connected = $false
 while (-not $connected) {
     try {
-        Connect-AzAccount -DeviceCode
+        Connect-AzAccount -DeviceCode -TenantId $TenantID
         $connected = $true
         Write-Output "Connect-AzAccount Connected successfully."
     }
