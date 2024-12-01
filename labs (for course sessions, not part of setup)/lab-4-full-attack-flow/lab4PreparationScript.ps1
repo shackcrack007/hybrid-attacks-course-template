@@ -132,6 +132,7 @@ while ($? -eq $False) {
     }
 }
 Write-Output "Connect-MgGraph Connected successfully."
+Write-Output "Continuing with the script execution..."
 
 # Extract domain from username
 $domain = (Get-AzContext).Account.Id.ToString().Split('@')[1]
