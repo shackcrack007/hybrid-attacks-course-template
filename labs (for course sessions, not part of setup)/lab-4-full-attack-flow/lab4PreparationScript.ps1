@@ -114,24 +114,24 @@ while (-not $connected) {
 
 
 # Connect to Microsoft Graph for assigning 'Azure DevOps Administrator' role on user2 later
-get-mguser -Top 1  -ErrorAction SilentlyContinue # check if we're connected 
+get-mguser -Top 1  -ErrorAction SilentlyContinue > $null # check if we're connected 
 if ($? -eq $False) {
     Write-Output "Login to Microsoft Graph API:"
     Start-Process "msedge.exe" -ArgumentList "https://microsoft.com/devicelogin"
-
     $connected = $false
-    while (-not $connected) {
-        try {
-            Connect-MgGraph -Scopes "User.ReadWrite.All", "Group.ReadWrite.All", "RoleManagement.ReadWrite.Directory" -UseDeviceCode -NoWelcome -Force
+}
 
-            $connected = $true
-            Write-Output "Connect-MgGraph Connected successfully."
-        }
-        catch {
-            Write-Output "Connection failed. Retrying..."
-        }
+get-mguser -Top 1 -ErrorAction SilentlyContinue > $null
+while ($? -eq $False) {
+    try {
+        Connect-MgGraph -Scopes "User.ReadWrite.All", "Group.ReadWrite.All", "RoleManagement.ReadWrite.Directory" -UseDeviceCode -NoWelcome 
+        get-mguser -Top 1  -ErrorAction SilentlyContinue > $null
+    }
+    catch {
+        get-mguser -Top 1 -ErrorAction SilentlyContinue > $null
     }
 }
+Write-Output "Connect-MgGraph Connected successfully."
 
 # Extract domain from username
 $domain = (Get-AzContext).Account.Id.ToString().Split('@')[1]
@@ -158,7 +158,7 @@ Write-Verbose "Domain: $domain"
 ################## User1 preps ##################
 
 Write-Verbose "Registering the Microsoft.Storage resource provider..."
-$none = Register-AzResourceProvider -ProviderNamespace Microsoft.Storage
+Register-AzResourceProvider -ProviderNamespace Microsoft.Storage > $null
 
 
 # Check if the resource group exists
@@ -189,13 +189,13 @@ $ctx = $storageAccount.Context
 
 Write-Verbose "Creating a new container 'secretcontainer' in the storage account..."
 $containerName = "secretcontainer"
-$none = New-AzStorageContainer -Name $containerName -Context $ctx
+New-AzStorageContainer -Name $containerName -Context $ctx > $null
 
 # Create a text file in the container
 Write-Verbose "Creating a text file 'secret.txt' in the container..."
 $content = "MAZAL TOV! YOU SUCCESSFULLY FINISHED THE EXERCISE!"
-Set-Content -Path "secret.txt" -Value $content
-Set-AzStorageBlobContent -File "secret.txt" -Container $containerName -Blob "secret.txt" -Context $ctx
+Set-Content -Path "secret.txt" -Value $content > $null
+Set-AzStorageBlobContent -File "secret.txt" -Container $containerName -Blob "secret.txt" -Context $ctx > $null
 
 
 ################## $user1 preps ##################
@@ -208,7 +208,7 @@ foreach ($role in $roles) {
 
     if ($null -eq $existingAssignment) {
         # Assign the role if it does not exist
-        New-AzRoleAssignment -ObjectId $user1ObjectId -RoleDefinitionName $role -Scope $scope
+        New-AzRoleAssignment -ObjectId $user1ObjectId -RoleDefinitionName $role -Scope $scope > $null
         Write-Verbose "Role '$role' assigned successfully."
     }
     else {
@@ -227,7 +227,7 @@ foreach ($role in $roles) {
 
     if ($null -eq $existingAssignment) {
         # Assign the role if it does not exist
-        New-AzRoleAssignment -ObjectId $user2ObjectId -RoleDefinitionName $role -Scope $scope
+        New-AzRoleAssignment -ObjectId $user2ObjectId -RoleDefinitionName $role -Scope $scope > $null
         Write-Verbose "Role '$role' assigned successfully."
     }
     else {
@@ -237,7 +237,7 @@ foreach ($role in $roles) {
 
 # Assign the "Azure DevOps Administrator" role to the user using Microsoft Graph
 $roleDefinition = Get-MgRoleManagementDirectoryRoleDefinition -Filter "displayName eq 'Azure DevOps Administrator'"
-New-MgRoleManagementDirectoryRoleAssignment -DirectoryScopeId "/" -PrincipalId $user2ObjectId -RoleDefinitionId $roleDefinition.Id -ErrorAction SilentlyContinue
+New-MgRoleManagementDirectoryRoleAssignment -DirectoryScopeId "/" -PrincipalId $user2ObjectId -RoleDefinitionId $roleDefinition.Id -ErrorAction SilentlyContinue > $null
 
 
 ################## FINISHED ##################
