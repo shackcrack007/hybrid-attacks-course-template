@@ -1,4 +1,4 @@
-# LAB 4 
+# LAB 4 : Capture the Flag (CTF) Challenge
 
 ## Preparations
 1. RDP login to DC VM using the YOURDOMAIN\\**rootuser**, then run the following script as admin:
@@ -18,9 +18,11 @@
 
 ## Instructions: Start Here
 1. Your goal is to find the `secret.txt` file 
-2. forget everything you knew: from this point on you DON'T know what the Entra admin password is (i.e. what's the password of 'user1' / 'rootuser'), and what the VMs passwords are
-3. **DO NOT** password reset or silver ticket (Seamless SSO) "user1"
+2. forget everything you knew: from this point on you DON'T know what the Entra admin password is (i.e. what's the password of ``user1`` / ``rootuser``), and what the VMs passwords are
+3. **DO NOT** password reset or silver ticket (Seamless SSO) ``user1``
 3. **Starting point:** as the attacker the only thing you have is the RDP session on the DC VM. Good luck! 
+
+Do not use hints unless you really have to..
 
 ## Hints
 

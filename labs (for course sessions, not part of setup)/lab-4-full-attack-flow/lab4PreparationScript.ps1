@@ -45,7 +45,7 @@ function Generate-StorageAccountName {
 
     $prefix = "secret"
     $suffixLength = $length - $prefix.Length
-    $suffix = -join ((65..90) + (97..122) + (48..57) | Get-Random -Count $suffixLength | ForEach-Object {[char]$_})
+    $suffix = -join ((65..90) + (97..122) + (48..57) | Get-Random -Count $suffixLength | ForEach-Object { [char]$_ })
     $storageAccountName = ($prefix + $suffix).ToLower()
 
     return $storageAccountName
@@ -72,15 +72,40 @@ Import-Module Microsoft.Graph.Identity.Governance
 # Connect to Azure for creating resources
 Write-Output "Login to Azure ARM API:"
 Start-Process "msedge.exe" -ArgumentList "https://microsoft.com/devicelogin"
-Connect-AzAccount -DeviceCode
+$connected = $false
+while (-not $connected) {
+    try {
+        Connect-AzAccount -DeviceCode
+        $connected = $true
+        Write-Output "Connect-AzAccount Connected successfully."
+    }
+    catch {
+        Write-Output "Connection failed. Retrying..."
+    }
+}
+
 
 # Connect to Microsoft Graph for assigning 'Azure DevOps Administrator' role on user2 later
-if (-Not (Get-AzContext).Account.Id.ToString() -eq (Get-mgContext).Account.ToString()) {
-    Write-Output "Login to Microsoft Graph API:"
-    Start-Process "msedge.exe" -ArgumentList "https://microsoft.com/devicelogin"
+try {
+    if (-Not (Get-AzContext).Account.Id.ToString() -eq (Get-mgContext).Account.ToString()) {
+        Write-Output "Login to Microsoft Graph API:"
+        Start-Process "msedge.exe" -ArgumentList "https://microsoft.com/devicelogin"
+    }
 }
-Connect-MgGraph -Scopes "RoleManagement.ReadWrite.Directory" -UseDeviceCode -NoWelcome
+catch {
+}
+$connected = $false
+while (-not $connected) {
+    try {
+        Connect-MgGraph -Scopes "RoleManagement.ReadWrite.Directory" -UseDeviceCode -NoWelcome
 
+        $connected = $true
+        Write-Output "Connect-MgGraph Connected successfully."
+    }
+    catch {
+        Write-Output "Connection failed. Retrying..."
+    }
+}
 
 # Extract domain from username
 $domain = (Get-AzContext).Account.Id.ToString().Split('@')[1]
@@ -116,7 +141,8 @@ $resourceGroup = Get-AzResourceGroup -Name $resourceGroupName -ErrorAction Silen
 if (-not $resourceGroup) {
     Write-Verbose "Resource group '$resourceGroupName' not found. Creating a new resource group..."
     $resourceGroup = New-AzResourceGroup -Name $resourceGroupName -Location $location
-} else {
+}
+else {
     Write-Verbose "Resource group '$resourceGroupName' already exists. Using the existing resource group."
 }
 
@@ -127,7 +153,8 @@ if (-not $storageAccount) {
     # Create the storage account if it doesn't exist
     $storageAccount = New-AzStorageAccount -ResourceGroupName $resourceGroupName -Name $storageAccountName -Location $location -SkuName Standard_LRS
     Write-Verbose "Storage account '$storageAccountName' created."
-} else {
+}
+else {
     Write-Verbose "Storage account '$storageAccountName' already exists. Using the existing storage account."
 }
 
@@ -157,7 +184,8 @@ foreach ($role in $roles) {
         # Assign the role if it does not exist
         New-AzRoleAssignment -ObjectId $user1ObjectId -RoleDefinitionName $role -Scope $scope
         Write-Verbose "Role '$role' assigned successfully."
-    } else {
+    }
+    else {
         Write-Verbose "Role '$role' already assigned."
     }
 }
@@ -175,7 +203,8 @@ foreach ($role in $roles) {
         # Assign the role if it does not exist
         New-AzRoleAssignment -ObjectId $user2ObjectId -RoleDefinitionName $role -Scope $scope
         Write-Verbose "Role '$role' assigned successfully."
-    } else {
+    }
+    else {
         Write-Verbose "Role '$role' already assigned."
     }
 }

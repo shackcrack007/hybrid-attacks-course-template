@@ -221,7 +221,7 @@ if you took the easy way earlier, take the hard one now!
 #
 ### 6. Pass The Hash using Entra Connect's MSOL Account Attack
 
-Your goal: using the MSOL account creds, perform pass the hash attack, and open cmd.exe in the context of a domain admin user (that is *not* ``user1``). Do it in the **Win 11 VM**.
+Your goal: using the MSOL account creds, perform pass the hash attack, and open cmd.exe on DC VM, using another domain admin user (that is *not* ``user1``). Do it from **Win 11 VM**.
 
 * Use ``c:\lab\mimikatz`` and [impacket-psexec](https://github.com/ropnop/impacket_static_binaries/releases/download/0.9.22.dev-binaries/psexec_windows.exe)
 
