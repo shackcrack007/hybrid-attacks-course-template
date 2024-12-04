@@ -31,13 +31,15 @@
 ```
 
 # Instructions 
-* Use only your **personal** Microsoft account (not coroporate/work)
+* Use only your **personal** Microsoft account (not corporate/work)
 
 ### 1. Entra Tenant + Azure Prep
 1. **Azure subscription**: [activate your free 150$ Azure credits](https://my.visualstudio.com/Benefits) (put in your personal Microsoft account, such as *yourname@outlook.com*), this will be used to deploy the Azure template and host the VMs
 
 2. **Entra tenant**: 
-    1. create a new admin user for the Entra tenant: login to [Entra portal](https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/AllUsers/menuId/), and create a new user: 
+    1. go to https://entra.microsoft.com and login with your personal Microsoft account, if you see an error "**``you don't have access``**"..: go to https://signup.azure.com to create a new Entra tenant (choose PAY AS YOU GO and enter credit cart, don't worry it's not gonna be used)
+    
+    2. Now that you have a tenant and can succesffully browse https://entra.microsoft.com, **create a new admin user for the Entra tenant:** login to [Entra portal](https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/AllUsers/menuId/)
 
         ![createuser](pics/create_tenant_admin_user.png)
 
