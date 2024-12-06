@@ -249,5 +249,36 @@ ipconfig # see the IP is of DC VM
 </details>
 
 
+### 7. Tenant Takeover Challenge
+In this last exercise, your goal is to takeover the entire tenant, by getting the 'Global Administrator' role over a compromised user.
+
+#### Preparations
+- Execute the following powershell, and authenticate using your **Entra admin credentials**.
+- **DO NOT look into the script** as it will reveal the solution.
+
+
+    ```powershell 
+    Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force
+
+    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/refs/heads/main/labs%20(for%20course%20sessions%2C%20not%20part%20of%20setup)/lab-2-entra-connect-attacks/lab-2-last-exc-prepartions.ps1" -OutFile "C:\\prepareLab2LastExc.ps1"; `
+    & "C:\\prepareLab2LastExc.ps1" `
+    -DomainName YOURDOMAIN.onmicrosoft.com # the one listed here https://admin.microsoft.com/#/Domains
+    ```
+
+
+<details>
+<summary><b>Solution</b></summary>
+
+**Once you're done, remove any role / permissions you've granted along the way.**
+
+There's an app named "My backup app"
+1. ```user1``` is an Owner of that app, which means he can add secrets to it
+1. authenticate as that user (after you've compromised it using the Sync__xx account)
+1. create a new secret for that app or its service principal
+1. use that secret to authenticate as that app
+1. the app has privileged permissions, use them to grant your user (or a new user) a global admin role
+</details>
+
 #
-###  Good Job! Summarize yourself the attack paths you just took and the attacks you've learned!
+
+###  Good Job! Summarize the attack paths you just took and the attacks you've learned!
