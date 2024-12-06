@@ -72,11 +72,11 @@ $appRequiredResourceAccess = @(
                 Type = "Role"
             },
             @{
-                Id = "06da0dbc-49e2-44d2-8312-53f166ab848a" # AppRoleAssignment.ReadWrite.All
+                Id = "06b708a9-e830-4db3-a914-8e69da51d44f" # AppRoleAssignment.ReadWrite.All
                 Type = "Role"
             },
             @{
-                Id = "62e90394-69f5-4237-9190-012177145e10" # RoleManagement.ReadWrite.Directory
+                Id = "9e3f62cf-ca93-4989-b6ce-bf83c28f9fe8" # RoleManagement.ReadWrite.Directory
                 Type = "Role"
             }
         )
@@ -101,7 +101,7 @@ Write-Verbose "Assigning Application Permissions and Granting Admin Consent..."
 $msGraphServicePrincipalId = (Get-MgServicePrincipal -Filter "AppId eq '00000003-0000-0000-c000-000000000000'").Id
 $spId = $sp.id
 
-$msgraphPermissions = @("741f803b-c850-494e-b5df-cde7c675a1ca", "19dbc75e-c2e2-444c-a770-ec69d8559fc7", "06da0dbc-49e2-44d2-8312-53f166ab848a", "62e90394-69f5-4237-9190-012177145e10")
+$msgraphPermissions = @("741f803b-c850-494e-b5df-cde7c675a1ca", "19dbc75e-c2e2-444c-a770-ec69d8559fc7", "06b708a9-e830-4db3-a914-8e69da51d44f", "9e3f62cf-ca93-4989-b6ce-bf83c28f9fe8")
 
 foreach ($permission in $msgraphPermissions) {
     $param = @{  
