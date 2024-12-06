@@ -71,7 +71,7 @@ Go the advanced way (and learn how to use access tokens):
 <details>
 <summary><b>Hint 3</b></summary>
 
-Hard way commands:
+Advanced way commands:
 1. ```Get-AADIntAccessTokenForAADGraph```
 1. ```Connect-AzureAD -AccountId $SyncUserUPN -TenantId $tenantId -AadAccessToken $at```
 

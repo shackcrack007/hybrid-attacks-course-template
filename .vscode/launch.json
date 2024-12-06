@@ -9,9 +9,7 @@
             "type": "PowerShell",
             "request": "launch",
             "script": "${file}",
-            "args": ["-DomainName", "lab.com",
-                "-DomainUser", "lab\\rootuser",
-                "-DomainPassword", "password"]
+            "args": ["-DomainName", "s81outlookco.onmicrosoft.com"]
         }
     ]
 }
