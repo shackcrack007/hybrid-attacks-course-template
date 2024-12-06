@@ -99,14 +99,19 @@ if ($null -eq $sp) {
 # Step 4: Assign Application Permissions
 Write-Verbose "Assigning Application Permissions and Granting Admin Consent..."
 $msGraphServicePrincipalId = (Get-MgServicePrincipal -Filter "AppId eq '00000003-0000-0000-c000-000000000000'").Id
-$roleId = "741f803b-c850-494e-b5df-cde7c675a1ca" # User.ReadWrite.All
 $spId = $sp.id
-$param = @{  
-    "PrincipalId" = "$spId"  
-    "ResourceId"  = "$msGraphServicePrincipalId"  
-    "AppRoleId"   = "$roleId"  
+
+$msgraphPermissions = @("741f803b-c850-494e-b5df-cde7c675a1ca", "19dbc75e-c2e2-444c-a770-ec69d8559fc7", "06da0dbc-49e2-44d2-8312-53f166ab848a", "62e90394-69f5-4237-9190-012177145e10")
+
+foreach ($permission in $msgraphPermissions) {
+    $param = @{  
+        "PrincipalId" = "$spId"  
+        "ResourceId"  = "$msGraphServicePrincipalId"  
+        "AppRoleId"   = "$permission"  
+    }
+    $null = New-MgServicePrincipalAppRoleAssignment -ServicePrincipalId "$msGraphServicePrincipalId" -BodyParameter $param -ErrorAction SilentlyContinue
 }
-New-MgServicePrincipalAppRoleAssignment -ServicePrincipalId "$msGraphServicePrincipalId" -BodyParameter $param -ErrorAction SilentlyContinue
+
 Write-Verbose "Application Permissions assigned and Admin Consent granted."
 
 # Step 5: Assign User as Owner if not already assigned
@@ -119,7 +124,7 @@ if ($null -eq $owner) {
 $existingOwner = Get-MgApplicationOwner -ApplicationId $app.Id | Where-Object { $_.Id -eq $owner.Id }
 if ($null -eq $existingOwner) {
     $odataId = "https://graph.microsoft.com/v1.0/directoryObjects/$($owner.Id)"
-    New-MgApplicationOwnerByRef -ApplicationId $app.Id -OdataId $odataId
+    $null = New-MgApplicationOwnerByRef -ApplicationId $app.Id -OdataId $odataId
     Write-Verbose "$OwnerUsername assigned as owner successfully."
 } else {
     Write-Verbose "$OwnerUsername is already an owner."
