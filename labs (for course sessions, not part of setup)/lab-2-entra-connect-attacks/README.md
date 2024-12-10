@@ -249,7 +249,7 @@ ipconfig # see the IP is of DC VM
 </details>
 
 
-### 7. Tenant Takeover Challenge
+### 7. Tenant Takeover Challenge (Bonus, for really advanced students)
 In this last exercise, your goal is to takeover the entire tenant, by getting the 'Global Administrator' role over a compromised user.
 
 #### Preparations
