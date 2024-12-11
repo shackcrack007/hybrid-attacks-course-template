@@ -42,6 +42,12 @@ Prepare your Entra + AD admin credentials:
 
 ### Verify
 1. go to https://entra.microsoft.com/#view/Microsoft_AAD_Devices/DevicesMenuBlade/~/Devices/menuId/Overview and look for your onboarded devices, they should be listed as "*Microsoft Entra hybrid joined*" under the "*Join type*" column (it takes time for the "Registered: Pending" state to finish)
+    * If you don't have the two VMs in the "Devices" tab in entra portal:
+        1. login to win11 using yourdomain\user1
+        1. run this tool on the dcvm: https://learn.microsoft.com/en-us/samples/azure-samples/dsregtool/dsregtool/
+        1. restart dcvm and rdp login again
+        1. wait at least an hour (keep the VMs turned on), and check again
+    * Only after you see the VMs in the Devices tab, continue
 
 2. go to https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/AllUsers/menuId/ and look for users 1-5, they should be listed as "*Yes*" under the "*On-premise sync enabled*" column
 
@@ -52,7 +58,7 @@ Prepare your Entra + AD admin credentials:
     1. open CMD as Administrator and run: ```dsregcmd /status```, you should see similar output to:
         ![dsreg](pics/dsregcmd_status_1.png)
 
-        and 
+        and
 
         ![dsreg2](pics/dsregcmd_status_2.png)
     2. if you don't see one of them, make sure:
