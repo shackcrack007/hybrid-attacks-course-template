@@ -3,7 +3,6 @@ In this lab you will setup and configure Entra Connect, which will sync up your 
 The configurations will include "password writeback", supporting Hybrid device join, and turning on Seamless SSO.
 Prepare your Entra + AD admin credentials:
 1. on the DC VM, install "c:\lab\AzureADConnect.msi"
-
 1. run *"Azure AD Connect"* and use the Express Installation
 1. First use your Entra credentials *YOURUSER@YOURDOMAIN.onmicrosoft.com*
 1. Next, use your AD credentials *YOURDOMAIN.onmicrosoft.com\rootuser*
@@ -60,7 +59,7 @@ Prepare your Entra + AD admin credentials:
 
         and
 
-        ![dsreg2](pics/dsregcmd_status_2.png)
+        ![dsreg2](pics/IsUserAzureAD.png)
     2. if you don't see one of them, make sure:
         - ADSync service is running on the DC, and restart
         - [*Registered* column is not "Pending"](https://entra.microsoft.com/#view/Microsoft_AAD_Devices/DevicesMenuBlade/~/Devices/menuId/), if it is, then continue to the next lab
