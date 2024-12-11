@@ -215,8 +215,6 @@ Get-MgContext
 Get-MgUser
 #SDK Docs: https://aka.ms/graph/sdk/powershell/docs
 ```
-if you took the easy way earlier, take the hard one now!
-
 
 #
 ### 6. Pass The Hash using Entra Connect's MSOL Account Attack
