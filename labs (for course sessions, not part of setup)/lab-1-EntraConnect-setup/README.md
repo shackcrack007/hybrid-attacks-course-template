@@ -5,7 +5,7 @@ Prepare your Entra + AD admin credentials:
 1. on the DC VM, install "c:\lab\AzureADConnect.msi"
 
 1. run *"Azure AD Connect"* and use the Express Installation
-1. First use your Entra credentials *YOURUSER@onmicrosoft.com*
+1. First use your Entra credentials *YOURUSER@YOURDOMAINonmicrosoft.com*
 1. Next, use your AD credentials *YOURDOMAIN.onmicrosoft.com\rootuser*
 1. Check the "Continue without matching"... box
 1. Install
