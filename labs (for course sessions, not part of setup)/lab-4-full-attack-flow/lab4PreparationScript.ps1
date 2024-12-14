@@ -28,7 +28,7 @@ If (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     Write-Error "You need to run this script as an administrator."
     Exit
 }
-
+$ProgressPreference = 'SilentlyContinue'
 Write-Output "Starting the script, this may take a while - watch out for prompts!"
 # bypass PS 5.1 limitations:
 $MaximumFunctionCount = 18000
@@ -240,7 +240,14 @@ foreach ($role in $roles) {
 $roleDefinition = Get-MgRoleManagementDirectoryRoleDefinition -Filter "displayName eq 'Azure DevOps Administrator'"
 New-MgRoleManagementDirectoryRoleAssignment -DirectoryScopeId "/" -PrincipalId $user2ObjectId -RoleDefinitionId $roleDefinition.Id -ErrorAction SilentlyContinue > $null
 
-
+# disconnect
+Disconnect-MgGraph -ErrorAction SilentlyContinue
+try {
+    Disconnect-AzureAD -ErrorAction SilentlyContinue
+}
+catch {
+}
+Disconnect-AzAccount -ErrorAction SilentlyContinue
 ################## FINISHED ##################
 
 Write-Output "Script execution completed successfully."

@@ -18,7 +18,7 @@ $logDirectory = [System.IO.Path]::GetDirectoryName($logFilePath)
 if (-not (Test-Path -Path $logDirectory)) {
     New-Item -Path $logDirectory -ItemType Directory | Out-Null
 }
-
+$ProgressPreference = 'SilentlyContinue'
 if($ShouldTrigger)
 {
     Start-Transcript -Path $logFilePath -Append -ErrorAction SilentlyContinue
