@@ -39,6 +39,7 @@ Do not use hints unless you really have to..
 <details>
     <summary><b>Entire attack path hint (use as last resort)</b></summary>
 
+![entire_path](entire_path.png)
     1. Pass reset: DC vm -> reset pass of "user2" using Entra Sync credentials
 
     2. Login to Azure as that user using your browser
