@@ -226,8 +226,11 @@ Your goal: using the MSOL account creds, perform pass the hash attack, and open 
 <details>
 <summary><b>Solution</b></summary>
 
-```powershell
 
+- On the Win11 VM [enable Active Directory feature](https://4sysops.com/archives/how-to-install-the-powershell-active-directory-module/#rtoc-5) so the ActiveDirectory PowerShell module will be installed
+
+```powershell
+Import-Module ActiveDirectory
 # find a domain admin user to target
 Get-ADGroupMember 'domain admins' | select name,samaccountname
 
