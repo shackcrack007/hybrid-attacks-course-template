@@ -37,6 +37,7 @@ $modulesToInstall = @(
     "AADInternals"
 )
 
+$dcVmIpAddress = "10.0.0.10"
 function Test-SoftwareInstallation {
     param (
         [string]$softwareName
@@ -44,7 +45,8 @@ function Test-SoftwareInstallation {
     $installed = Get-WmiObject -Query "SELECT Name FROM Win32_Product WHERE Name LIKE '%$softwareName%'"
     if ($installed) {
         return "$softwareName is installed.\n", $true
-    } else {
+    }
+    else {
         return "$softwareName is NOT installed.\n", $false
     }
 }
@@ -56,7 +58,8 @@ function Test-ModuleInstallation {
     $module = Get-Module -ListAvailable -Name $moduleName
     if ($module) {
         return "PS Module $moduleName is installed.\n", $true
-    } else {
+    }
+    else {
         return "PS Module $moduleName is not installed.\n", $false
     }
 }
@@ -68,7 +71,8 @@ function Test-UserCreation {
     $user = Get-LocalUser -Name $userName -ErrorAction SilentlyContinue
     if ($user) {
         return "User $userName exists.\n", $true
-    } else {
+    }
+    else {
         return "User $userName does not exist.\n", $false
     }
 }
@@ -80,7 +84,8 @@ function Test-DomainCreation {
     $domain = Get-ADDomain -Identity $domainName -ErrorAction SilentlyContinue
     if ($domain) {
         return "Domain $domainName exists.\n", $true
-    } else {
+    }
+    else {
         return "Domain $domainName does not exist.\n", $false
     }
 }
@@ -88,9 +93,10 @@ function Test-DomainCreation {
 function Test-DomainJoin {
     $computerSystem = Get-WmiObject -Class Win32_ComputerSystem
     if ($computerSystem.PartOfDomain) {
-        return "Computer is joined to the domain.\n";  $true
-    } else {
-        return "Computer is NOT joined to the domain.\n";  $false
+        return "Computer is joined to the domain.\n"; $true
+    }
+    else {
+        return "Computer is NOT joined to the domain.\n"; $false
     }
 }
 
@@ -107,7 +113,7 @@ function Finish ($isSuccessfull) {
     $global:SETUP_RESULTS | Out-File -FilePath $outputFile -Force
 
     Write-Output "Validation results written to $outputFile"
-    if($isSuccessfull) {
+    if ($isSuccessfull) {
         $global:SETUP_RESULTS += "Lab setup script has finished successfully."
         $global:SETUP_RESULTS | Out-File -FilePath $outputFile
         Stop-Transcript
@@ -132,6 +138,10 @@ function Install-ModuleWithParams {
     )
 
     $arguments = "-NoProfile -Command Install-Module $moduleToInstall -AllowClobber -Force -Scope AllUsers"
+    if ($moduleToInstall -eq "AADInternals") {
+        $arguments += " -RequiredVersion 0.9.4"
+    }
+
     if ($waitForCompletion) {
         Start-Process powershell -ArgumentList $arguments -Verb RunAs -Wait
     }
@@ -234,12 +244,12 @@ function Copy-DirectoryContentToWindows {
         try {
             # Create the destination directory if it doesn't exist
             if (-Not (Test-Path -Path (Split-Path -Path $destinationPath -Parent))) {
-            New-Item -ItemType Directory -Path (Split-Path -Path $destinationPath -Parent) | Out-Null
+                New-Item -ItemType Directory -Path (Split-Path -Path $destinationPath -Parent) | Out-Null
             }
 
             # Copy the item to the destination
             if (-Not (Test-Path -Path $destinationFile)) {
-            Copy-Item -Path $item.FullName -Destination $destinationPath -Force
+                Copy-Item -Path $item.FullName -Destination $destinationPath -Force
             }
         }
         catch {
@@ -282,7 +292,7 @@ if (Is-WindowsServer) {
     # Validate the domain
     $text, $status = Test-DomainCreation -domainName "$DomainName"
     $global:SETUP_RESULTS += $text
-    if(-Not $status) {
+    if (-Not $status) {
         Write-Output $text
         Write-Output "Cannot continue without a domain. Exiting..."
         Finish($false)
@@ -291,7 +301,8 @@ if (Is-WindowsServer) {
 
     # Create dummy domain users and add them to Domain Admins group
     Write-Output "Creating $NUM_OF_USERS dummy domain users and adding them to Domain Admins group..."
-    for ($i = 1; $i -le $NUM_OF_USERS; $i++) { # do not modify this as this username is used below to join the pc vm to the domain
+    for ($i = 1; $i -le $NUM_OF_USERS; $i++) {
+        # do not modify this as this username is used below to join the pc vm to the domain
         $username = "user$i" # do not modify this as this username is used below to join the pc vm to the domain
         try {
             New-ADUser `
@@ -320,12 +331,11 @@ if (Is-WindowsServer) {
     }
 
     # Validate the users
-    for ($i = 1; $i -le $NUM_OF_USERS; $i++)
-    {
+    for ($i = 1; $i -le $NUM_OF_USERS; $i++) {
         $username = "user$i"
         $text, $status = Test-UserCreation -userName $username
         $global:SETUP_RESULTS += $text
-        if(-Not $status) {
+        if (-Not $status) {
             Write-Output $text
             Write-Output "Cannot continue without the users. Exiting..."
             Finish($false)
@@ -338,6 +348,33 @@ if (Is-WindowsServer) {
         -fileName "$global:LAB_DIR\AzureADConnect.msi" `
         -startProcess "" `
         -processArgList ""
+
+
+    # Set up a scheduled task to restart the Azure AD Connect service at system startup & user login
+    function Set-ADSyncRestartTask {
+        param (
+            [string]$ServiceName = "ADSync", # The name of the service to restart
+            [string]$TaskName = "RestartADSyncService" # The name of the scheduled task
+        )
+        
+        # Define the script to restart the service
+        $arguments = "-WindowStyle Hidden -ExecutionPolicy Bypass -Command `"Restart-Service -Name 'ADSync' -Force`""
+        
+        # Define the scheduled task actions
+        $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument $arguments
+        
+        # Define triggers: at system startup & user login
+        $triggers = @(
+            New-ScheduledTaskTrigger -AtStartup
+            New-ScheduledTaskTrigger -AtLogon
+        )
+        
+        # Register the scheduled task
+        Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $triggers -RunLevel Highest -Force
+        
+        Write-Host "Scheduled task '$TaskName' created successfully to restart the '$ServiceName' service."
+    }
+    Set-ADSyncRestartTask
 }
 else {
     Write-Output "This is a Windows Client system."
@@ -347,13 +384,42 @@ else {
 
     Write-Output "Setting the primary and secondary DNS servers..."
     # Set the primary and secondary DNS servers
-    Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ServerAddresses ("10.0.0.10", "8.8.8.8")
+    Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ServerAddresses ($dcVmIpAddress, "8.8.8.8")
     if ($?) {
-        Write-Output "DNS servers have been set to 10.0.0.10 and 8.8.8.8."
+        Write-Output "DNS servers have been set to $dcVmIpAddress and 8.8.8.8."
     }
     else {
         Write-Output "DNS servers failed to be set"
     }
+
+    #### Add to the hosts file
+    function Add-HostsEntry {
+        param (
+            [string]$Hostname, # The hostname to add (e.g., "dcvm")
+            [string]$IPAddress       # The IP address to associate with the hostname (e.g., "10.0.0.10")
+        )
+    
+        # Define the path to the hosts file
+        $hostsFilePath = "$env:SystemRoot\System32\drivers\etc\hosts"
+        $hostsEntry = "$IPAddress $Hostname"
+    
+        # Check if the entry already exists in the hosts file
+        if (-not (Get-Content $hostsFilePath | Select-String -Pattern "$hostsEntry")) {
+            try {
+                Add-Content -Path $hostsFilePath -Value $hostsEntry
+                Write-Host "Entry '$hostsEntry' added to the hosts file successfully."
+            }
+            catch {
+                Write-Error "Failed to modify the hosts file. Ensure you run the script as an administrator."
+            }
+        }
+        else {
+            Write-Host "The entry '$hostsEntry' already exists in the hosts file."
+        }
+    }
+    Add-HostsEntry -Hostname "dcvm" -IPAddress $dcVmIpAddress
+    Add-HostsEntry -Hostname $DomainName.Replace(".onmicrosoft.com", "") -IPAddress $dcVmIpAddress
+    Add-HostsEntry -Hostname $DomainName -IPAddress $dcVmIpAddress
 }
 
 ############################

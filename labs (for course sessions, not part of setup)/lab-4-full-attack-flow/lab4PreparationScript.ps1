@@ -113,7 +113,7 @@ while (-not $connected) {
 }
 
 
-# Connect to Microsoft Graph for assigning 'Azure DevOps Administrator' role on user2 later
+# Connect to Microsoft Graph for assigning roles on user2 later
 get-mguser -Top 1  -ErrorAction SilentlyContinue > $null # check if we're connected 
 if ($? -eq $False) {
     Write-Output "Login to Microsoft Graph API:"
@@ -197,11 +197,11 @@ Write-Verbose "Creating a text file 'secret.txt' in the container..."
 $content = "MAZAL TOV! YOU SUCCESSFULLY FINISHED THE EXERCISE!"
 Set-Content -Path "secret.txt" -Value $content > $null
 Set-AzStorageBlobContent -File "secret.txt" -Container $containerName -Blob "secret.txt" -Context $ctx > $null
-
+Remove-Item "secret.txt" -Force -ErrorAction SilentlyContinue
 
 ################## $user1 preps ##################
 Write-Verbose "Assigning azure roles to $user1@$domain..."
-$roles = @("Reader", "Storage Account Key Operator Service Role")
+$roles = @("Reader", "Storage Account Key Operator Service Role", "Storage Account Contributor")
 $scope = "/subscriptions/$subscriptionId"
 foreach ($role in $roles) {
     # Check if the role assignment already exists
@@ -217,10 +217,9 @@ foreach ($role in $roles) {
     }
 }
 
-
 ################## $user2 preps ##################
 Write-Verbose "Assigning azure roles to $user2@$domain..."
-$roles = @("Reader", "Virtual Machine Contributor")
+$roles = @("Virtual Machine Contributor")
 $scope = "/subscriptions/$subscriptionId"
 foreach ($role in $roles) {
     # Check if the role assignment already exists
@@ -236,7 +235,7 @@ foreach ($role in $roles) {
     }
 }
 
-# Assign the "Azure DevOps Administrator" role to the user using Microsoft Graph
+# Assign the "Azure DevOps Administrator" role to user2 using Microsoft Graph, this is just for the students to see this user as a lucrative and potential target, we don't really use this role
 $roleDefinition = Get-MgRoleManagementDirectoryRoleDefinition -Filter "displayName eq 'Azure DevOps Administrator'"
 New-MgRoleManagementDirectoryRoleAssignment -DirectoryScopeId "/" -PrincipalId $user2ObjectId -RoleDefinitionId $roleDefinition.Id -ErrorAction SilentlyContinue > $null
 

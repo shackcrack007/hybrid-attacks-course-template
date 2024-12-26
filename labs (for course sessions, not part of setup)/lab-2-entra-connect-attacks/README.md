@@ -6,9 +6,9 @@ in [Entra porta](https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants
 
 
 # Instructions
-From this point on you act as the adversary, without knowing the Entra / AD Creds, you have code execution as Administrator on the Entra Connect server (in our case- it's the DC VM), and you know the Entra tenant domain.
-
-Don't go so fast for the solution.. **try first!**
+-  From this point on you act as the adversary, without knowing the Entra / AD Creds, you have code execution as Administrator on the Entra Connect server (in our case- it's the DC VM), and you know the Entra tenant domain.
+- Once done for the day, go to **WRAP UP** section below before logging out / stopping the VMs
+- Don't go so fast for the solution.. **try first!**
 
 # Start 
 
@@ -145,10 +145,12 @@ Set-AADIntUserPassword -SourceAnchor "IMMUTABLE_ID" -Password "MYPASS" -AccessTo
 ```
 Now, open https://entra.microsoft.com in the browser **in incognito** and login as that user *VICTIM_USER@YOURDOMAIN.onmicrosoft.com* with the new password :)
 
-
 *This method does not bypass MFA
-</details>
 
+#
+# Finished? Reset the password back to the original one
+#
+</details>
 
 #
 ### 5. Silver Ticket (Seamless SSO) Attack
@@ -281,5 +283,16 @@ There's an app named "My backup app"
 </details>
 
 #
+
+
+## WRAP UP
+1. MAKE SURE YOU'VE RESET THE PASSWORD **BACK TO THE ORIGINAL ONE!** (Exercise 4)
+2. Force Entra Conncet sync by running on **dcVm**:
+    ```powershell
+    Import-Module ADSync
+    Start-ADSyncSyncCycle -PolicyType Initial
+    Get-ADSyncRunStatus # wait for it to finish (should return empty result)
+    ```
+3. Now you can logout / stop the VMs
 
 ###  Good Job! Summarize the attack paths you just took and the attacks you've learned!

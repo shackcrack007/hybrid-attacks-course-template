@@ -10,8 +10,8 @@ param adminPassword string
 @description('Change to *your* tenant domain name (e.g. "YOURDOMAIN.onmicrosoft.com"), it will set up the Active Directory Domain with the same name (must be the same). "YOURDOMAIN" cant be more than 15 chars!')
 param domainName string = 'YOURDOMAIN.onmicrosoft.com'
 
-@description('Size of the VM for the controller (preffered Standard_D2s_v3)')
-param vmSize string = 'Standard_DS1_v2'
+@description('Size of the VM for the controller')
+param vmSize string = 'Standard_D2s_v3'
 
 @description('The location of resources, such as templates and DSC modules, that the template depends on. do not modify.')
 var _artifactsLocation = deployment().properties.templateLink.uri
