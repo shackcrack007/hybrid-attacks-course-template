@@ -74,7 +74,8 @@ Import-Module Microsoft.Graph.Identity.Governance
 
 # Connect to Azure for creating resources
 Write-Output "Login to Azure Resource Manager API:"
-Connect-AzAccount -DeviceCode -TenantId $TenantID -NoWelcome
+Start-Process "msedge.exe" -ArgumentList "https://microsoft.com/devicelogin"
+Connect-AzAccount -DeviceCode -TenantId $TenantID
 if (-Not (Get-AzContext).Name.Contains("Visual Studio Enterprise Subscription")) {
     $selectedAzureSub = (Get-AzContext).Name
     Write-Warning "NOTICE: The Azure subscription that's going to be used is: $selectedAzureSub"
@@ -99,6 +100,7 @@ if (-Not (Get-AzContext).Name.Contains("Visual Studio Enterprise Subscription"))
 }
 
 # Connect to Microsoft Graph for assigning roles on user2 later
+Start-Process "msedge.exe" -ArgumentList "https://microsoft.com/devicelogin"
 Connect-MgGraph -TenantId $TenantID -UseDeviceCode -NoWelcome -Scopes "User.ReadWrite.All", "Group.ReadWrite.All", "RoleManagement.ReadWrite.Directory"  
 Write-Output "Connect-MgGraph Connected successfully."
 Write-Output "Continuing with the script execution..."
@@ -219,4 +221,4 @@ Disconnect-AzAccount -ErrorAction SilentlyContinue
 ################## FINISHED ##################
 
 Write-Output "Script execution completed successfully."
-Write-Output "Once done with the lab, delete the resource group '$resourceGroupName' to clean up the resources."
+Write-Output "Once done with the lab, delete the resource group $resourceGroupName to clean up the resources."
