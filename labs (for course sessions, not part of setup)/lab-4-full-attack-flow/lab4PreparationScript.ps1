@@ -74,7 +74,7 @@ Import-Module Microsoft.Graph.Identity.Governance
 
 # Connect to Azure for creating resources
 Write-Output "Login to Azure Resource Manager API:"
-Connect-AzAccount -DeviceCode -TenantId $TenantID -UseDeviceCode -NoWelcome
+Connect-AzAccount -DeviceCode -TenantId $TenantID -NoWelcome
 if (-Not (Get-AzContext).Name.Contains("Visual Studio Enterprise Subscription")) {
     $selectedAzureSub = (Get-AzContext).Name
     Write-Warning "NOTICE: The Azure subscription that's going to be used is: $selectedAzureSub"
