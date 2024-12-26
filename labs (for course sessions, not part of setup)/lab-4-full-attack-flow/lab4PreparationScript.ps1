@@ -73,42 +73,28 @@ Import-Module Az.Storage
 Import-Module Microsoft.Graph.Identity.Governance
 
 # Connect to Azure for creating resources
-Write-Output "Login to Azure ARM API:"
-Start-Process "msedge.exe" -ArgumentList "https://microsoft.com/devicelogin"
-$connected = $false
-while (-not $connected) {
-    try {
-        Connect-AzAccount -DeviceCode -TenantId $TenantID
-        if (-Not (Get-AzContext).Name.Contains("Visual Studio Enterprise Subscription")) {
-            $selectedAzureSub = (Get-AzContext).Name
-            Write-Warning "NOTICE: The Azure subscription that's going to be used is: $selectedAzureSub"
-            Write-Warning "It is not the 150$ one, Please select the subscription you'd like to proceed with:"
-            # Get the list of subscriptions
-            $subscriptions = Get-AzSubscription | Select-Object TenantId, Name
+Write-Output "Login to Azure Resource Manager API:"
+Connect-AzAccount -DeviceCode -TenantId $TenantID -UseDeviceCode -NoWelcome
+if (-Not (Get-AzContext).Name.Contains("Visual Studio Enterprise Subscription")) {
+    $selectedAzureSub = (Get-AzContext).Name
+    Write-Warning "NOTICE: The Azure subscription that's going to be used is: $selectedAzureSub"
+    Write-Warning "It is not the 150$ one, Please select the subscription you'd like to proceed with:"
+    # Get the list of subscriptions
+    $subscriptions = Get-AzSubscription | Select-Object TenantId, Name
 
-            # Prompt the user to select a subscription
-            Write-Output "Available Subscriptions:"
-            $subscriptions | ForEach-Object { Write-Output "$($_.Name) - TenantId: $($_.TenantId)" }
-            $selectedSubscription = $subscriptions | Out-GridView -Title "Select a subscription" -PassThru
-            
-            if ($selectedSubscription) {
-                $TenantID = $selectedSubscription.TenantId
-                Write-Output "Selected TenantId: $TenantID"
-                Set-AzContext -Tenant $TenantID -SubscriptionName $selectedSubscription.Name
-            }
-            else {
-                Write-Output "Subscription not found. Please try again."
-            }
-
-            $connected = $false
-            break
-        }
-
-        $connected = $true
-        Write-Output "Connect-AzAccount Connected successfully."
+    # Prompt the user to select a subscription
+    Write-Output "Available Subscriptions:"
+    $subscriptions | ForEach-Object { Write-Output "$($_.Name) - TenantId: $($_.TenantId)" }
+    $selectedSubscription = $subscriptions | Out-GridView -Title "Select a subscription" -PassThru
+    
+    if ($selectedSubscription) {
+        $TenantID = $selectedSubscription.TenantId
+        Write-Output "Selected TenantId: $TenantID"
+        Set-AzContext -Tenant $TenantID -SubscriptionName $selectedSubscription.Name
     }
-    catch {
-        Write-Output "Connection failed. Retrying..."
+    else {
+        Write-Output "Subscription not found. Please try again."
+        return
     }
 }
 

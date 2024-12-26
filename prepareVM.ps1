@@ -34,7 +34,8 @@ $modulesToInstall = @(
     "Microsoft.Graph",
     "DSInternals",
     "AzureAD", 
-    "AADInternals"
+    "AADInternals",
+    "Az"
 )
 
 $dcVmIpAddress = "10.0.0.10"
