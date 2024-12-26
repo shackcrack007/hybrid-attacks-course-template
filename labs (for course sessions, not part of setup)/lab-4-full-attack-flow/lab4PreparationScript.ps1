@@ -98,25 +98,8 @@ if (-Not (Get-AzContext).Name.Contains("Visual Studio Enterprise Subscription"))
     }
 }
 
-
 # Connect to Microsoft Graph for assigning roles on user2 later
-get-mguser -Top 1  -ErrorAction SilentlyContinue > $null # check if we're connected 
-if ($? -eq $False) {
-    Write-Output "Login to Microsoft Graph API:"
-    Start-Process "msedge.exe" -ArgumentList "https://microsoft.com/devicelogin"
-    $connected = $false
-}
-
-get-mguser -Top 1 -ErrorAction SilentlyContinue > $null
-while ($? -eq $False) {
-    try {
-        Connect-MgGraph -Scopes "User.ReadWrite.All", "Group.ReadWrite.All", "RoleManagement.ReadWrite.Directory" -UseDeviceCode -NoWelcome 
-        get-mguser -Top 1  -ErrorAction SilentlyContinue > $null
-    }
-    catch {
-        get-mguser -Top 1 -ErrorAction SilentlyContinue > $null
-    }
-}
+Connect-MgGraph -TenantId $TenantID -UseDeviceCode -NoWelcome -Scopes "User.ReadWrite.All", "Group.ReadWrite.All", "RoleManagement.ReadWrite.Directory"  
 Write-Output "Connect-MgGraph Connected successfully."
 Write-Output "Continuing with the script execution..."
 
