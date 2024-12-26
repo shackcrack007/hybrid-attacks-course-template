@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.31.92.45157",
-      "templateHash": "7282741231209599913"
+      "version": "0.32.4.45862",
+      "templateHash": "5458656351293360722"
     }
   },
   "parameters": {
@@ -24,9 +24,9 @@
     },
     "vmSize": {
       "type": "string",
-      "defaultValue": "Standard_DS1_v2",
+      "defaultValue": "Standard_D2s_v3",
       "metadata": {
-        "description": "Size of the VM for the controller (preffered Standard_D2s_v3)"
+        "description": "Size of the VM for the controller"
       }
     }
   },
@@ -276,8 +276,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.31.92.45157",
-              "templateHash": "10825958380104081023"
+              "version": "0.32.4.45862",
+              "templateHash": "4253589836066685562"
             }
           },
           "parameters": {
@@ -375,8 +375,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.31.92.45157",
-              "templateHash": "2424793751536189289"
+              "version": "0.32.4.45862",
+              "templateHash": "17520041931023815211"
             }
           },
           "parameters": {
