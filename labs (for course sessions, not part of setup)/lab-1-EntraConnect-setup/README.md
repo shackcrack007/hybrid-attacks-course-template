@@ -35,9 +35,16 @@ Prepare your Entra + AD admin credentials:
 
 6. restart the VMs
 
-7. login to the DC VM > Open Task Manager > look for "```ADsync```" and start it if it's not running
+7. login to the **dcVm** > Open Task Manager > look for "```ADsync```" and start it if it's not running
 
     ![alt text](pics/adsyncservice.png)
+    
+8. Force Entra Conncet sync by running on **dcVm**:
+    ```powershell
+    Import-Module ADSync
+    Start-ADSyncSyncCycle -PolicyType Initial
+    Get-ADSyncConnectorRunStatus # wait for it to finish (should return empty result)
+    ```
 
 ### Verify
 1. go to https://entra.microsoft.com/#view/Microsoft_AAD_Devices/DevicesMenuBlade/~/Devices/menuId/Overview and look for your onboarded devices, they should be listed as "*Microsoft Entra hybrid joined*" under the "*Join type*" column (it takes time for the "Registered: Pending" state to finish)

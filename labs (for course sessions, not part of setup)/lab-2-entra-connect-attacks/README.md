@@ -291,7 +291,7 @@ There's an app named "My backup app"
     ```powershell
     Import-Module ADSync
     Start-ADSyncSyncCycle -PolicyType Initial
-    Get-ADSyncRunStatus # wait for it to finish (should return empty result)
+    Get-ADSyncConnectorRunStatus # wait for it to finish (should return empty result)
     ```
 3. Now you can logout / stop the VMs
 
