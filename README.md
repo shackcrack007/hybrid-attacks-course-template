@@ -2,21 +2,6 @@
 #### The lab is comprised from an Active Directory domain + VMs, synced to an Entra tenant, hosted on Azure VMs
 
 ![lab](pics/lab.png)
-* 2 VMs: 
-    1. Windows Server 2019 - as a Domain Controller - **dcVm** 
-    2. Windows 11 - as a client in the domain
-* Creates 40 dummy domain users and adds them to the Domain Admins group.
-* the Active Directory domain will be set to the one you set during the deployment
-* Common Tasks:
-    * Module Installation: PowerShell modules to install (Microsoft.Graph, 
-    * DSInternals, AzureAD, AADInternals).
-    * Installs various software including Azure AD Connect, Azure CLI, Fiddler, * Python, Mimikatz, Sysinternals Suite, and OneDrive.
-    * Disables antivirus using a script.
-    * Enables multiple, parallel RDP connections.
-    * Enables TLS 1.2 for Windows Server.
-    * Disables Internet Explorer Enhanced Security Configuration (ESC).
-    * Creates a file on the desktop indicating the script has finished.
-    * Restarts the computer to apply changes.
 
 **As part of the lab setup, you will:**
 * Create an Entra tenant - which will play the "cloud" role
@@ -34,6 +19,8 @@
 * Use only your **personal** Microsoft account (not corporate/work)
 
 ### 1. Entra Tenant + Azure Prep
+- If you don't have an Entra tenant and you create a new one, use as small as possible name, so the tenant name will be **no longer than 15 chars** (***TENANT-NAME***.onmicrosoft.com)
+
 1. **Azure subscription**: [activate your free 150$ Azure credits](https://my.visualstudio.com/Benefits) (put in your personal Microsoft account, such as *yourname@outlook.com*), this will be used to deploy the Azure template and host the VMs
 
 2. **Entra tenant**: 
@@ -61,7 +48,7 @@
         <img src="pics/manage_tenant.png" width="600" />
 
         * if the toggle is disabled, it probably means that you don't have any Azure subscription associated to your Entra tenant. If this is the case- go back and create another Entra admin account, this time in the CORRECT Entra tenant directory, that has an associated subscription.
-    2. Refresh browser, find your subscription > *IAM > Add role assignment*:
+    2. Refresh browser, Choose your Subscription > *IAM > Add role assignment*:
 
         <img src="pics/add_ga_azure.png" width="500" />
 
