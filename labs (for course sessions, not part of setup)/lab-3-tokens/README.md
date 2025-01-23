@@ -8,8 +8,10 @@
 
 3. Make sure you are verified:
    1. open Edge and make sure you have your profile logged in
-   2. go to Account Info and make sure you don't have any warning about not being verified, if you have then verify yourself.
+   2. go to Start -> Account Info and make sure you don't have any warning about not being verified, if you have then verify yourself.
       ![verify](verifyAccount.png)
+
+4. if there's still an issue, restart the vm and login again
 
 #
 
@@ -37,6 +39,9 @@ roadrecon auth --prt-init
 # Get a new PRT Cookie
 .\ROADtoken.exe <nonce>
 ```
+Example: 
+![roadtoken](roadtoken.png)
+
 
 #### Option 2: Steal PRT Cookie using RequestAADRefreshToken.exe tool
 

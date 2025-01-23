@@ -1,8 +1,7 @@
 # Lab 2 - Entra Connect Attacks
 ### Preparations
 #### Prepare a victim user with high privileges:
-in [Entra porta](https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/AllUsers/menuId/) (login with your admin tenant creds), select ***user1*** and assign it with the **Active** (not *Eligible*) **Application Administrator** role
-
+in [Entra porta](https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/AllUsers/menuId/) (login with your admin tenant creds), select ***user2*** and assign him with the **Active** (not *Eligible*) **Application Administrator** role
 
 
 # Instructions
@@ -154,6 +153,7 @@ Now, open https://entra.microsoft.com in the browser **in incognito** and login 
 
 #
 ### 5. Silver Ticket (Seamless SSO) Attack
+* this method does not bypass MFA (as Kerberos ticket is a replacement for only the first factor (password))
 
 Set the domain:
 ```powershell
@@ -257,6 +257,8 @@ ipconfig # see the IP is of DC VM
 In this last exercise, your goal is to takeover the entire tenant, by getting the 'Global Administrator' role over a compromised user.
 
 #### Preparations
+- in [Entra porta](https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/AllUsers/menuId/) (login with your admin tenant creds), select ***user1*** and assign him with the **Active** (not *Eligible*) **Application Administrator** role
+
 - Execute the following powershell from dcVm, and authenticate using your **Entra admin credentials**.
 - **DO NOT look into the script** as it will reveal the solution.
 

