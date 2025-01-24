@@ -144,8 +144,6 @@ Set-AADIntUserPassword -SourceAnchor "IMMUTABLE_ID" -Password "MYPASS" -AccessTo
 ```
 Now, open https://entra.microsoft.com in the browser **in incognito** and login as that user *VICTIM_USER@YOURDOMAIN.onmicrosoft.com* with the new password :)
 
-*This method does not bypass MFA
-
 #
 # Finished? Reset the password back to the original one
 #
@@ -219,6 +217,27 @@ Get-MgUser
 #SDK Docs: https://aka.ms/graph/sdk/powershell/docs
 ```
 
+#### Key Takeaways
+Attack Focus: Exploit the AZUREADSSOACC$ account's Kerberos capabilities to forge tickets and impersonate users in a hybrid Azure AD environment.
+MFA Limitation: This attack bypasses password authentication but does not bypass MFA if enforced.
+Potential Impact: Full control of Azure AD and its resources, depending on the permissions of the impersonated user.
+
+*This method does not bypass MFA
+#### Mitigation Strategies
+Protect the AZUREADSSOACC$ Account:
+- Restrict replication permissions to limit hash extraction via DCSync.
+- Regularly rotate the account’s password.
+- Monitor for Suspicious Activity:
+
+Detect unusual Kerberos ticket generation or access patterns.
+Audit AD replication and access requests.
+Enforce Conditional Access:
+Block access to sensitive resources unless all factors of authentication are verified.
+Limit Privileges:
+Ensure the AZUREADSSOACC$ account has the minimum required permissions.
+Use separate privileged accounts for administration.
+
+
 #
 ### 6. Pass The Hash using Entra Connect's MSOL Account Attack
 
@@ -250,6 +269,28 @@ C:\lab\mimikatz\x64\mimikatz.exe "lsadump::dcsync /user:rootuser"
 ipconfig # see the IP is of DC VM
 
 ```
+
+#### Mitigation Strategies
+To defend against this type of attack:
+
+Limit Privileges:
+
+Restrict the MSOL account's permissions using the principle of least privilege.
+Use managed identities in Azure AD Connect to eliminate the MSOL account altogether.
+Monitor Sensitive Operations:
+
+Detect and alert on DCSync-like behaviors and NTLM hash usage.
+Use tools like Azure AD Identity Protection or SIEM solutions.
+Secure NTLM Authentication:
+
+Disable NTLM where possible or enforce strong network authentication policies.
+Deploy LSA protection to prevent credential dumping.
+Apply Conditional Access Policies:
+
+Enforce MFA and restrict logins to sensitive accounts.
+Regular Patching:
+
+Ensure all systems and tools like Entra Connect are updated to the latest version to prevent known vulnerabilities.
 </details>
 
 
