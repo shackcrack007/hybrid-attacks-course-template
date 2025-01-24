@@ -1,6 +1,8 @@
 # Preparation instructions for hybrid lab deployment 
 #### The lab is comprised from an Active Directory domain + VMs, synced to an Entra tenant, hosted on Azure VMs
 
+WARNING: Deploying this infrastructure in your Entra ID and Azure environment may incur additional costs, and any security risks associated with its deployment and use are solely your responsibility.
+
 ![lab](pics/lab.png)
 
 **As part of the lab setup, you will:**
