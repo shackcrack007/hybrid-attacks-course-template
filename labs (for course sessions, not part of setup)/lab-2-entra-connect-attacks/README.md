@@ -40,7 +40,9 @@ Get-AADIntSyncCredentials
 keep the creds aside :)
 </details>
 
-### 3. Finding a target (victim) user to attack
+### 3. Exploring the Tenant for High-Value Targets
+In this lab, the goal is to identify synced users in the Azure AD tenant who have powerful roles or permissions. This information helps in lateral movement to the cloud and taking over high-value accounts. By leveraging the credentials of the dumped Sync_xx account and using Azure AD PowerShell or AADInternals, the attacker explores synced accounts in the tenant.
+
 So far you've obtained:
 1. Tenant ID + domain
 2. Sync_xx account credentials
@@ -117,12 +119,21 @@ $onpremSyncedUsers | ForEach-Object {
 } | Format-Table -Wrap -AutoSize
 ```
 
-Did you find it? should be ```user1```.
+Did you find it? should be ```user1 & user2```.
 </details>
 
 
 ### 4. Reset Password Attack
 #### Reset the victim user's Entra password
+
+In this scenario, the attacker resets the victim user's Entra (Azure Active Directory) password. By doing so, the attacker gains unauthorized access to the victim's account, allowing them to perform actions on behalf of the victim.
+
+Attack Workflow
+- Identify the Target: The attacker identifies the victim user whose password they want to reset.
+- Obtain Access Token: The attacker obtains an access token with sufficient privileges to reset the user's password. This can be done through various means, such as phishing or exploiting vulnerabilities.
+- Use AADInternals: The attacker uses the AADInternals tool, a PowerShell module for managing Azure AD, to reset the user's password.
+- Execute Command: The attacker executes a command with the appropriate parameters to reset the password.
+- Login as Victim: The attacker logs in to the Entra portal using the victim's account with the new password, in an incognito browser session to avoid detection.
 
 <details>
 <summary><b>Hint 1</b></summary>
@@ -143,6 +154,15 @@ Use Set-AADIntUserPassword command
 Set-AADIntUserPassword -SourceAnchor "IMMUTABLE_ID" -Password "MYPASS" -AccessToken $at -Verbose 
 ```
 Now, open https://entra.microsoft.com in the browser **in incognito** and login as that user *VICTIM_USER@YOURDOMAIN.onmicrosoft.com* with the new password :)
+
+#### Possible Mitigations
+- Enable Multi-Factor Authentication (MFA): Require MFA for all users, which adds an extra layer of security beyond just the password.
+- Monitor Access Logs: Regularly review access and audit logs to detect any unusual or unauthorized activities.
+- Use Conditional Access Policies: Implement conditional access policies to control access based on conditions such as location, device compliance, and user risk.
+- Limit Privileges: Ensure that only authorized personnel have privileges to reset passwords and access sensitive information.
+- Security Awareness Training: Educate users about phishing and other social engineering attacks to reduce the risk of credential compromise.
+- Use Strong Password Policies: Enforce strong password policies, including complexity requirements and regular password changes.
+- By implementing these mitigations, organizations can reduce the risk of unauthorized password resets and protect their users' accounts.
 
 #
 # Finished? Reset the password back to the original one
