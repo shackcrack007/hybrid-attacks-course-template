@@ -79,7 +79,7 @@ Do not use hints unless you really have to..
 on the DC VM:
 
 ```powershell
-Import-Module AADInternals
+Import-Module AADInternals -RequiredVersion "0.9.4"
 Get-AADIntSyncCredentials
 ```
 

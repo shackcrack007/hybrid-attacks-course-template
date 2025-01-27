@@ -20,8 +20,8 @@ Hint: use https://aadinternals.com/aadinternals
 <summary><b>Solution</b></summary>
 
 ```powershell
-Install-Module -Name "AADInternals" -RequiredVersion "0.9.4" -Force
-Import-Module -Name "AADInternals" -RequiredVersion "0.9.4"
+Install-Module AADInternals -RequiredVersion "0.9.4" -Force
+Import-Module AADInternals -RequiredVersion "0.9.4"
 Invoke-AADIntReconAsOutsider -DomainName YOURDOMAIN.onmicrosoft.com
 ```
 </details>
