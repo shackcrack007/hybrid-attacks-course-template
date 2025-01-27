@@ -267,7 +267,9 @@ Use separate privileged accounts for administration.
 #
 ### 6. Pass The Hash using Entra Connect's MSOL Account Attack
 
-Your goal: **using the already-obtained MSOL account creds**, perform pass the hash attack, and open cmd.exe on DC VM, using another domain admin user (that is *not* ``user1``). Do it from **Win 11 VM**.
+**Your goal: move laterally from the Win11 to the DC by leveraging the already-obtained MSOL account creds**.
+- perform pass-the-hash attack from Win11 by opening cmd.exe on DC VM.
+- Login and conduct the attack from **Win11** (login wit h **user2**)
 
 * Use ``c:\lab\mimikatz`` and [impacket-psexec](https://github.com/ropnop/impacket_static_binaries/releases/download/0.9.22.dev-binaries/psexec_windows.exe)
 
