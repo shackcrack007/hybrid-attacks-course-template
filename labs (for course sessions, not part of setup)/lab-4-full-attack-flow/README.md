@@ -3,7 +3,7 @@
 ## Preparations
 * **DO NOT** look at the scripts content / output
 
-1. RDP login to DC VM using the YOURDOMAIN\\**rootuser**, then run the following script as admin (when asked, login using the ENTRA CREDS (!) - you will be asked twice)
+1. RDP login to DC VM using the YOURDOMAIN\\**rootuser**, then run the following script as admin (**when asked, login using the ENTRA CREDS (!) - you will be asked twice**)
     ```powershell
     # when asked, login using the ENTRA ADMIN CREDS (!)
     $tenantId = "YOUR_TENANT_ID" # you can get it here https://entra.microsoft.com/#view/Microsoft_AAD_IAM/TenantOverview.ReactView
