@@ -278,7 +278,7 @@ foreach ($storageAccount in $storageAccounts) {
 ### The content of "secret.txt" in storage account is your medal, mazal tov hacker cracker!
 
 #### Bonus: 
-Go back to the beginning, and try steal user1 identity using silver ticket (Seamless SSO) instead of password reset
+Go back to the beginning, and try steal user2 identity using silver ticket (Seamless SSO) instead of password reset
 </details>
 
 
