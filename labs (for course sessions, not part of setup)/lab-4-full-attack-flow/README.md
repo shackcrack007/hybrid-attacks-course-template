@@ -283,4 +283,4 @@ Go back to the beginning, and try steal user2 identity using silver ticket (Seam
 
 
 ## Don't forget
-Once done, delete the lab resource groups to clean up the resources
+Once done, delete the lab resource groups to clean up the resources + the App Registration and its Enterprise App
