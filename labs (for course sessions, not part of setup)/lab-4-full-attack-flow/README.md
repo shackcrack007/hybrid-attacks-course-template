@@ -182,7 +182,7 @@ If the file is empty, then make sure `user1` is logged in properly:
 
 ```powershell
 $at = "eyJ"... # what you've obtained from the Run Command hack
-$userUPN = "user2@YOURDOMAIN.onmicrosoft.com" # you can get it from the access token if you'll parse in https://jwt.io
+$userUPN = "user1@YOURDOMAIN.onmicrosoft.com" # you can get it from the access token if you'll parse in https://jwt.io
 $tenantId = "YOUR_TENANT_ID" # you can get it here https://entra.microsoft.com/#view/Microsoft_AAD_IAM/TenantOverview.ReactView
 
 
