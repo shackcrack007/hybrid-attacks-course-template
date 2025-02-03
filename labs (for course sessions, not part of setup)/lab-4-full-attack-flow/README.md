@@ -10,7 +10,8 @@
     Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/refs/heads/main/labs%20(for%20course%20sessions%2C%20not%20part%20of%20setup)/lab-4-full-attack-flow/lab4PreparationScript.ps1" -OutFile "C:\\lab4PreparationScript.ps1"; `
     & "C:\\lab4PreparationScript.ps1" -TenantID $tenantId
     ```
-    Ignore errors such as "*cannot be created because function capacity 4096 has been exceeded for this scope*"..
+    - Ignore errors such as "*cannot be created because function capacity 4096 has been exceeded for this scope*"..
+    - if failed it's probably due to timeout: rerun again and enter the creds faster
 
 2. RDP login to Win11 VM using the YOURDOMAIN\\**user1**, then run the following script as admin:
     ```powershell
