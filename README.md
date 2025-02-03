@@ -144,3 +144,8 @@ if (-not (Get-Module -ListAvailable -Name Microsoft.Graph)) {
     Install-Module -Name Microsoft.Graph -Force -AllowClobber -Verbose
 }
 ```
+# Resources Deletion
+
+1. Delete any resources groups created (should be 2 if you've done lab-4)
+1. Delete the synced users from Entra portal (`user1`, `user2`...)
+1. Delete the application registration and service principals created for those apps under Enterprise Apps in the Entra portal
