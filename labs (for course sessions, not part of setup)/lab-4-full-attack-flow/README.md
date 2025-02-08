@@ -104,6 +104,8 @@ $onpremSyncedUsers | ForEach-Object {
 
 Enumerate Applications:
 ```powershell
+Connect-MgGraph # using the Sync_xxx creds
+
 # Retrieve all applications
 $applications = Get-MgApplication -All
 
