@@ -188,6 +188,8 @@ We see some interesting app and service principal, however we don't have any per
     Let's target `user2` (or your target user given as in class), as he holds a privileged role and we do have permissions to set its password.. 
 </details>
 
+<details>
+    <summary><b>Solution</b></summary>
 
 Reset the victim user's Entra password:
 ```powershell
