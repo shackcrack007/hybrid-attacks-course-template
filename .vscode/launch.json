@@ -9,7 +9,11 @@
             "type": "PowerShell",
             "request": "launch",
             "script": "${file}",
-            "args": ["-DomainName", ".onmicrosoft.com"]
+            "args": [
+                "-DomainName",
+                "s81outlookco.onmicrosoft.com",
+                "-Verbose"
+            ]
         }
     ]
 }
