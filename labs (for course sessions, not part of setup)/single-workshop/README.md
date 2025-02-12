@@ -11,6 +11,7 @@
     - Reset all MFA methods for the users 2-N
     - Assign students numbers starting with 2, this will be the user that they will be using throughout the class
     - Share VMs ip address + creds
+    - prepare multiple vms (or a client that is Win Server) as there can be only 4 users connected to a single VM in parallel, even if using TermsrvPatcher    
     - Install https://github.com/fabianosrc/TermsrvPatcher to allow multiple RDP sessions on the Win11
 - Lab 3 - Token Attacks
     - RDP using your assigned user (**not** `user1`)
