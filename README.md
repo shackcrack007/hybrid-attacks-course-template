@@ -149,3 +149,24 @@ if (-not (Get-Module -ListAvailable -Name Microsoft.Graph)) {
 1. Delete any resources groups created (should be 2 if you've done lab-4)
 1. Delete the synced users from Entra portal (`user1`, `user2`...)
 1. Delete the application registration and service principals created for those apps under Enterprise Apps in the Entra portal
+
+
+# Instructor internal prep notes for in-class sessions:
+- Reset all MFA methods for the users 2-N
+- Assign students with numbers starting with 2, this will be the user that they will be using throughout the class (ask them to send u their number so they won't forget)
+- Share with students VMs ip address + creds
+- Enable on Win11 VM multiple RDP sessions: 
+    - Install https://github.com/fabianosrc/TermsrvPatcher to allow multiple RDP sessions on the Win11 - this only allows 4~ parallel connections
+    - Enable unlimited connections: https://www.youtube.com/watch?v=mIyAceQbsXE
+    - just to be on the safe side create another win11 vm / prepare multiple vms (or a client that is Win Server)
+- Enable on DC VM multiple RDP sessions: 
+    - follow this guide https://www.youtube.com/watch?v=S8QW_qiWin0
+    - add the RDS license + then add it to the AD DS group by going to RD License manager -> dcVm right click -> Review
+        - use Windows Server 2019 Remote Desktop Services device connections (50) license code (encrypted with aes-256-cbc): U2FsdGVkX1+vUUVLVbWv8EvfRkDw/Q+Ou7muMVdfQIMUVktnzzNowjyBPPS7U7sr
+        - decrypt using my leet password (same as the video) on https://encrypt-online.com/
+        - got the license code from https://my.visualstudio.com/ProductKeys?mkt=en-us
+    - on gpedit.msc: 
+        - `Computer Configuration\Administrative Templates\Windows Components\Terminal Services\Terminal Server\Connections\` Change `Restrict each user to a single session` to `Disable`
+        - Enable unlimited connections: https://www.youtube.com/watch?v=mIyAceQbsXE
+    - Add all users to remote desktop users group
+    - restart
