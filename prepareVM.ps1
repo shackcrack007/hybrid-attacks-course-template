@@ -326,6 +326,7 @@ if (Is-WindowsServer) {
                 -Enabled $True    
 
             Add-ADGroupMember -Identity "Domain Admins" -Members $username
+            Add-ADGroupMember -Identity "Remote Desktop Users" -Members $username
         }
         catch [Microsoft.ActiveDirectory.Management.ADIdentityAlreadyExistsException] {
         }
