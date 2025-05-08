@@ -258,9 +258,6 @@ function Copy-DirectoryContentToWindows {
     }
 }
 
-Install-WindowsFeature -Name "RSAT-AD-PowerShell" –IncludeAllSubFeature -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -InformationAction SilentlyContinue -IncludeManagementTools
-
-
 function Is-WindowsServer {
     $os = Get-WmiObject -Class Win32_OperatingSystem
     return $os.ProductType -eq 2 -or $os.ProductType -eq 3
@@ -274,6 +271,9 @@ Install-Software -url "https://raw.githubusercontent.com/shackcrack007/hybrid-at
 
 if (Is-WindowsServer) {
     Write-Output "This is a Windows Server system."
+
+    Install-WindowsFeature -Name "RSAT-AD-PowerShell" –IncludeAllSubFeature -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -InformationAction SilentlyContinue -IncludeManagementTools
+
 
     function Disable-IEESC {
         Write-Output "Disabling IE Enhanced Security Configuration (ESC)..."
