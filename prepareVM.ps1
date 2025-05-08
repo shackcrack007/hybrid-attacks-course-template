@@ -258,6 +258,9 @@ function Copy-DirectoryContentToWindows {
     }
 }
 
+Install-WindowsFeature -Name "RSAT-AD-PowerShell" –IncludeAllSubFeature -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -InformationAction SilentlyContinue -IncludeManagementTools
+
+
 function Is-WindowsServer {
     $os = Get-WmiObject -Class Win32_OperatingSystem
     return $os.ProductType -eq 2 -or $os.ProductType -eq 3
